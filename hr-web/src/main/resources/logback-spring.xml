@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+
+    <!-- 引用 spring-boot 默认的 logback 配置 -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+
+    <!-- a) 引用 spring-boot 默认的控制台输出配置 -->
+    <!-- 其格式由常量 CONSOLE_LOG_PATTERN 定义，可通过 application 配置属性 logging.pattern.console 覆盖 -->
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+
+    <!-- 引入 spring env 变量值，供后面的配置使用 -->
+    <springProperty name="APP_NAME" source="spring.application.name"/>
+
+    <!-- b) 原控制台输出配置 -->
+    <!--<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            &lt;!&ndash;格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符&ndash;&gt;
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
+    </appender>-->
+
+    <!-- a) 引用 spring boot 默认的文件输出配置-->
+    <!-- 其格式由常量 FILE_LOG_PATTERN 定义，可通过 application 配置属性 logging.pattern.file 覆盖 -->
+    <!--<property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}}/spring.log}"/>
+    <include resource="org/springframework/boot/logging/logback/file-appender.xml" />-->
+
+    <!-- b) 自定义：按日期生成日志文件 -->
+    <!-- 输出目录根据 logging.path 配置值确定 -->
+    <property name="LOG_HOME" value="${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}}/${APP_NAME}" />
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <FileNamePattern>${LOG_HOME}/${APP_NAME}.log.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <!--日志文件最大的大小-->
+            <MaxFileSize>10MB</MaxFileSize>
+            <!--日志文件保留天数-->
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder charset="UTF-8" class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 控制总体log级别 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <!--<springProfile name="!dev">-->
+            <appender-ref ref="FILE" />
+        <!--</springProfile>-->
+    </root>
+
+    <logger name="dao" level="DEBUG"/>
+
+</configuration>

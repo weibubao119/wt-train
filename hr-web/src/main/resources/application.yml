@@ -1,0 +1,94 @@
+server:
+  port: 8099
+  servlet:
+    context-path: /hr
+
+spring:
+  application:
+    name: HR
+  profiles:
+    active: local
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    deserialization:
+      FAIL_ON_UNKNOWN_PROPERTIES: false
+  session:
+    store-type: none
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+mapper:
+  not-empty: true
+  safe-update: true
+  safe-delete: true
+
+pagehelper:
+  params: pageNum=page;pageSize=rows;orderBy=orderBy
+  offset-as-page-num: true
+  row-bounds-with-count: true
+  reasonable: true
+  support-methods-arguments: true
+
+mybatis:
+  mapper-locations: classpath*:mapper/mysql/*/*.xml
+  config-location: classpath:mybatis.xml
+  type-aliases-package: com.dyys.hr.entity.*
+
+#swagger API文档相关配置
+swagger:
+  enabled: true
+  docket:
+    sys:
+      title: 系统管理
+      description: 系统管理模块接口
+      version: 1.0.0
+      base-package: com.dyys.hr.
+      terms-of-service-url: http://127.0.0.1:${server.port}${server.servlet.context-path}
+      base-path: /sys/**
+    train:
+      title: 培训管理
+      description: 培训管理模块接口
+      version: 1.0.0
+      base-package: com.dyys.hr.
+      terms-of-service-url: http://127.0.0.1:${server.port}${server.servlet.context-path}
+      base-path: /train/**
+    exam:
+      title: 考试试题
+      description: 考试和试题相关接口
+      version: 1.0.0
+      base-package: com.dyys.hr.
+      terms-of-service-url: http://127.0.0.1:${server.port}${server.servlet.context-path}
+      base-path: /exam/**
+    common:
+      title: 公共数据管理
+      description: 公共数据管理接口
+      version: 1.0.0
+      base-package: com.dyys.hr.
+      terms-of-service-url: http://127.0.0.1:${server.port}${server.servlet.context-path}
+      base-path: /common/**
+
+  global-operation-parameters[0]:
+    name: X-Token
+    description: Token
+    model-ref: string
+    parameter-type: header
+    required: false
+
+info:
+  app:
+    name: ${spring.application.name}
+    version: @project.version@
+    encoding: @project.build.sourceEncoding@
+    description: @project.description@
+    spring-boot-version: @spring.boot.version@
+
+# 是否登陆拦截
+permission:
+  authc: /**
+  anon: /common/login,/swagger-ui.html,/doc.html,/swagger-resources/**,/v2/api-docs/**,/webjars/springfox-swagger-ui/**,/druid/**,/hystrix/**,/actuator/**,/error,/train/employee/signInAttendance,/recruit/talent/getCollectDetailExport,/recruit/feedback/audit/getExcelTemplate,/recruit/position/**/getUrlQRCode,/sys/dictDetail/list,/sys/user/info,/recruit/position,/recruit/resume,/common/tmp/login,/train/data/eLearningSave,/train/data/employTrainData,/train/bi/**,/common/loginSso
+
+
+
