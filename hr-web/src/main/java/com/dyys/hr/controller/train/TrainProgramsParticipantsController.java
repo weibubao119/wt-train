@@ -65,6 +65,12 @@ public class TrainProgramsParticipantsController {
         return trainProgramsParticipantsService.noticeSignUp(dtoList,userHelper.getLoginEmplId());
     }
 
+    @PostMapping("confirmSignUp ")
+    @ApiOperation(value = "批量确认报名")
+    public Boolean confirmSignUp(@RequestBody @Validated(IdDTO.Insert.class) List<IdDTO> dtoList) {
+        return trainProgramsParticipantsService.confirmSignUp(dtoList,userHelper.getLoginEmplId());
+    }
+
     @PostMapping("addStudents")
     @ApiOperation(value = "添加学员")
     public Boolean addStudents(@RequestBody List<TrainProgramsParticipantsDTO> dtoList) {

@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.Future;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -38,11 +37,11 @@ public class TrainProgramsPlanDTO implements Serializable {
 	private Date endTime;
 
 	@ApiModelProperty(value = "上课时间")
-	@NotBlank(message = "培训计划表-上课时间不能为空", groups = {TrainProgramsDTO.Insert.class, TrainProgramsDTO.Update.class})
+//	@NotBlank(message = "培训计划表-上课时间不能为空", groups = {TrainProgramsDTO.Insert.class, TrainProgramsDTO.Update.class})
 	private String schooltime;
 
 	@ApiModelProperty(value = "场地")
-	@NotBlank(message = "培训计划表-场地说明不能为空", groups = {TrainProgramsDTO.Insert.class, TrainProgramsDTO.Update.class})
+//	@NotBlank(message = "培训计划表-场地说明不能为空", groups = {TrainProgramsDTO.Insert.class, TrainProgramsDTO.Update.class})
 	private String site;
 
 	@ApiModelProperty(value = "机构id")
@@ -62,10 +61,10 @@ public class TrainProgramsPlanDTO implements Serializable {
 	private Integer examineForm;
 
 	@ApiModelProperty(value = "费用")
-	@NotNull(message = "培训计划表-费用不能为空", groups = {TrainProgramsDTO.Insert.class, TrainProgramsDTO.Update.class})
+//	@NotNull(message = "培训计划表-费用不能为空", groups = {TrainProgramsDTO.Insert.class, TrainProgramsDTO.Update.class})
 	private BigDecimal outlay;
 
 	@ApiModelProperty(value = "费用说明")
-	@NotBlank(message = "培训计划表-费用说明不能为空", groups = {TrainProgramsDTO.Insert.class, TrainProgramsDTO.Update.class})
+//	@NotBlank(message = "培训计划表-费用说明不能为空", groups = {TrainProgramsDTO.Insert.class, TrainProgramsDTO.Update.class})
 	private String outlayText;
 }

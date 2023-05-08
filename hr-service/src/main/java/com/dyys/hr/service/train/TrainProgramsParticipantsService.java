@@ -21,6 +21,14 @@ public interface TrainProgramsParticipantsService extends ICrudService<TrainProg
 
     Boolean noticeSignUp(List<IdDTO> dtoList,String loginUserId);
 
+    /**
+     * 批量确认报名
+     * @param dtoList
+     * @param loginUserId
+     * @return
+     */
+    Boolean confirmSignUp(List<IdDTO> dtoList,String loginUserId);
+
     Boolean addStudents(List<TrainProgramsParticipantsDTO> dtoList, String loginUserId);
 
     Integer removeStudents(List<IdDTO> dtoList,String loginUserId);

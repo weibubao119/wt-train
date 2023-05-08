@@ -67,6 +67,13 @@ public class TrainProgramsParticipantsServiceImpl extends AbstractCrudService<Tr
                 trainNotice.setCreateUser(loginUserId);
                 trainNotice.setCreateTime(System.currentTimeMillis()/1000);
                 noticeList.add(trainNotice);
+
+                //自助平台插入代办
+                dataParams.put("typeId",dto.getId());
+                dataParams.put("type",11);
+                dataParams.put("emplId",participants.getUserId());
+                dataParams.put("url","http://218.13.91.107:38000/kn-front/emp/center");
+                trainNoticeMapper.createEmployeeSelfNotice(dataParams);
                 ids = ids.concat("," + dto.getId().toString());
             }
             result = trainNoticeService.insertBatchSelective(noticeList);
@@ -80,6 +87,34 @@ public class TrainProgramsParticipantsServiceImpl extends AbstractCrudService<Tr
         }
         return result;
     }
+
+    /**
+     * 批量确认报名
+     * @param dtoList
+     * @param loginUserId
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean confirmSignUp(List<IdDTO> dtoList,String loginUserId){
+        boolean result = false;
+        if(dtoList != null && !dtoList.isEmpty()){
+            //循环给参训人员发送通知
+            String ids = "";
+            for (IdDTO dto : dtoList){
+                ids = ids.concat("," + dto.getId().toString());
+            }
+            ids = ids.substring(1);
+            //批量更新参训状态为已报名
+            TrainProgramsParticipants updateParticipants = new TrainProgramsParticipants();
+            updateParticipants.setStatus(1);
+            Condition condition = new Condition(TrainProgramsParticipants.class);
+            condition.createCriteria().andCondition("id in (" + ids + ")");
+            this.updateByConditionSelective(updateParticipants,condition);
+        }
+        return result;
+    }
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)

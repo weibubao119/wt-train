@@ -80,7 +80,7 @@ public class TrainProgramsDTO implements Serializable {
 	private Integer trainShape;
 
 	@ApiModelProperty(value = "经费预算")
-	@NotNull(message = "经费预算不能为空", groups = {Insert.class,Update.class})
+//	@NotNull(message = "经费预算不能为空", groups = {Insert.class,Update.class})
 	private BigDecimal outlay;
 
 	@ApiModelProperty(value = "负责人列表")
