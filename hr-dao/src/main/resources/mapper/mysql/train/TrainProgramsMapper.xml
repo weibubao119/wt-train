@@ -1,0 +1,597 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainProgramsMapper">
+    <resultMap type="com.dyys.hr.entity.train.TrainPrograms" id="trainProgramsMap">
+        <result property="id" column="id"/>
+        <result property="trainName" column="train_name"/>
+        <result property="number" column="number"/>
+        <result property="planId" column="plan_id"/>
+        <result property="planDetailId" column="plan_detail_id"/>
+        <result property="companyCode" column="company_code"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="coOrganizer" column="co_organizer"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="trainSubject" column="train_subject"/>
+        <result property="participantsNum" column="participants_num"/>
+        <result property="trainShape" column="train_shape"/>
+        <result property="outlay" column="outlay"/>
+        <result property="principalList" column="principal_list"/>
+        <result property="status" column="status"/>
+        <result property="isDelete" column="is_delete"/>
+        <result column="is_import" property="isImport"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainPrograms_Column_sql">
+        id,number,train_name,plan_id,plan_detail_id,company_code,dept_id,co_organizer,start_time,end_time,train_subject,participants_num,train_shape,outlay,principal_list,status,is_delete,is_import,create_user,create_time,update_user,update_time
+    </sql>
+    <update id="close">
+        update train_programs set status = 2 where id = #{id}
+    </update>
+    <select id="pageList" resultType="com.dyys.hr.vo.train.TrainProgramsVO">
+        SELECT
+            a.id, a.number,a.train_name, a.start_time, a.end_time, a.participants_num, a.principal_list,
+            a.company_code, b.descr AS companyName,
+            a.dept_id, f.dept_name_path AS deptPathName,
+            a.status,
+            CASE
+                WHEN a.STATUS = 1 THEN "进行中"
+                WHEN a.STATUS = 2 THEN "已完成"
+                ELSE "未开始"
+            END  AS statusName,
+            a.plan_id,d.title as plan_title,d.plan_year
+        FROM train_programs a
+        LEFT JOIN staff_company b ON a.company_code = b.id
+        LEFT JOIN train_plan d ON a.plan_id = d.id
+        LEFT JOIN staff_department f ON a.dept_id = f.id
+        <where>
+            a.is_delete = 0
+            <if test="trainName != null and trainName != ''">
+                and a.train_name like '%${trainName}%'
+            </if>
+            <if test="status != null and status != ''">
+                and a.status = #{status}
+            </if>
+            <if test="principal != null and principal != ''">
+                and a.principal_list like '%${principal}%'
+            </if>
+            <if test="startTime != null and startTime != ''">
+                and a.start_time >= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and a.end_time  &lt;=  #{endTime}
+            </if>
+            <if test="planId != null and planId != '' ">
+                and a.plan_id = #{planId}
+            </if>
+            <if test="planYear != null and planYear != ''">
+                and d.plan_year = #{planYear}
+            </if>
+            <if test="deptList != null and deptList.size > 0">
+                and a.dept_id in
+                <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, f.dept_id_path)
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+    <select id="getDetailByQuery" resultType="com.dyys.hr.vo.train.TrainProgramsDetailVO">
+        SELECT
+            a.*,
+            if(a.train_shape=1,'内部培训','外部培训') as trainShapeName,
+            b.title AS planName,
+            c.descr AS companyName,
+            d.dept_name_path AS deptPathName
+        FROM
+            train_programs a
+            LEFT JOIN train_plan b ON a.plan_id = b.id
+            LEFT JOIN staff_company c ON a.company_code = c.id
+            LEFT JOIN staff_department d ON a.dept_id = d.id
+        <where>
+            <if test="id != null">
+                and a.id = #{id}
+            </if>
+        </where>
+    </select>
+    <select id="employeePageList" resultType="com.dyys.hr.vo.train.EmployeeProgramsVO">
+        SELECT
+        a.id, a.train_name, a.start_time, a.end_time, a.train_shape,
+        if(a.train_shape=1,'内部培训','外部培训') as trainShapeName
+        FROM
+        train_programs a
+        LEFT JOIN train_programs_participants c ON a.id = c.programs_id
+        <where>
+            a.is_delete = 0
+            <if test="userId != null and userId != ''">
+                and c.user_id = #{userId}
+            </if>
+            <if test="status != null and status != ''">
+                and a.status = #{status}
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+    <select id="trainingTypeDistribution" resultType="com.dyys.hr.vo.train.StatisticalProportionVo">
+        select
+        count(a.id) as num,b.name
+        from
+        train_programs a
+        left join train_constant b on a.train_type = b.id
+        <where>
+            <if test="companyCode != null">
+                and a.company_code = #{companyCode}
+            </if>
+            <if test="queryYear != null">
+                and FROM_UNIXTIME(a.create_time, '%Y') = #{queryYear}
+            </if>
+        </where>
+        group by train_type
+    </select>
+    <select id="trainingResponsibleList" resultType="com.dyys.hr.vo.train.AdminResponsibleProgramsVO">
+        SELECT
+            DISTINCT
+            a.id, a.train_name, a.start_time, a.end_time, a.train_shape,
+            if(a.train_shape=1,'内部培训','外部培训') as trainShapeName,
+            (   SELECT count(id) FROM
+                train_programs_participants
+                WHERE
+                programs_id = a.id and status = 1
+            ) as participantsNum
+        FROM train_programs a
+        LEFT JOIN train_programs_participants c ON a.id = c.programs_id
+        LEFT JOIN staff_department sd ON a.dept_id = sd.id
+        <where>
+            a.is_delete = 0
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+            <if test="adminId != null and adminId != ''">
+                and a.create_user = #{adminId}
+            </if>
+            <if test="trainName != null and trainName != ''">
+                and a.train_name like '%${trainName}%'
+            </if>
+            <if test="year != null">
+                and a.start_time >= #{startTime} and a.end_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+    <select id="planCourseList" resultType="java.util.Map">
+        select
+            DISTINCT
+            tbc.id,tbc.name
+        from
+            train_base_course tbc
+            left join train_programs_plan tpp on tbc.id = tpp.course_id
+        <where>
+            tpp.programs_id = #{programsId} and tbc.status = 1
+            <if test="name != null and name != ''">
+                and tbc.name like '%${name}%'
+            </if>
+        </where>
+        order by tpp.id asc
+    </select>
+    <select id="courseList" resultType="java.util.Map">
+        select
+            id as programs_course_id,course_id, CONCAT(course_name,'  ',schooltime,' ',start_time,'~',end_time) as course_name
+        from
+            train_programs_course
+        <where>
+            programs_id = #{programsId}
+            <if test="schooltime != null and schooltime != ''">
+                and schooltime = #{schooltime}
+            </if>
+            <if test="name != null and name != ''">
+                and course_name like '%${name}%'
+            </if>
+        </where>
+        order by id asc
+    </select>
+    <select id="trainPlanYearImplementPageList" resultType="com.dyys.hr.vo.train.TrainPlanYearImplementVO">
+        SELECT
+            tp.id,tp.company_code,tp.number,tp.train_name,tp.participants_num,tp.`status`,if(tp.`status`=1,'进行中','已完成') as statusName,tp.outlay,tp.end_time as course_end_time,
+            ( SELECT count( id ) FROM train_programs_participants WHERE programs_id = tp.id AND `status` = 1 ) AS actual_participants_num,
+            ( SELECT sum( cast( amount as DECIMAL(18,2)) ) FROM train_cost WHERE programs_id = tp.id ) AS actual_cost,
+            sc.descr AS company_descr,
+            sd.descr AS dept_descr,
+            tpl.plan_year,
+            tpd.train_complete_time
+        FROM
+            train_programs tp
+            LEFT JOIN staff_company sc ON tp.company_code = sc.id
+            LEFT JOIN train_plan_detail tpd ON tp.plan_detail_id = tpd.id
+            LEFT JOIN staff_department sd ON tpd.department_code = sd.id
+            LEFT JOIN train_plan tpl ON tp.plan_id = tpl.id
+        <where>
+            tp.is_delete = 0
+            <if test="planYear != null and planYear != ''">
+                and tpl.plan_year = #{planYear}
+            </if>
+            <if test="companyCode != null and companyCode != ''">
+                and tp.company_code = #{companyCode}
+            </if>
+            <if test="status != null and status != ''">
+                and tp.status = #{status}
+            </if>
+            <if test="deptList != null and deptList.size > 0">
+                and tp.dept_id in
+                <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+        </where>
+        order by tp.id desc
+    </select>
+    <select id="studentTrainingDetails" resultType="com.dyys.hr.vo.train.StudentTrainingDetailsVO">
+        SELECT
+            td.*,
+            IF ( td.train_shape = 1, '内部', '外部' ) AS trainShapeName,
+            IF ( td.is_obtain = 1, '是', '否' ) AS isObtainName,
+            sj.company_descr,sj.dept_descr,sj.post_descr,sj.sec_descr,sj.level_descr as grade_descr,sp.descr AS profession_descr,
+            if(tbc.course_source=1,'外部','自有') as courseSourceName,
+            tc1.name as courseCategoryName,
+            tc2.name as learningFormName,
+            tc3.name as examineFormName,
+            tpp.outlay as courseOutlay
+        FROM
+            train_data td
+            LEFT JOIN staff_job sj ON td.empl_id = sj.empl_id
+            LEFT JOIN staff_position spn ON sj.post_code = spn.id
+            left join staff_main_post smp on spn.std_posn_id = smp.post_code
+            LEFT JOIN staff_profession sp ON smp.profession = sp.code
+            LEFT JOIN train_base_course tbc ON td.course_number = tbc.number
+            LEFT JOIN train_programs tp ON td.train_number = tp.number
+            LEFT JOIN train_plan tpl ON tp.plan_id = tpl.id
+            LEFT JOIN train_programs_plan tpp ON tp.id = tpp.programs_id and tbc.id = tpp.course_id
+            LEFT JOIN train_constant tc1 on td.course_category = tc1.id
+            LEFT JOIN train_constant tc2 on td.learning_form = tc2.id
+            LEFT JOIN train_constant tc3 on td.examine_form = tc3.id
+            LEFT JOIN staff_department sd ON td.dept_id = sd.id
+        <where>
+            td.status = 1
+            <if test="planYear != null and planYear != ''">
+                and tpl.plan_year = #{planYear}
+            </if>
+            <if test="companyCode != null and companyCode != ''">
+                and td.company_code = #{companyCode}
+            </if>
+            <if test="professionCode != null and professionCode != ''">
+                and smp.profession = #{professionCode}
+            </if>
+            <if test="posnGradeCode != null and posnGradeCode != ''">
+                and sj.level_code = #{posnGradeCode}
+            </if>
+            <if test="posnSecCode != null and posnSecCode != ''">
+                and sj.sec_code = #{posnSecCode}
+            </if>
+            <if test="emplName != null and emplName != ''">
+                and td.empl_name like '%${emplName}%'
+            </if>
+            <if test="emplId != null and emplId != ''">
+                and td.empl_id like '%${emplId}%'
+            </if>
+            <if test="trainName != null and trainName != ''">
+                and td.train_name like '%${trainName}%'
+            </if>
+            <if test="courseName != null and courseName != ''">
+                and td.course_name like '%${courseName}%'
+            </if>
+            <if test="courseCategory != null and courseCategory != ''">
+                and td.course_category = #{courseCategory}
+            </if>
+            <if test="trainShape != null and trainShape != ''">
+                and td.train_shape = #{trainShape}
+            </if>
+            <if test="learningForm != null and learningForm != ''">
+                and td.learning_form = #{learningForm}
+            </if>
+            <if test="deptList != null and deptList.size > 0">
+                and td.dept_id in
+                <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+        </where>
+        ORDER BY td.id desc
+    </select>
+    <select id="courseTrainingDetails" resultType="com.dyys.hr.vo.train.CourseTrainingDetailsVO">
+        SELECT
+            tpp.id,
+            tpp.start_time,
+            tpp.end_time,
+            tpp.outlay,
+            tpp.class_hour,
+            tbc.NAME AS course_name,
+            sc.descr AS company_descr,
+            sd.descr AS dept_descr,
+            tpn.plan_year,
+            IF
+            ( tp.train_shape = 1, '内部', '外部' ) AS train_shape,
+            tp.train_name
+        FROM
+            train_programs_plan tpp
+            LEFT JOIN train_programs tp ON tpp.programs_id = tp.id
+            LEFT JOIN train_base_course tbc ON tpp.course_id = tbc.id
+            LEFT JOIN staff_company sc ON tp.company_code = sc.id
+            LEFT JOIN staff_department sd ON tp.dept_id = sd.id
+            LEFT JOIN train_plan tpn ON tp.plan_id = tpn.id
+        <where>
+            <if test="planYear != null and planYear != ''">
+                and tpn.plan_year = #{planYear}
+            </if>
+            <if test="startMonth != null and startMonth != ''">
+                and tpp.start_time >= #{startMonth}
+            </if>
+            <if test="endMonth != null and endMonth != ''">
+                and tpp.end_time  &lt;=  #{endMonth}
+            </if>
+            <if test="companyCode != null and companyCode != ''">
+                and tp.company = #{companyCode}
+            </if>
+            <if test="deptList != null and deptList.size > 0">
+                and tp.dept_id in
+                <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+        </where>
+        order by tpp.id desc
+    </select>
+    <select id="courseTeacherDetails" resultType="com.dyys.hr.vo.train.CourseTeacherDetailsVO">
+        SELECT
+            a.id,
+            c.company_descr,
+            c.dept_descr,
+            b.number,
+            b.NAME AS teacher_name,
+            IF
+            ( b.type = 1, '内部', '外部' ) AS type_name,
+            tc1.NAME AS level_name,
+            e.NAME AS course_name,
+            ( SELECT count( id ) FROM train_base_teacher_taught WHERE teacher_id = a.teacher_id AND course_id = a.course_id ) AS have_taught_num,
+            (
+            SELECT
+            sum( class_hours )
+            FROM
+            train_base_teacher_taught tbtt
+            LEFT JOIN train_base_course tbc ON tbtt.course_id = tbc.id
+            WHERE
+            tbtt.teacher_id = a.teacher_id
+            AND tbtt.course_id = a.course_id
+            ) AS have_taught_class_hours,
+            ( SELECT sum( teacher_score ) FROM train_base_teacher_taught WHERE teacher_id = a.teacher_id AND course_id = a.course_id ) AS teacher_score
+        FROM
+            train_base_course_teacher a
+            LEFT JOIN train_base_teacher b ON a.teacher_id = b.id
+            LEFT JOIN staff_job c ON b.number = c.empl_id
+            LEFT JOIN staff_department d ON c.dept_id = d.id
+            LEFT JOIN train_base_course e ON e.id = a.course_id
+            LEFT JOIN train_constant tc1 ON b.LEVEL = tc1.id
+            <where>
+                <if test="number != null and number != ''">
+                    and b.number like '%${number}%'
+                </if>
+                <if test="teacherName != null and teacherName != ''">
+                    and b.name like '%${teacherName}%'
+                </if>
+                <if test="companyCode != null and companyCode != ''">
+                    and c.company = #{companyCode}
+                </if>
+                <if test="deptList != null and deptList.size > 0">
+                    and c.dept_id in
+                    <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                        #{id}
+                    </foreach>
+                </if>
+                <if test="deptId != null and deptId != ''">
+                    and FIND_IN_SET(#{deptId}, d.dept_id_path)
+                </if>
+                <if test="type != null and type != ''">
+                    and b.type = #{type}
+                </if>
+                <if test="level != null and level != ''">
+                    and b.level = #{level}
+                </if>
+                <if test="courseName != null and courseName != ''">
+                    and e.name like '%${courseName}%'
+                </if>
+
+            </where>
+        ORDER BY a.id desc
+    </select>
+    <select id="taughtCourseTeacherDetails" resultType="com.dyys.hr.vo.train.TaughtCourseTeacherDetailsVO">
+        SELECT
+            a.id,
+            a.course_start_time,
+            a.course_end_time,
+            tc2.NAME AS learning_form,
+            a.participants_total,
+            a.course_score,
+            IF
+            ( a.examine_form = 1, '考试', '考察' ) AS examine_form,
+            a.train_fee,
+            b.company_code,
+            b.dept_id,
+            b.train_name,
+            IF
+            ( b.train_shape = 1, '内部', '外部' ) AS train_shape,
+            b.train_subject,
+            c.descr AS company_descr,
+            d.descr AS dept_descr,
+            e.number AS course_number,
+            e.NAME AS course_name,
+            e.class_hours,
+            e.credit,
+            e.category,
+            tc1.NAME AS category_name,
+            f.number AS teacher_number,
+            f.NAME AS teacher_name,
+            g.actual_results,
+            h.NAME AS institution_name
+        FROM
+            train_base_teacher_taught a
+            LEFT JOIN train_programs b ON a.programs_id = b.id
+            LEFT JOIN staff_company c ON b.company_code = c.id
+            LEFT JOIN staff_department d ON b.dept_id = d.id
+            LEFT JOIN train_base_course e ON e.id = a.course_id
+            LEFT JOIN train_base_teacher f ON f.id = a.teacher_id
+            LEFT JOIN train_admin_summary g ON a.programs_id = g.programs_id
+            LEFT JOIN train_institution h ON a.institution_id = h.id
+            LEFT JOIN train_constant tc1 ON e.category = tc1.id
+            LEFT JOIN train_constant tc2 ON a.learning_form = tc2.id
+            <where>
+                <if test="companyCode != null and companyCode != ''">
+                    and b.company_code = #{companyCode}
+                </if>
+                <if test="deptList != null and deptList.size > 0">
+                    and b.dept_id in
+                    <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                        #{id}
+                    </foreach>
+                </if>
+                <if test="deptId != null and deptId != ''">
+                    and FIND_IN_SET(#{deptId}, d.dept_id_path)
+                </if>
+                <if test="courseName != null and courseName != ''">
+                    and e.name like '%${courseName}%'
+                </if>
+                <if test="teacherName != null and teacherName != ''">
+                    and f.name like '%${teacherName}%'
+                </if>
+                <if test="trainName != null and trainName != ''">
+                    and b.train_name like '%${trainName}%'
+                </if>
+                <if test="courseCategory != null and courseCategory != ''">
+                    and e.category = #{courseCategory}
+                </if>
+                <if test="trainShape != null and trainShape != ''">
+                    and b.train_shape = #{trainShape}
+                </if>
+                <if test="learningForm != null and learningForm != ''">
+                    and a.learning_form = #{learningForm}
+                </if>
+            </where>
+        ORDER BY a.id desc
+    </select>
+    <select id="trainCostDetails" resultType="com.dyys.hr.vo.train.TrainCostDetailsVO">
+        SELECT
+            a.id,
+            a.programs_id,
+            round( sum( a.amount ), 2 ) AS totalAmount,
+            b.train_name,
+            b.number AS trainNumber,
+            IF
+            ( b.train_shape = 1, '内部', '外部' ) AS trainShape,
+            ( SELECT count( id ) FROM train_programs_participants WHERE programs_id = a.programs_id AND `status` = 1 ) AS actual_participants_num,
+            c.title AS planName,
+            c.plan_year,
+            d.descr AS company_descr,
+            e.descr AS dept_descr
+        FROM
+            train_cost a
+            LEFT JOIN train_programs b ON a.programs_id = b.id
+            LEFT JOIN train_plan c ON b.plan_id = c.id
+            LEFT JOIN staff_company d ON b.company_code = d.id
+            LEFT JOIN staff_department e ON b.dept_id = e.id
+        <where>
+            <if test="companyCode != null and companyCode != ''">
+                and b.company_code = #{companyCode}
+            </if>
+            <if test="deptList != null and deptList.size > 0">
+                and b.dept_id in
+                <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, e.dept_id_path)
+            </if>
+            <if test="planYear != null and planYear != ''">
+                and c.plan_year = #{planYear}
+            </if>
+            <if test="planName != null and planName != ''">
+                and c.title like '%${planName}%'
+            </if>
+            <if test="trainName != null and trainName != ''">
+                and b.train_name like '%${trainName}%'
+            </if>
+            <if test="trainShape != null and trainShape != ''">
+                and b.train_shape = #{trainShape}
+            </if>
+        </where>
+        GROUP BY
+            a.programs_id
+        ORDER BY
+            a.programs_id DESC
+    </select>
+    <select id="studentTrainCostDetails" resultType="com.dyys.hr.vo.train.StudentTrainCostDetailsVO">
+        SELECT
+            td.*,
+            if(td.train_shape=1,'内部培训','外部培训') as train_shape_name,
+            sj.company_descr,
+            sj.dept_descr,
+            sj.post_descr,
+            sj.sec_descr,
+            sj.grade_descr,
+            sj.level_descr,
+            sp.descr AS profession_descr,
+            tpl.plan_year
+        FROM
+            train_data td
+            LEFT JOIN staff_job sj ON td.empl_id = sj.empl_id
+            LEFT JOIN staff_position spn ON sj.post_code = spn.id
+            LEFT JOIN staff_main_post smp ON spn.std_posn_id = smp.post_code
+            LEFT JOIN staff_profession sp ON smp.profession = sp.code
+            LEFT JOIN train_programs tp ON td.train_number = tp.number
+            LEFT JOIN train_plan tpl ON tp.plan_id = tpl.id
+            LEFT JOIN staff_department sd ON td.dept_id = sd.id
+        <where>
+            td.status = 1
+            <if test="planYear != null and planYear != ''">
+                and tpl.plan_year = #{planYear}
+            </if>
+            <if test="emplName != null and emplName != ''">
+                and td.empl_name like '%${emplName}%'
+            </if>
+            <if test="companyCode != null and companyCode != ''">
+                and td.company_code = #{companyCode}
+            </if>
+            <if test="deptList != null and deptList.size > 0">
+                and td.dept_id in
+                <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+            <if test="trainName != null and trainName != ''">
+                and td.train_name like '%${trainName}%'
+            </if>
+            <if test="trainShape != null and trainShape != ''">
+                and td.train_shape = #{trainShape}
+            </if>
+        </where>
+        ORDER BY
+            td.id DESC
+    </select>
+</mapper>

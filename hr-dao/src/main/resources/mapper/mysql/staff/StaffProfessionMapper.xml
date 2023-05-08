@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.staff.StaffProfessionMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.staff.StaffProfession">
+        <id column="id" property="id" />
+        <result column="set_id" property="setId" />
+        <result column="code" property="code" />
+        <result column="descr" property="descr" />
+        <result column="descr_short" property="descrShort" />
+        <result column="business_unit" property="businessUnit" />
+        <result column="eff_date" property="effDate" />
+        <result column="eff_status" property="effStatus" />
+        <result column="creator" property="creator" />
+        <result column="create_date" property="createDate" />
+        <result column="updater" property="updater" />
+        <result column="update_date" property="updateDate" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, set_id, code, descr, descr_short, business_unit, eff_date, eff_status, creator, create_date, updater, update_date
+    </sql>
+
+    <!-- 职族筛选列表 -->
+    <select id="selectList" resultType="com.dyys.hr.vo.common.PsProfessionVO">
+        SELECT a.code AS professionCode, a.descr AS professionName
+        FROM staff_profession a
+        INNER JOIN (SELECT code, MAX(eff_date) AS eff_date FROM staff_profession WHERE eff_status = "A" GROUP BY code) b
+        ON a.code = b.code AND a.eff_date = b.eff_date
+        ORDER BY a.code ASC
+    </select>
+
+</mapper>

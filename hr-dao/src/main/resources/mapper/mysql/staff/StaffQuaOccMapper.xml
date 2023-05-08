@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.staff.StaffQuaOccMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.staff.StaffQuaOcc">
+        <id column="id" property="id" />
+        <result column="empl_id" property="emplId" />
+        <result column="ctfct_type" property="ctfctType" />
+        <result column="name" property="name" />
+        <result column="level" property="level" />
+        <result column="vqc_type" property="vqcType" />
+        <result column="start_date" property="startDate" />
+        <result column="ctfct_dept" property="ctfctDept" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, empl_id, ctfct_type, name, level, vqc_type, start_date, ctfct_dept, update_time
+    </sql>
+
+</mapper>

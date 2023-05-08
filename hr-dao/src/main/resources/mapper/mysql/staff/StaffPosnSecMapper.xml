@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.staff.StaffPosnSecMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.staff.StaffPosnSec">
+        <id column="id" property="id" />
+        <result column="set_id" property="setId" />
+        <result column="posn_sec_id" property="posnSecId" />
+        <result column="descr" property="descr" />
+        <result column="descr_short" property="descrShort" />
+        <result column="business_unit" property="businessUnit" />
+        <result column="eff_date" property="effDate" />
+        <result column="eff_status" property="effStatus" />
+        <result column="creator" property="creator" />
+        <result column="create_date" property="createDate" />
+        <result column="updater" property="updater" />
+        <result column="update_date" property="updateDate" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, set_id, posn_sec_id, descr, descr_short, business_unit, eff_date, eff_status, creator, create_date, updater, update_date
+    </sql>
+
+    <!-- 职序筛选列表 -->
+    <select id="selectList" resultType="com.dyys.hr.vo.common.PsPosnSecVO">
+        SELECT a.posn_sec_id AS posnSecCode, a.descr AS posnSecName
+        FROM staff_posn_sec a
+        INNER JOIN (SELECT posn_sec_id, MAX(eff_date) AS eff_date FROM staff_posn_sec WHERE eff_status = "A" GROUP BY posn_sec_id) b
+        ON a.posn_sec_id = b.posn_sec_id AND a.eff_date = b.eff_date
+        ORDER BY a.posn_sec_id ASC
+    </select>
+
+    <!-- 根据职序编码获取职序的名称 -->
+    <select id="basicInfoByCode" resultType="com.dyys.hr.vo.common.PsPosnSecVO">
+        SELECT a.posn_sec_id AS posnSecCode, a.descr AS posnSecName
+        FROM staff_posn_sec a
+        INNER JOIN (SELECT posn_sec_id, MAX(eff_date) AS eff_date FROM staff_posn_sec WHERE eff_status = "A" GROUP BY posn_sec_id) b
+        ON a.posn_sec_id = b.posn_sec_id AND a.eff_date = b.eff_date
+        WHERE a.posn_sec_id = #{posnSecCode}
+    </select>
+</mapper>

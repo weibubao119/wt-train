@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainPlanDetailMapper">
+
+  <resultMap type="com.dyys.hr.entity.train.TrainPlanDetail" id="trainPlanDetailMap">
+    <result property="id" column="id"/>
+    <result property="planId" column="plan_id"/>
+    <result property="companyCode" column="company_code"/>
+    <result property="departmentCode" column="department_code"/>
+    <result property="feedbackUserId" column="feedback_user_id"/>
+    <result property="demandType" column="demand_type"/>
+    <result property="trainName" column="train_name"/>
+    <result property="courseType" column="course_type"/>
+    <result property="trainShape" column="train_shape"/>
+    <result property="trainSubject" column="train_subject"/>
+    <result property="trainCompleteTime" column="train_complete_time"/>
+    <result property="trainRequirements" column="train_requirements"/>
+    <result property="participantsNum" column="participants_num"/>
+    <result property="teacherId" column="teacher_id"/>
+    <result property="assessmentMethod" column="assessment_method"/>
+    <result property="outlay" column="outlay"/>
+    <result property="remark" column="remark"/>
+    <result property="coOrganizer" column="co_organizer"/>
+    <result property="isShow" column="is_show"/>
+    <result property="createUser" column="create_user"/>
+    <result property="createTime" column="create_time"/>
+    <result property="updateUser" column="update_user"/>
+    <result property="updateTime" column="update_time"/>
+  </resultMap>
+
+  <sql id="TrainPlanDetail_Column_sql">
+    id,plan_id,company_code,dept_id,feedback_user_id,demand_type,train_name,train_shape,train_subject,train_complete_time,train_requirements,participants_num,teacher_id,assessment_method,outlay,remark,co_organizer,is_show,create_user,create_time,update_user,update_time
+  </sql>
+    <delete id="deleteByParams">
+        delete from train_plan_detail
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="planId != null">
+                and plan_id = #{planId}
+            </if>
+        </where>
+    </delete>
+    <select id="getDetailList" resultType="com.dyys.hr.vo.train.TrainPlanDetailVO">
+      SELECT
+        a.*,
+        if(a.train_shape=1,'内部','外部') as trainShapeName,
+        if(a.demand_type = 1, '临时需求', '计划培训') as demandTypeName,
+        d.descr_short AS companyName,
+        e.descr_short AS departmentName,
+        f.empl_name AS feedbackUserName,
+        g.NAME AS teacherName,
+        h.NAME AS courseTypeName,
+        i.NAME AS trainRequirementsName,
+        j.NAME AS assessmentMethodName
+      FROM
+        train_plan_detail a
+        LEFT JOIN staff_company d ON a.company_code = d.id
+        LEFT JOIN staff_department e ON a.department_code = e.id
+        LEFT JOIN staff_job f ON a.feedback_user_id = f.empl_id
+        LEFT JOIN train_base_teacher g ON a.teacher_id = g.id
+        LEFT JOIN train_constant h ON a.course_type = h.id
+        LEFT JOIN train_constant i ON a.train_requirements = i.id
+        LEFT JOIN train_constant j ON a.assessment_method = j.id
+      <where>
+          a.is_show = 1
+          <if test="id != null">
+            and a.id = #{id}
+          </if>
+          <if test="plan_id != null">
+            and a.plan_id = #{plan_id}
+          </if>
+      </where>
+    </select>
+    <select id="selectList" resultType="com.dyys.hr.vo.train.TrainPlanDetailSelectVO">
+      select
+        a.id,a.train_name as name,a.co_organizer,a.company_code,
+        c.descr_short as company_name
+      from
+        train_plan_detail a
+        left join train_plan b on a.plan_id = b.id
+        left join staff_company c on a.company_code = c.id
+      <where>
+        b.status = 1 and a.is_show = 1
+        <if test="name != null and name != ''">
+          and a.train_name like '%${name}%'
+        </if>
+      </where>
+      order by id asc
+    </select>
+  <select id="getDetail" resultType="com.dyys.hr.vo.train.TrainPlanDetailVO">
+    SELECT
+        a.*,
+        if(a.train_shape=1,'内部','外部') as trainShapeName,
+        if(a.demand_type = 1, '临时需求', '计划培训') as demandTypeName,
+        d.descr_short AS companyName,
+        e.descr_short AS departmentName,
+        f.empl_name AS feedbackUserName,
+        g.NAME AS teacherName,
+        h.NAME AS courseTypeName,
+        i.NAME AS trainRequirementsName,
+        j.NAME AS assessmentMethodName
+    FROM
+        train_plan_detail a
+        LEFT JOIN staff_company d ON a.company_code = d.id
+        LEFT JOIN staff_department e ON a.department_code = e.id
+        LEFT JOIN staff_job f ON a.feedback_user_id = f.empl_id
+        LEFT JOIN train_base_teacher g ON a.teacher_id = g.id
+        LEFT JOIN train_constant h ON a.course_type = h.id
+        LEFT JOIN train_constant i ON a.train_requirements = i.id
+        LEFT JOIN train_constant j ON a.assessment_method = j.id
+    <where>
+      <if test="id != null">
+        and a.id = #{id}
+      </if>
+      <if test="plan_id != null">
+        and a.plan_id = #{plan_id}
+      </if>
+      <if test="feedback_user_id != null">
+        and a.feedback_user_id = #{feedback_user_id}
+      </if>
+      <if test="demand_type != null">
+        and a.demand_type = #{demand_type}
+      </if>
+    </where>
+  </select>
+
+    <!-- 需求汇总导出培训计划数据 -->
+    <select id="exportListByPlanId" resultType="com.dyys.hr.entity.train.excel.PlanDetailExportExcel">
+        SELECT a.company_code AS companyCode, a.department_code AS departmentCode, a.feedback_user_id AS feedbackUserId,
+        a.train_name AS trainName, CONCAT(a.course_type, '-', f.name) AS courseTypeName,
+        CONCAT(a.train_shape, '-', if(a.train_shape=1,'内部培训','外部培训')) AS trainShapeName,
+        a.train_subject AS trainSubject, a.train_complete_time AS trainCompleteTime,
+        CONCAT(a.train_requirements, '-', g.name) AS trainRequirementsName,
+        a.participants_num AS participantsNum, a.outlay,
+        CONCAT (a.assessment_method, '-', h.name) AS assessmentMethodName, a.remark,
+        b.descr_short AS companyName, c.descr_short AS departmentName, d.empl_name AS feedbackUserName,
+        e.number AS teacherNumber, e.name AS teacherName
+        FROM train_plan_detail a
+        LEFT JOIN staff_company b ON a.company_code = b.id
+        LEFT JOIN staff_department c ON a.department_code = c.id
+        LEFT JOIN staff_job d ON a.feedback_user_id = d.empl_id
+        LEFT JOIN train_base_teacher e ON a.teacher_id = e.id
+        LEFT JOIN train_constant f ON a.course_type = f.id
+        LEFT JOIN train_constant g ON a.train_requirements = g.id
+        LEFT JOIN train_constant h ON a.assessment_method = h.id
+        WHERE a.plan_id = #{planId} AND a.is_show = 1
+    </select>
+</mapper>

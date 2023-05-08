@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.staff.StaffRwdPnsMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.staff.StaffRwdPns">
+        <id column="id" property="id" />
+        <result column="empl_id" property="emplId" />
+        <result column="prd_id" property="prdId" />
+        <result column="rwd_date" property="rwdDate" />
+        <result column="name" property="name" />
+        <result column="level" property="level" />
+        <result column="grade" property="grade" />
+        <result column="pns_account" property="pnsAccount" />
+        <result column="grant_business" property="grantBusiness" />
+        <result column="grant_dept" property="grantDept" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, empl_id, prd_id, rwd_date, name, level, grade, pns_account, grant_business, grant_dept, update_time
+    </sql>
+
+</mapper>

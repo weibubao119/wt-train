@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainLearnMapPosnGradeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.train.TrainLearnMapPosnGrade">
+        <id column="id" property="id" />
+        <result column="map_id" property="mapId" />
+        <result column="map_code" property="mapCode" />
+        <result column="posn_grade_code" property="posnGradeCode" />
+        <result column="p_posn_grade_code" property="pPosnGradeCode" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, map_id, map_code, posn_grade_code, p_posn_grade_code, create_user, create_time, update_user, update_time
+    </sql>
+
+    <!-- 统计学习地图下职级数量 -->
+    <select id="queryTotalByMapId" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM train_learn_map_posn_grade WHERE map_id = #{mapId}
+    </select>
+
+    <!-- 查询学习地图下的职级列表 -->
+    <select id="queryListByMapId" resultType="com.dyys.hr.vo.train.LearnMapPosnGradeVO">
+        SELECT a.posn_grade_code AS posnGradeCode, a.p_posn_grade_code AS pPosnGradeCode,
+        b.descr_short AS posnGradeName, c.descr_short AS pPosnGradeName
+        FROM train_learn_map_posn_grade a
+        LEFT JOIN staff_posn_grade b ON a.posn_grade_code = b.id
+        LEFT JOIN staff_posn_grade c ON a.p_posn_grade_code = c.id
+        WHERE a.map_id = #{mapId}
+        ORDER BY a.id ASC
+    </select>
+
+    <!-- 获取低一级职级 -->
+    <select id="queryLowInfo" resultType="com.dyys.hr.vo.train.LearnMapPosnGradeVO">
+        SELECT posn_grade_code AS posnGradeCode
+        FROM train_learn_map_posn_grade
+        WHERE map_id = #{mapId} AND p_posn_grade_code = #{posnGradeCode} AND posn_grade_code != #{posnGradeCode}
+    </select>
+
+    <!-- 学习地图职级选择列表 -->
+    <select id="mapGradeListByMapId" resultType="com.dyys.hr.vo.train.LearnMapPosnGradeSelectVO">
+        SELECT a.posn_grade_code AS posnGradeCode, CONCAT(a.posn_grade_code, '-', b.descr_short) AS posnGradeCodeName
+        FROM train_learn_map_posn_grade a
+        LEFT JOIN staff_posn_grade b ON a.posn_grade_code = b.id
+        WHERE a.map_id = #{mapId}
+        ORDER BY a.id ASC
+    </select>
+</mapper>

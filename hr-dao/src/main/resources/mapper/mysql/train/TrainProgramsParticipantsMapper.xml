@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainProgramsParticipantsMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainProgramsParticipants" id="trainProgramsParticipantsMap">
+        <result property="id" column="id"/>
+        <result property="programsId" column="programs_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="companyCode" column="company_code"/>
+        <result property="departmentCode" column="department_code"/>
+        <result property="jobCode" column="job_code"/>
+        <result property="status" column="status"/>
+        <result column="is_import" property="isImport"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainProgramsParticipants_Column_sql">
+        id,programs_id,user_id,company_code,department_code,job_code,status,is_import,create_user,create_time,update_user,update_time
+    </sql>
+    <delete id="deleteByParams">
+        delete from train_programs_participants
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="programs_id != null">
+                and programs_id = #{programs_id}
+            </if>
+        </where>
+    </delete>
+    <select id="getDetailList" resultType="com.dyys.hr.vo.train.TrainProgramsParticipantsDetailVO">
+        SELECT
+            DISTINCT
+            a.*,
+            e.company_descr AS companyName,
+            e.dept_descr AS departmentName,
+            e.post_descr AS jobName,
+            e.empl_name AS userName
+        FROM
+            train_programs_participants a
+            LEFT JOIN staff_job e ON e.empl_id = a.user_id
+        <where>
+            <if test="id != null">
+                and a.id = #{id}
+            </if>
+            <if test="programs_id != null">
+                and a.programs_id = #{programs_id}
+            </if>
+            <if test="status != null">
+                and a.status = #{status}
+            </if>
+        </where>
+    </select>
+    <select id="pageList" resultType="com.dyys.hr.entity.train.excel.ProgramsParticipantsExcel">
+        SELECT
+            DISTINCT
+            tpp.id,tpp.status,
+            CASE status
+                WHEN 2 THEN '待通知'
+                WHEN 0 THEN '待确认'
+                WHEN 1 THEN '已报名'
+                ELSE '未知'
+            END
+            as statusName,
+            sj.empl_id,sj.empl_name,sj.company,sj.company_descr,sj.dept_id,sj.dept_descr,sj.post_code,sj.post_descr,
+            sj.level_code AS gradeCode,sj.level_descr AS gradeDescr,sj.sec_code,sj.sec_descr
+        FROM train_programs_participants tpp
+        LEFT JOIN staff_job sj ON sj.empl_id = tpp.user_id
+        LEFT JOIN staff_department sd ON sj.dept_id = sd.id
+        <where>
+            <if test="id != null and id != ''">
+                and tpp.id = #{id}
+            </if>
+            <if test="programsId != null and programsId != ''">
+                and tpp.programs_id = #{programsId}
+            </if>
+            <if test="status != null and status != ''">
+                and tpp.status = #{status}
+            </if>
+            <if test="emplName != null and emplName != ''">
+                and (sj.empl_name like '%${emplName}%' or tpp.user_id = #{emplName})
+            </if>
+            <if test="companyCode != null and companyCode != ''">
+                and sj.company = #{companyCode}
+            </if>
+            <if test="departmentCode != null and departmentCode != ''">
+                and FIND_IN_SET(#{departmentCode}, sd.dept_id_path)
+            </if>
+            <if test="posnGradeCode != null and posnGradeCode != ''">
+                and sj.level_code = #{posnGradeCode}
+            </if>
+            <if test="posnSecCode != null and posnSecCode != ''">
+                and sj.sec_code = #{posnSecCode}
+            </if>
+        </where>
+
+    </select>
+
+    <!-- 培训数量统计(管理员端：进行中、已完成、总计、按月统计；员工端：进行中、已完成) -->
+    <select id="getProgramsCountByQuery" resultType="java.lang.Integer">
+        select count(DISTINCT a.id ) from
+            train_programs a
+            left join train_programs_participants b on a.id = b.programs_id
+            LEFT JOIN staff_department sd ON a.dept_id = sd.id
+        <where>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+            <if test="status != null">
+                and a.status = #{status}
+            </if>
+            <if test="userId != null">
+                and b.user_id = #{userId}
+            </if>
+            <if test="userStatus != null">
+                and b.status = #{userStatus}
+            </if>
+            <if test="year != null">
+                and a.start_time >= #{startTime} and a.end_time &lt;= #{endTime}
+            </if>
+            <if test="queryMonth != null">
+               and DATE_FORMAT(a.start_time, '%Y-%m') = #{queryMonth}
+            </if>
+        </where>
+    </select>
+    <select id="programsMonthSchedule" resultType="com.dyys.hr.vo.train.EmployeeTrainingScheduleVO">
+        SELECT
+            a.train_name,
+            date_format(a.start_time,'%d') as start_day,
+            date_format(a.end_time,'%d') as end_day
+        FROM
+            train_programs a
+            LEFT JOIN train_programs_participants b ON a.id = b.programs_id
+        <where>
+            and DATE_FORMAT(a.start_time, '%Y-%m') = #{queryMonth}
+            <if test="user_id != null">
+                and b.user_id = #{user_id}
+            </if>
+        </where>
+        order by a.start_time asc
+    </select>
+
+    <!-- 已完成培训总人次统计 -->
+    <select id="getProgramsParticipantsCountByQuery" resultType="java.lang.Integer">
+        select count(a.id)
+        from train_programs_participants a
+        left join train_programs b on a.programs_id = b.id
+        LEFT JOIN staff_department sd ON b.dept_id = sd.id
+        <where>
+            <if test="userStatus != null and userStatus != ''">
+                and a.status = #{userStatus}
+            </if>
+            <if test="status != null and status != ''">
+                and b.status = #{status}
+            </if>
+            <if test="year != null">
+                and b.start_time >= #{startTime} and b.end_time &lt;= #{endTime}
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+        </where>
+    </select>
+    <select id="getUserIdsByQuery" resultType="java.lang.String">
+        select user_id from train_programs_participants
+        <where>
+            <if test="programsId != null">
+                and programs_id = #{programsId}
+            </if>
+        </where>
+    </select>
+    <select id="exportList" resultType="com.dyys.hr.entity.train.excel.ProgramsParticipantsExcel">
+        SELECT
+            DISTINCT
+            tpp.status,
+            CASE status
+                WHEN 2 THEN '待通知'
+                WHEN 0 THEN '待确认'
+                WHEN 1 THEN '已报名'
+            ELSE '未知'
+            END
+            as statusName,
+            sj.*
+        FROM
+            train_programs_participants tpp
+            LEFT JOIN staff_job sj ON sj.empl_id = tpp.user_id
+        WHERE tpp.programs_id = #{programsId}
+    </select>
+
+    <!-- 培训总结excel模板获取培训项目的参训人员 -->
+    <select id="getParticipantListTml" resultType="com.dyys.hr.entity.train.excel.SummaryExcel">
+        SELECT b.empl_id, b.empl_name
+        FROM train_programs_participants a
+        LEFT JOIN staff_job b ON a.user_id = b.id
+        <where>
+            a.programs_id = #{programsId}
+        </where>
+    </select>
+
+    <!-- 获取某个项目已报名参训人员 -->
+    <select id="getApplyNum" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT user_id) FROM train_programs_participants WHERE programs_id = #{programsId} AND status = 1
+    </select>
+</mapper>

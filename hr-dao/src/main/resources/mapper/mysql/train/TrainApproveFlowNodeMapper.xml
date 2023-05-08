@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainApproveFlowNodeMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainApproveFlowNode" id="trainApproveFlowNodeMap">
+        <result property="id" column="id"/>
+        <result property="flowId" column="flow_id"/>
+        <result property="name" column="name"/>
+        <result property="emplId" column="empl_id"/>
+        <result property="emplName" column="empl_name"/>
+        <result property="sort" column="sort"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainApproveFlowNode_Column_sql">
+        id,flow_id,name,empl_id,empl_name,sort,create_user,create_time,update_user,update_time
+    </sql>
+    <delete id="deleteByParams">
+        delete from train_approve_flow_node
+        <where>
+            <if test="id != null and id != ''">
+                and id = #{id}
+            </if>
+            <if test="flowId != null and flowId != ''">
+                and flow_id = #{flowId}
+            </if>
+        </where>
+    </delete>
+    <select id="getNodeListByQuery" resultType="com.dyys.hr.entity.train.TrainApproveFlowNode">
+        select * from train_approve_flow_node
+        <where>
+            <if test="id != null and id != ''">
+                and id = #{id}
+            </if>
+            <if test="flowId != null and flowId != ''">
+                and flow_id = #{flowId}
+            </if>
+        </where>
+        order by sort asc
+    </select>
+    <select id="getNodeDTOListByQuery" resultType="com.dyys.hr.dto.train.TrainApproveFlowNodeDTO">
+        select * from train_approve_flow_node
+        <where>
+            <if test="id != null and id != ''">
+                and id = #{id}
+            </if>
+            <if test="flowId != null and flowId != ''">
+                and flow_id = #{flowId}
+            </if>
+        </where>
+        order by sort asc
+    </select>
+</mapper>

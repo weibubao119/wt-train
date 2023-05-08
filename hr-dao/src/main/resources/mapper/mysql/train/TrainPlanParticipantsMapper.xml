@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainPlanParticipantsMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainPlanParticipants" id="trainPlanParticipantsMap">
+        <result property="id" column="id"/>
+        <result property="planDetailId" column="plan_detail_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="companyCode" column="company_code"/>
+        <result property="departmentCode" column="department_code"/>
+        <result property="jobCode" column="job_code"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainPlanParticipants_Column_sql">
+        id,plan_detail_id,user_id,company_code,department_code,job_code,create_user,create_time,update_user,update_time
+    </sql>
+    <delete id="deleteByParams">
+        delete from
+            train_plan_participants
+        <where>
+            <if test="planDetailId != null and planDetailId != ''">
+                and plan_detail_id = #{planDetailId}
+            </if>
+        </where>
+    </delete>
+    <select id="getList" resultType="com.dyys.hr.vo.train.TrainPlanParticipantsVO">
+        SELECT
+            DISTINCT
+            a.*,
+            e.company_descr AS companyName,
+            e.dept_descr AS departmentName,
+            e.post_descr AS jobName,
+            e.empl_name AS userName
+        FROM
+            train_plan_participants a
+            LEFT JOIN staff_job e ON e.empl_id = a.user_id
+        <where>
+            <if test="id != null">
+                and a.id = #{id}
+            </if>
+            <if test="plan_detail_id != null">
+                and a.plan_detail_id = #{plan_detail_id}
+            </if>
+        </where>
+    </select>
+</mapper>

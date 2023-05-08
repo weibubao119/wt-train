@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainApproveMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainApprove" id="trainApproveMap">
+        <result property="id" column="id"/>
+        <result property="type" column="type"/>
+        <result property="typeId" column="type_id"/>
+        <result property="approveEmplid" column="approve_emplid"/>
+        <result property="nodeName" column="node_name"/>
+        <result property="sortNum" column="sort_num"/>
+        <result property="status" column="status"/>
+        <result property="reason" column="reason"/>
+        <result property="isHistory" column="is_history"/>
+        <result property="createTime" column="create_time"/>
+        <result property="createUser" column="create_user"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="updateUser" column="update_user"/>
+    </resultMap>
+
+    <sql id="TrainApprove_Column_sql">
+        id,type,type_id,approve_emplid,node_name,sort_num,status,is_history,reason,create_time,create_user,update_time,update_user
+    </sql>
+    <select id="getListByQuery" resultType="com.dyys.hr.vo.train.TrainApproveVO">
+        select
+            DISTINCT
+            a.sort_num,a.approve_emplid,a.node_name,a.status,a.reason, FROM_UNIXTIME(a.create_time,'%Y-%m-%d %H:%i:%s') as create_time,FROM_UNIXTIME(a.update_time,'%Y-%m-%d %H:%i:%s') as update_time,
+            b.name as approveEmplName,
+        IF ( a.type = 2, "无", ( SELECT node_name FROM train_approve WHERE type = a.type AND type_id = a.type_id AND id > a.id AND is_history = a.is_history ORDER BY id ASC LIMIT 1 ) )AS nextNodeName
+        from train_approve a
+        left join staff_user_info b on a.approve_emplid = b.empl_id
+        <where>
+            <if test="type != null and type != ''">
+                and a.type = #{type}
+            </if>
+            <if test="typeId != null and typeId != ''">
+                and a.type_id = #{typeId}
+            </if>
+            <if test="approveEmplid != null and approveEmplid != ''">
+                and a.approve_emplid = #{approveEmplid}
+            </if>
+        </where>
+        order by a.id asc
+    </select>
+    <select id="getMaxHistoryCode" resultType="java.lang.Integer">
+        SELECT max(is_history) FROM train_approve
+        <where>
+            <if test="type != null and type != ''">
+                and type = #{type}
+            </if>
+            <if test="typeId != null and typeId != ''">
+                and type_id = #{typeId}
+            </if>
+        </where>
+    </select>
+
+    <select id="getThisApproveListByQuery" resultType="com.dyys.hr.entity.train.TrainApprove">
+        select * from train_approve
+        <where>
+            is_history = 0 and status = 1
+            <if test="type != null and type != ''">
+                and type = #{type}
+            </if>
+            <if test="typeId != null and typeId != ''">
+                and type_id = #{typeId}
+            </if>
+        </where>
+        order by id asc
+    </select>
+</mapper>

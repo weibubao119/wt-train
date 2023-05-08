@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainProgramsTeacherMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainProgramsTeacher" id="trainProgramsTeacherMap">
+        <result property="id" column="id"/>
+        <result property="programsId" column="programs_id"/>
+        <result property="teacherId" column="teacher_id"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainProgramsTeacher_Column_sql">
+        id,programs_id,teacher_id,create_user,create_time,update_user,update_time
+    </sql>
+    <delete id="deleteByParams">
+        delete from train_programs_teacher
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="programs_id != null">
+                and programs_id = #{programs_id}
+            </if>
+        </where>
+    </delete>
+    <select id="getDetailList" resultType="com.dyys.hr.vo.train.TrainProgramsTeacherDetailVO">
+        select
+            a.teacher_id,
+            b.*,
+            if(b.type=1,'内部讲师','外部讲师') as typeName,
+            d.name as levelName
+        from
+            train_programs_teacher a
+            left join train_base_teacher b on a.teacher_id = b.id
+            left join train_constant d on b.level = d.id
+        where
+            b.is_delete = 0
+            <if test="programs_id != null">
+                and a.programs_id = #{programs_id}
+            </if>
+    </select>
+</mapper>

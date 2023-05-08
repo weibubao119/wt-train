@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.staff.StaffEdctMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.staff.StaffEdct">
+        <id column="id" property="id" />
+        <result column="empl_id" property="emplId" />
+        <result column="edct_lrng_style" property="edctLrngStyle" />
+        <result column="start_date" property="startDate" />
+        <result column="end_date" property="endDate" />
+        <result column="edct_schl" property="edctSchl" />
+        <result column="edct_bakg" property="edctBakg" />
+        <result column="edct_dege" property="edctDege" />
+        <result column="edct_prfn" property="edctPrfn" />
+        <result column="schl_type" property="schlType" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, empl_id, edct_lrng_style, start_date, end_date, edct_schl, edct_bakg, edct_dege, edct_prfn, schl_type, update_time
+    </sql>
+
+</mapper>

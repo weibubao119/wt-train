@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainAttendanceRulesMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainAttendanceRules" id="trainAttendanceRulesMap">
+        <result property="id" column="id"/>
+        <result property="programsId" column="programs_id"/>
+        <result property="programsCourseId" column="programs_course_id"/>
+        <result property="courseId" column="course_id"/>
+        <result property="date" column="date"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="attendanceNum" column="attendance_num"/>
+        <result property="absentNum" column="absent_num"/>
+        <result property="lateNum" column="late_num"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainAttendanceRules_Column_sql">
+        id,programs_id,programs_course_id,course_id,date,start_time,end_time,attendance_num,absent_num,late_num,create_user,create_time,update_user,update_time
+    </sql>
+    <select id="pageList" resultType="com.dyys.hr.vo.train.TrainAttendanceRulesVO">
+        select
+            tar.*, CONCAT(tpc.start_time, '~', tpc.end_time) AS courseTime,
+            (select count(id) from train_attendance_person where attendance_rules_id = tar.id) as total_num,
+            tbc.name as course_name
+            from train_attendance_rules tar
+            LEFT JOIN train_programs_course tpc ON tar.programs_course_id = tpc.id
+            left join train_base_course tbc on tar.course_id = tbc.id
+        <where>
+            <if test="programsId != null">
+                and tar.programs_id = #{programsId}
+            </if>
+            <if test="courseName != null and courseName != ''">
+                and tbc.name like '%${courseName}%'
+            </if>
+            <if test="startTime != null and startTime != ''">
+                and tar.date >= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and tar.date &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+    <select id="getDetail" resultType="com.dyys.hr.vo.train.TrainAttendanceRulesDetailVO">
+        select
+            tar.*,
+            CONCAT(tpc.course_name,':',tpc.start_time,'-',tpc.end_time) as course_name
+        from
+        train_attendance_rules tar
+        left join train_programs_course tpc on tar.programs_course_id = tpc.id
+        <where>
+            <if test="id != null">
+                and tar.id = #{id}
+            </if>
+        </where>
+    </select>
+    <select id="ruleListExport" resultType="com.dyys.hr.entity.train.excel.TrainAttendanceRulesExcel">
+        select
+        tar.*, CONCAT(tpc.start_time, '~', tpc.end_time) AS courseTime,
+        (select count(id) from train_attendance_person where attendance_rules_id = tar.id) as total_num,
+        tbc.name as course_name
+        from train_attendance_rules tar
+        LEFT JOIN train_programs_course tpc ON tar.programs_course_id = tpc.id
+        left join train_base_course tbc on tar.course_id = tbc.id
+        <where>
+            <if test="programsId != null">
+                and tar.programs_id = #{programsId}
+            </if>
+            <if test="courseName != null and courseName != ''">
+                and tbc.name like '%${name}%'
+            </if>
+            <if test="startTime != null and startTime != ''">
+                and tar.date >= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and tar.date &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+</mapper>

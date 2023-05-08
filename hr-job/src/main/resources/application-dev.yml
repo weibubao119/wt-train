@@ -1,0 +1,96 @@
+#开发环境
+#logback日志等级
+logging:
+  path: logs/
+  level:
+    .: info
+    com.dyys.hr: info
+    org.springframework.cloud.sleuth: debug
+
+spring:
+  datasource:
+    #数据库连接池druid配置
+    druid:
+      driver-class-name: com.mysql.jdbc.Driver
+      url: jdbc:mysql://218.13.91.107:39046/dyhr?useUnicode=true&characterEncoding=utf8&useSSL=false&tinyInt1isBit=false
+      username: root
+      password: sie2022^^O^^
+      #连接池配置
+      #初始化大小、最小、最大
+      initial-size: 25
+      min-idle: 25
+      max-active: 100
+      #配置获取连接等待超时的时间
+      max-wait: 60000
+      #配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      time-between-eviction-runs-millis: 60000
+      # 配置一个连接在池中最小生存的时间，单位是毫秒
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1 FROM DUAL
+      validation-query-timeout: 10000
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      # 打开PSCache，并且指定每个连接上PSCache的大小
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      filters: stat,wall
+      # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+      stat-view-servlet:
+        login-username: druid
+        login-password: druid
+      aop-patterns: com.dyys.hr.*
+      keep-alive: true
+  # redis配置信息
+  redis:
+#    # Redis服务器地址
+#    host: 39.108.232.188
+#    # Redis服务器连接端口
+#    port: 6379
+#    # Redis服务器连接密码（默认为空）
+#    password: dy*123456
+    host: 127.0.0.1
+    port: 6379
+    # 连接超时时间（毫秒）
+    timeout: 60000
+    # Redis数据库索引（默认为0）
+    database: 0
+    lettuce:
+      pool:
+        # 连接池最大连接数（使用负值表示没有限制）
+        max-active: 8
+        # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-wait: -1
+        # 连接池中的最大空闲连接
+        max-idle: 8
+        # 连接池中的最小空闲连接
+        min-idle: 0
+      shutdown-timeout: 0
+
+# 项目相关配置
+dyys-hr:
+  network-url: http://10.60.251.225/#/
+  questionnaire-url: train/TrainingImplementation/signIn2?trainClassId=%d&trainClassName=%s
+  picture_url: http://139.159.238.180:8085
+#开启actuator所有监控端点，2.0后默认值开启info和health
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: '*'
+#  server:
+#    port: 9201
+knps:
+  auth:
+    driver: com.mysql.jdbc.Driver
+    url: jdbc:mysql://218.13.91.107:39046/kn-auth?useUnicode=true&characterEncoding=utf8&useSSL=false&tinyInt1isBit=false
+    user: root
+    password: sie2022^^O^^
+
+aes:
+  security: 9K6Pu0gDlGS3eUPp6xNRoBznAc9duLV4
+  iv: dpg#pV6pGhb.Yo3$
+
+
+

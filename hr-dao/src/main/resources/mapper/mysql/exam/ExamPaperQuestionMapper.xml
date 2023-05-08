@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.exam.ExamPaperQuestionMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="examPaperQuestionMap" type="com.dyys.hr.entity.exam.ExamPaperQuestion">
+        <result property="id" column="id"/>
+        <result property="paperId" column="paper_id"/>
+        <result property="quId" column="qu_id"/>
+        <result property="sort" column="sort"/>
+    </resultMap>
+
+    <resultMap type="com.dyys.hr.vo.exam.ExamPaperQuestionVO" id="examQuestionVOMap">
+        <result property="id" column="id"/>
+        <result property="quType" column="qu_type"/>
+        <result property="score" column="score"/>
+        <result property="image" column="image"/>
+        <result property="content" column="content"/>
+        <result property="remark" column="remark"/>
+        <result property="rightAnswer" column="right_answer"/>
+        <result property="analysis" column="analysis"/>
+        <result property="sort" column="sort"/>
+    </resultMap>
+
+    <resultMap type="com.dyys.hr.vo.exam.ExamPaperQuestionVO" id="examQuestionDetailsMap">
+        <result property="id" column="id"/>
+        <result property="quType" column="qu_type"/>
+        <result property="score" column="score"/>
+        <result property="image" column="image"/>
+        <result property="content" column="content"/>
+        <result property="remark" column="remark"/>
+        <result property="rightAnswer" column="right_answer"/>
+        <result property="analysis" column="analysis"/>
+        <result property="sort" column="sort"/>
+        <collection property="answerList" ofType="com.dyys.hr.vo.exam.ExamQuestionAnswerVO"
+                    select="com.dyys.hr.dao.exam.ExamQuestionAnswerMapper.listExamQuestionAnswer" column="{quId=id}"/>
+    </resultMap>
+
+    <sql id="question_Column_List">
+        eq.id as id, eq.qu_type, eq.score, eq.image, eq.content, eq.remark, eq.right_answer, eq.analysis
+    </sql>
+
+    <delete id="deleteByPaper">
+        DELETE FROM
+        exam_paper_question
+        WHERE paper_id = #{paperId}
+    </delete>
+
+    <delete id="deletePaperQuestion">
+        DELETE FROM
+        exam_paper_question
+        WHERE qu_id = #{quesId}
+    </delete>
+
+    <select id="listPaperQuestion" resultMap="examQuestionVOMap">
+        SELECT
+        epq.paper_id,
+        epq.sort as sort,
+        <include refid="question_Column_List"/>
+        FROM exam_paper_question epq
+        LEFT JOIN exam_question eq ON epq.qu_id=eq.id
+        WHERE epq.paper_id=#{paperId}
+        ORDER BY epq.sort
+    </select>
+
+    <select id="listQuestionDetails" resultMap="examQuestionDetailsMap">
+        SELECT
+        epq.paper_id,
+        epq.sort as sort,
+        <include refid="question_Column_List"/>
+        FROM exam_paper_question epq
+        LEFT JOIN exam_question eq ON epq.qu_id=eq.id
+        WHERE epq.paper_id=#{paperId}
+        ORDER BY epq.sort
+    </select>
+</mapper>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.staff.StaffPosnGradeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.staff.StaffPosnGrade">
+        <id column="id" property="id" />
+        <result column="set_id" property="setId" />
+        <result column="business_unit" property="businessUnit" />
+        <result column="eff_date" property="effDate" />
+        <result column="eff_status" property="effStatus" />
+        <result column="descr" property="descr" />
+        <result column="descr_short" property="descrShort" />
+        <result column="posn_grade_type" property="posnGradeType" />
+        <result column="creator" property="creator" />
+        <result column="create_date" property="createDate" />
+        <result column="updater" property="updater" />
+        <result column="update_date" property="updateDate" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, set_id, business_unit, eff_date, eff_status, descr, descr_short, posn_grade_type, creator, create_date, updater, update_date
+    </sql>
+
+    <!-- 职级筛选列表 -->
+    <select id="selectList" resultType="com.dyys.hr.vo.common.PsPosnGradeVO">
+        SELECT id AS posnGradeCode, descr_short AS posnGradeName
+        FROM staff_posn_grade
+        WHERE 1 = 1
+        <if test="null != posnGradeType and posnGradeType != ''">
+            AND posn_grade_type = #{posnGradeType}
+        </if>
+        ORDER BY id ASC
+    </select>
+
+</mapper>

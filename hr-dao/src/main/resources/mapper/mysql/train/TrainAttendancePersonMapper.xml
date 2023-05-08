@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainAttendancePersonMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainAttendancePerson" id="trainAttendancePersonMap">
+        <result property="id" column="id"/>
+        <result property="attendanceRulesId" column="attendance_rules_id"/>
+        <result property="emplId" column="empl_id"/>
+        <result property="company" column="company"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="postCode" column="post_code"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainAttendancePerson_Column_sql">
+        id,attendance_rules_id,empl_id,company,dept_id,post_code,create_user,create_time,update_user,update_time
+    </sql>
+    <delete id="deleteByAttendanceRulesId">
+        delete from train_attendance_person where attendance_rules_id = #{rulesId}
+    </delete>
+    <select id="getListByQuery" resultType="com.dyys.hr.vo.train.TrainAttendancePersonVO">
+        select
+            tap.*,
+            tap.id as attendancePersonId,
+            sj.empl_name,sj.company_descr,sj.dept_descr,sj.post_descr
+        from
+            train_attendance_person tap
+            LEFT JOIN staff_job sj ON tap.empl_id = sj.empl_id
+        <where>
+            <if test="id != null">
+                and tap.id = #{id}
+            </if>
+            <if test="attendance_rules_id != null">
+                and tap.attendance_rules_id = #{attendance_rules_id}
+            </if>
+        </where>
+    </select>
+</mapper>

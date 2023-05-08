@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.exam.ExamQuestionAnswerMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.vo.exam.ExamQuestionAnswerVO">
+        <id column="id" property="id"/>
+        <result column="qu_id" property="quId"/>
+        <result column="is_right" property="isRight"/>
+        <result column="image" property="image"/>
+        <result column="content" property="content"/>
+        <result column="analysis" property="analysis"/>
+        <result column="item_index" property="itemIndex"/>
+        <result column="sort" property="sort"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, qu_id, is_right, image, content, analysis, item_index, sort
+    </sql>
+
+    <delete id="deleteByQuestion">
+        DELETE FROM exam_question_answer
+        WHERE qu_id = #{quId}
+    </delete>
+
+    <select id="listExamQuestionAnswer" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM exam_question_answer
+        WHERE qu_id=#{quId}
+        ORDER BY sort
+    </select>
+</mapper>

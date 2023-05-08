@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainBaseCertificateMapper">
+  <resultMap id="trainBaseCertificateMap" type="com.dyys.hr.entity.train.TrainBaseCertificate">
+    <result column="id" property="id"/>
+    <result column="certificate_name" property="certificateName"/>
+    <result column="certificate_no" property="certificateNo"/>
+    <result column="issued_institutions" property="issuedInstitutions"/>
+    <result column="certificate_period" property="certificatePeriod"/>
+    <result column="certificate_status" property="certificateStatus"/>
+    <result column="file_list" property="fileList"/>
+    <result column="update_user" property="updateUser"/>
+    <result column="update_time" property="updateTime"/>
+    <result column="create_user" property="createUser"/>
+    <result column="create_time" property="createTime"/>
+    <result column="is_delete" property="isDelete"/>
+  </resultMap>
+  <sql id="TrainBaseCertificate_Column_sql">id,certificate_name,certificate_no,issued_institutions,certificate_period,certificate_status,file_list,update_user,update_time,create_user,create_time,is_delete </sql>
+  <select id="pageList" resultType="com.dyys.hr.vo.train.TrainBaseCertificateVO">
+    select
+        id,certificate_name, certificate_no,issued_institutions, certificate_period
+    from
+        train_base_certificate
+    <where>
+        is_delete = 0
+        <if test="certificateName != null and certificateName != ''">
+          and certificate_name like  '%${certificateName}%'
+        </if>
+        <if test="issuedInstitutions != null and issuedInstitutions != ''">
+          and issuedInstitutions like  '%${issuedInstitutions}%'
+        </if>
+    </where>
+    order by id desc
+  </select>
+  <select id="selectByCateId" resultType="com.dyys.hr.vo.train.TrainBaseCertificateVO">
+    select
+    <include refid="TrainBaseCertificate_Column_sql" />
+    from train_base_certificate
+    where is_delete = 0 and id = #{id}
+  </select>
+  <select id="selectByCertificateNo" resultType="com.dyys.hr.vo.train.TrainBaseCertificateVO">
+      select
+      <include refid="TrainBaseCertificate_Column_sql" />
+      from train_base_certificate
+      where is_delete = 0 and certificate_no = #{certificateNo}
+  </select>
+</mapper>

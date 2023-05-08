@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainDemandFeedbackMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainDemandFeedback" id="trainDemandFeedbackMap">
+        <result property="id" column="id"/>
+        <result property="demandId" column="demand_id"/>
+        <result property="feedbackUserId" column="feedback_user_id"/>
+        <result property="companyCode" column="company_code"/>
+        <result property="departmentCode" column="department_code"/>
+        <result property="status" column="status"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainDemandFeedback_Column_sql">
+        id,demand_id,feedback_user_id,company_code,department_code,status,is_delete,create_user,create_time,update_user,update_time
+    </sql>
+    <update id="rollbackFeedBackById">
+        update train_demand_feedback set status = 0 where id = #{id}
+    </update>
+    <update id="finishFeedBackByQuery">
+        update train_demand_feedback set status = 1 where
+            demand_id = #{demand_id} and feedback_user_id = #{feedback_user_id}
+    </update>
+    <select id="userFeedBackPageList" resultType="com.dyys.hr.vo.train.TrainDemandUserFeedbackVO">
+        SELECT
+            b.id,
+            a.status,
+            IF
+            ( a.status = 1, '已反馈', '待反馈' ) AS statusName,
+            b.demand_name,
+            b.initiator,
+            b.feedback_end_time,
+            c.empl_name AS initiatorName
+        FROM
+            train_demand_feedback a
+            LEFT JOIN train_demand_collect b ON a.demand_id = b.id
+            LEFT JOIN staff_job c ON b.initiator = c.empl_id
+        <where>
+            a.feedback_user_id = #{feedback_user_id}
+            and b.is_delete = 0
+            <if test="status != null">
+                and a.status = #{status}
+            </if>
+            <if test="collectStatus != null">
+                and b.status = 0
+            </if>
+        </where>
+        order by b.create_time desc
+    </select>
+    <delete id="cancelFeedBackById">
+        delete from train_demand_feedback where id = #{id}
+    </delete>
+    <delete id="deleteFeedBackByQuery">
+        delete  from train_demand_feedback where
+        demand_id = #{demand_id} and feedback_user_id = #{feedback_user_id}
+    </delete>
+    <select id="feedbackList" resultType="com.dyys.hr.vo.train.TrainDemandFeedbackVO">
+        select
+            DISTINCT
+            a.*,if(a.status=1,'已反馈','待反馈') as statusName,
+            b.descr_short as companyName,
+            c.descr_short as departmentName,
+            d.empl_name as feedbackUserName,
+            (
+                select create_time from train_demand_feedback_detail
+                where demand_id = a.demand_id and feedback_user_id = a.feedback_user_id order by create_time desc limit 1
+            ) as feedbackTime
+        from
+        train_demand_feedback a
+        LEFT JOIN staff_company b ON b.id = a.company_code
+        LEFT JOIN staff_department c ON c.id = a.department_code
+        LEFT JOIN staff_job d ON d.empl_id = a.feedback_user_id
+        left join train_demand_feedback_detail e ON a.demand_id = e.demand_id and a.feedback_user_id = e.feedback_user_id
+        <where>
+            <if test="demand_id != null">
+                and a.demand_id = #{demand_id}
+            </if>
+            <if test="feedback_user_id != null">
+                and a.feedback_user_id = #{feedback_user_id}
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+    <select id="findOneByQuery" resultType="com.dyys.hr.vo.train.TrainDemandFeedbackVO">
+        select * from train_demand_feedback
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="demand_id != null">
+                and demand_id = #{demand_id}
+            </if>
+            <if test="feedback_user_id != null">
+                and feedback_user_id = #{feedback_user_id}
+            </if>
+        </where>
+    </select>
+    <select id="selectByQuery" resultType="com.dyys.hr.entity.train.TrainDemandFeedback">
+
+    </select>
+</mapper>

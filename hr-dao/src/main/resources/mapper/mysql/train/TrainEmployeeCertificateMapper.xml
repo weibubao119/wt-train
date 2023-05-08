@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainEmployeeCertificateMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainEmployeeCertificate" id="trainEmployeeCertificateMap">
+        <result property="id" column="id"/>
+        <result property="emplId" column="empl_id"/>
+        <result property="emplName" column="empl_name"/>
+        <result property="certificateNo" column="certificate_no"/>
+        <result property="certificateName" column="certificate_name"/>
+        <result property="certificateLevel" column="certificate_level"/>
+        <result property="issuingAgencyName" column="issuing_agency_name"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="trainName" column="train_name"/>
+        <result property="trainNumber" column="train_number"/>
+        <result property="isImport" column="is_import"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainEmployeeCertificate_Column_sql">
+        id,empl_id,empl_name,certificate_no,certificate_name,certificate_level,issuing_agency_name,start_date,end_date,train_name,train_number,is_import,create_user,create_time,update_user,update_time
+    </sql>
+    <select id="pageList" resultType="com.dyys.hr.vo.train.TrainEmployeeCertificatePageVO">
+        select
+            tec.*,sj.company,sj.company_descr, sj.dept_id, sd.dept_name_path AS deptPathName
+        from train_employee_certificate tec
+        left join staff_job sj on tec.empl_id = sj.empl_id
+        LEFT JOIN staff_department sd ON sj.dept_id = sd.id
+        <where>
+            <if test="emplId != null and emplId != ''">
+                and tec.empl_id like '%${emplId}%'
+            </if>
+            <if test="emplName != null and emplName != ''">
+                and tec.empl_name like '%${emplName}%'
+            </if>
+            <if test="certificateName != null and certificateName != ''">
+                and tec.certificate_name like '%${certificateName}%'
+            </if>
+            <if test="issuingAgencyName != null and issuingAgencyName != ''">
+                and tec.issuing_agency_name like '%${issuingAgencyName}%'
+            </if>
+            <if test="deptList != null and deptList.size > 0">
+                and sj.dept_id in
+                <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+        </where>
+    </select>
+    <select id="certificateExpirationReminderList" resultType="com.dyys.hr.vo.train.AdminCertificateExpirationReminderListVO">
+        SELECT
+            a.id,a.empl_name,a.certificate_name,a.end_date,
+            ( select key_value from train_setting where key_name = 'employee_certificate_expire_time' ) AS expireDays
+        FROM train_employee_certificate a
+        LEFT JOIN staff_job b ON a.empl_id = b.empl_id
+        LEFT JOIN staff_department sd ON b.dept_id = sd.id
+        <where>
+            a.end_date > NOW() and
+            NOW( ) >= DATE_SUB(a.end_date, INTERVAL 30 DAY )
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+            <if test="year != null">
+                and a.start_date >= #{startTime} and a.end_date &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+    <select id="getCertificateCountByQuery" resultType="java.lang.Integer">
+        select count(id) from train_employee_certificate
+        <where>
+            <if test="userId != null and userId != ''">
+                and empl_id = #{userId}
+            </if>
+            <if test="isDue != null">
+                and end_date &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')
+            </if>
+        </where>
+    </select>
+    <select id="emplCertificateList" resultType="com.dyys.hr.vo.train.EmplCertificateListVO">
+        select * from train_employee_certificate where empl_id = #{emplId}
+    </select>
+    <select id="exportList" resultType="com.dyys.hr.entity.train.excel.CertificateListExcel">
+        select
+            tec.*,
+            sj.company,sj.company_descr,sj.dept_descr,sj.grade_descr,sj.sec_descr,sp.descr as profession_descr
+            from train_employee_certificate tec
+            left join staff_job sj on tec.empl_id = sj.empl_id
+            LEFT JOIN staff_position spn ON sj.post_code = spn.id
+            left join staff_main_post smp on spn.std_posn_id = smp.post_code
+            left join staff_profession sp on smp.profession = sp.code
+        <where>
+            <if test="emplId != null and emplId != ''">
+                and tec.empl_id like '%${emplId}%'
+            </if>
+            <if test="emplName != null and emplName != ''">
+                and tec.empl_name like '%${emplName}%'
+            </if>
+            <if test="companyDescr != null and companyDescr != ''">
+                and sj.company_descr like '%${companyDescr}%'
+            </if>
+            <if test="certificateName != null and certificateName != ''">
+                and tec.certificate_name like '%${certificateName}%'
+            </if>
+            <if test="issuingAgencyName != null and issuingAgencyName != ''">
+                and tec.issuing_agency_name like '%${issuingAgencyName}%'
+            </if>
+        </where>
+    </select>
+</mapper>

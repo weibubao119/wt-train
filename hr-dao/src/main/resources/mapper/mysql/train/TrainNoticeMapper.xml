@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainNoticeMapper">
+    <resultMap type="com.dyys.hr.entity.train.TrainNotice" id="trainNoticeMap">
+        <result property="id" column="id"/>
+        <result property="typeId" column="type_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="type" column="type"/>
+        <result property="status" column="status"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainNotice_Column_sql">
+        id,type_id,user_id,type,status,create_user,create_time,update_user,update_time
+    </sql>
+    <delete id="deleteByParams">
+        delete from train_notice
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="type_id != null">
+                and type_id = #{type_id}
+            </if>
+            <if test="user_id != null and user_id != ''">
+                and user_id = #{user_id}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+        </where>
+    </delete>
+    <select id="participantsNoticeList" resultType="com.dyys.hr.vo.train.EmployeeParticipantsNoticeListVO">
+        select
+            DISTINCT
+            b.id as train_id,b.train_name,b.train_shape,b.start_time,b.end_time,
+            if(b.train_shape=1,'内部培训','外部培训') as trainShapeName,
+            c.descr as companyDescr
+        from
+            train_notice a
+            left join train_programs b on a.type_id = b.id
+            left join staff_company c on b.company_code = c.id
+        <where>
+            a.type = 1 and a.status = 0
+            <if test="user_id != null and user_id != ''">
+                and a.user_id = #{user_id}
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+    <select id="toDoNoticeList" resultType="com.dyys.hr.vo.train.EmployeeToDoNoticeListVO">
+        select
+           a.type,
+            case a.type
+                when '2' then '考试'
+                when '3' then '评估'
+                when '4' then '机构评估'
+                when '11' then '计划审批'
+                end as typeName,
+            case a.type
+                when '2' then c.id
+                when '3' then d.id
+                when '4' then e.id
+                when '11' then f.id
+                end as id,
+            case a.type
+                when '2' then c.title
+                when '3' then d.title
+                when '4' then e.title
+                when '11' then f.title
+                end as title,
+            case a.type
+                when '2' then c.start_time
+                when '3' then d.start_time
+                when '4' then e.start_time
+                when '11' then f.plan_year
+                end as start_time,
+            case a.type
+                when '2' then c.end_time
+                when '3' then d.end_time
+                when '4' then e.end_time
+                when '11' then f.plan_year
+                end as end_time
+        from
+            train_notice a
+            left join train_programs b on a.type_id = b.id
+            left join train_exam c on a.type_id = c.id
+            left join train_appraise d on a.type_id = d.id
+            left join train_institution_assessment e on a.type_id = e.id
+            left join train_plan f on a.type_id = f.id
+        <where>
+            a.status = 0
+            <if test="user_id != null and user_id != ''">
+                and a.user_id = #{user_id}
+            </if>
+            <if test="type != null and type != ''">
+                and a.type = #{type}
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+    <select id="getByQuery" resultType="com.dyys.hr.entity.train.TrainNotice">
+        select * from train_notice
+        <where>
+            <if test="typeId != null">
+                and type_id = #{typeId}
+            </if>
+            <if test="userId != null and userId != ''">
+                and user_id = #{userId}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+    <insert id="createEmployeeSelfNotice">
+        insert into wt-common.notice into (type,type_id,empl_id,url) values (#{type},#{typeId},#{emplId},#{url});
+    </insert>
+</mapper>

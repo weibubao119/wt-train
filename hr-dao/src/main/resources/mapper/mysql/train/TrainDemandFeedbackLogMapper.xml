@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainDemandFeedbackLogMapper">
+    <resultMap type="com.dyys.hr.entity.train.TrainDemandFeedbackLog" id="trainDemandFeedbackLogMap">
+        <result property="id" column="id"/>
+        <result property="feedbackId" column="feedback_id"/>
+        <result property="type" column="type"/>
+        <result property="reason" column="reason"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <sql id="TrainDemandFeedbackDetail_Column_sql">
+        id,feedback_id,type,train_name,reason,create_user,create_time
+    </sql>
+    <select id="getList" resultType="com.dyys.hr.vo.train.TrainDemandFeedbackLogVO">
+        select
+            a.*,b.empl_name as createUserName
+        from
+            train_demand_feedback_log a
+        left join staff_job b on a.create_user = b.empl_id
+        <where>
+            <if test="feedbackId != null and feedbackId != ''">
+                and a.feedback_id = #{feedbackId}
+            </if>
+        </where>
+    </select>
+</mapper>

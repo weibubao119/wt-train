@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.staff.StaffMainPostMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.staff.StaffMainPost">
+        <id column="id" property="id" />
+        <result column="set_id" property="setId" />
+        <result column="post_code" property="postCode" />
+        <result column="descr" property="descr" />
+        <result column="descr_short" property="descrShort" />
+        <result column="eff_date" property="effDate" />
+        <result column="eff_status" property="effStatus" />
+        <result column="business_unit" property="businessUnit" />
+        <result column="posn_sec" property="posnSec" />
+        <result column="posn_type" property="posnType" />
+        <result column="profession" property="profession" />
+        <result column="bus_type" property="busType" />
+        <result column="creator" property="creator" />
+        <result column="updater" property="updater" />
+        <result column="create_date" property="createDate" />
+        <result column="update_date" property="updateDate" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, set_id, post_code, descr, descr_short, eff_date, eff_status, business_unit, posn_sec, posn_type, profession, bus_type, creator, updater, create_date, update_date
+    </sql>
+
+    <!-- 标准岗位筛选列表 -->
+    <select id="selectList" resultType="java.util.Map">
+        select position_nbr as positionCode,descr_short as positionName
+        from staff_position
+        <where>
+            <if test="positionName != null and positionName != ''">
+                and descr_short like '%${positionName}%'
+            </if>
+            <if test="positionCode != null and positionCode != ''">
+                and position_nbr like '%${positionCode}%'
+            </if>
+        </where>
+        order by id asc
+    </select>
+</mapper>

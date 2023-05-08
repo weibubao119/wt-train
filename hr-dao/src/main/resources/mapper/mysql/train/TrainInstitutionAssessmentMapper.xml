@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainInstitutionAssessmentMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.train.TrainInstitutionAssessment">
+        <id column="id" property="id" />
+        <result column="institution_id" property="institutionId" />
+        <result column="title" property="title" />
+        <result column="questionnaire_id" property="questionnaireId" />
+        <result column="yearly" property="yearly" />
+        <result column="start_time" property="startTime" />
+        <result column="end_time" property="endTime" />
+        <result column="score" property="score" />
+        <result column="status" property="status" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, institution_id, titile, questionnaire_id, yearly, start_time, end_time, score, status, create_user, create_time, update_user, update_time
+    </sql>
+
+    <!-- 某个机构的评估记录列表 -->
+    <select id="assessmentListByInstitutionId" resultType="com.dyys.hr.vo.train.TrainInstitutionAssessmentVO">
+        SELECT id, institution_id AS institutionId, title, questionnaire_id AS questionnaireId, yearly, start_time AS startTime,
+        end_time AS endTime, score, status
+        FROM train_institution_assessment
+        WHERE institution_id = #{institutionId}
+        ORDER BY yearly DESC
+    </select>
+
+    <!-- 机构评估记录详情 -->
+    <select id="queryInfoById" resultType="com.dyys.hr.vo.train.TrainInstitutionAssessmentVO">
+        SELECT a.id, a.institution_id AS institutionId, a.title, a.questionnaire_id AS questionnaireId, a.yearly,
+        a.start_time AS startTime, a.end_time AS endTime, a.score, a.status, b.title AS questionnaireName
+        FROM train_institution_assessment a
+        LEFT JOIN questionnaire b ON a.questionnaire_id = b.id
+        WHERE a.id = #{id}
+    </select>
+    <select id="finishedList" resultType="com.dyys.hr.entity.train.TrainInstitutionAssessment">
+        select * from train_institution_assessment where status = 2 and end_time &lt;= now()
+    </select>
+</mapper>

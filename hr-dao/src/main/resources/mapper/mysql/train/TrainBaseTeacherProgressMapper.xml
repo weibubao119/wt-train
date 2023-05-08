@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainBaseTeacherProgressMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainBaseTeacherProgress" id="trainBaseTeacherProgressMap">
+        <result property="id" column="id"/>
+        <result property="teacherId" column="teacher_id"/>
+        <result property="level" column="level"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="fee" column="fee"/>
+        <result property="instructions" column="instructions"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainBaseTeacherProgress_Column_sql">
+        id,teacher_id,level,start_time,end_time,fee,instructions,create_user,create_time,update_user,update_time
+    </sql>
+    <delete id="deleteByTeacherId">
+        delete from train_base_teacher_progress where teacher_id = #{teacherId}
+    </delete>
+    <select id="getProgressByTeacherId" resultType="com.dyys.hr.vo.train.TrainBaseTeacherProgressVO">
+        select
+        a.*,
+        b.name as levelName
+        from
+        train_base_teacher_progress a
+        left join train_constant b on a.level = b.id
+        where
+        a.teacher_id = #{teacherId}
+    </select>
+</mapper>

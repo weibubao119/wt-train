@@ -1,0 +1,53 @@
+server:
+  port: 48371
+
+spring:
+  application:
+    name: HR-JOB
+  profiles:
+    active: dev
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    deserialization:
+      FAIL_ON_UNKNOWN_PROPERTIES: false
+  session:
+    store-type: none
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 20MB
+
+mapper:
+  not-empty: true
+  safe-update: true
+  safe-delete: true
+
+pagehelper:
+  params: pageNum=page;pageSize=rows;orderBy=orderBy
+  offset-as-page-num: true
+  row-bounds-with-count: true
+  reasonable: true
+  support-methods-arguments: true
+
+mybatis:
+  mapper-locations: classpath*:mapper/mysql/*/*.xml
+  config-location: classpath:mybatis.xml
+  type-aliases-package: com.dyys.hr.entity.*
+
+logging:
+  path: logs/
+  level:
+    .: info
+    org.springframework: info
+
+info:
+  app:
+    name: ${spring.application.name}
+    version: @project.version@
+    encoding: @project.build.sourceEncoding@
+    description: @project.description@
+    spring-boot-version: @spring.boot.version@
+
+
+

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.QuestionnaireMapper">
+    <resultMap type="com.dyys.hr.entity.train.Questionnaire" id="questionnaireMap">
+        <result property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="code" column="code"/>
+        <result property="instructions" column="instructions"/>
+        <result property="status" column="status"/>
+        <result property="templateJson" column="template_json"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="Questionnaire_Column_sql">
+        id,title,code,instructions,status,template_json,create_user,create_time,update_user,update_time
+    </sql>
+    <select id="pageList" resultType="com.dyys.hr.vo.train.QuestionnaireTemplatePageVo">
+        select
+            DISTINCT
+            a.id,a.title,a.code,a.instructions,
+            a.status,if(a.status=1,'已发布','未发布') as statusName,
+            FROM_UNIXTIME(a.create_time,'%Y-%m-%d %H-%i-%s') as create_time,
+            FROM_UNIXTIME(a.update_time,'%Y-%m-%d %H-%i-%s') as update_time,
+            b.empl_name as create_user_name
+        from
+            questionnaire a
+            left join staff_job b on a.create_user = b.empl_id
+        <where>
+            <if test="title != null and title != ''">
+                and a.title like '%${title}%'
+            </if>
+            <if test="code != null and code != ''">
+                and a.code like '%${code}%'
+            </if>
+            <if test="instructions != null and instructions != ''">
+                and a.instructions like '%${instructions}%'
+            </if>
+            <if test="createUser != null and createUser != ''">
+                and a.create_user = #{createUser}
+            </if>
+            <if test="status != null and status != ''">
+                and a.status = #{status}
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+    <select id="getDetailByQuery" resultType="com.dyys.hr.dto.train.QuestionnaireDTO">
+        select
+            DISTINCT a.*
+        from questionnaire a
+        left join train_appraise b on a.id = b.questionnaire_id
+        LEFT JOIN train_institution_assessment c ON a.id = c.questionnaire_id
+        <where>
+            <if test="id != null">
+                and a.id = #{id}
+            </if>
+            <if test="appraiseId != null">
+                and b.id = #{appraiseId}
+            </if>
+            <if test="assessmentId != null">
+                and c.id = #{assessmentId}
+            </if>
+        </where>
+    </select>
+    <select id="selectList" resultType="java.util.Map">
+        select id,title as name from
+        questionnaire
+        <where>
+            status = 1
+            <if test="title != null and title != ''">
+                and title like '%${title}%'
+            </if>
+        </where>
+        order by id asc
+    </select>
+</mapper>

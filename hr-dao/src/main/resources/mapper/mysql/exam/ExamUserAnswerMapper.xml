@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.exam.ExamUserAnswerMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.exam.ExamUserAnswer">
+        <id column="id" property="id"/>
+        <result column="paper_id" property="paperId"/>
+        <result column="details_id" property="detailsId"/>
+        <result column="answer" property="answer"/>
+        <result column="qu_id" property="quId"/>
+        <result column="user_id" property="userId"/>
+        <result column="is_right" property="isRight"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, paper_id, user_paper_id, answer_id, qu_id, user_id, is_right, sort, abc
+    </sql>
+    <delete id="deleteByQuery">
+        delete from exam_user_answer
+        <where>
+            <if test="detailsIds.size != 0 and detailsIds != null">
+                and details_id in
+                <foreach item="detailsIds" index="index" collection="detailsIds" open="(" separator="," close=")">
+                    #{detailsIds}
+                </foreach>
+            </if>
+        </where>
+    </delete>
+
+    <resultMap id="AnswerDetailsMap" type="com.dyys.hr.vo.exam.ExamAnswerDetailsVO">
+        <result column="id" property="id"/>
+        <result column="qu_type" property="quType"/>
+        <result column="image" property="image"/>
+        <result column="content" property="content"/>
+        <result column="score" property="score"/>
+        <result column="right_answer" property="rightAnswer"/>
+        <result column="answer" property="answer"/>
+        <result column="is_right" property="isRight"/>
+        <collection property="answers" ofType="com.dyys.hr.vo.exam.ExamQuestionAnswerVO"
+                    select="com.dyys.hr.dao.exam.ExamQuestionAnswerMapper.listExamQuestionAnswer" column="{quId=id}"/>
+    </resultMap>
+
+
+    <select id="listByDetailsId" resultMap="AnswerDetailsMap">
+        SELECT
+        eq.id as id,
+        eua.answer as answer,
+        eua.is_right as is_right,
+        eq.qu_type as qu_type,
+        eq.image as image,
+        eq.content as content,
+        eq.score as score,
+        eq.right_answer as right_answer
+        FROM exam_user_answer eua
+        LEFT JOIN exam_question eq ON eua.qu_id = eq.id
+        LEFT JOIN exam_paper_question epq ON eua.paper_id = epq.paper_id
+        WHERE eua.details_id = #{detailsId}
+        ORDER BY epq.sort
+    </select>
+    <select id="listUserExamDetail" resultType="com.dyys.hr.entity.train.excel.UserExamDetailExcel">
+         select
+            pj.empl_name,
+            eq.content as title,eq.score,eq.right_answer,
+            eq.qu_type,
+            case eq.qu_type
+                when '1' then '单选'
+                when '2' then '多选'
+                when '3' then '判断'
+                when '4' then '主观'
+            end as typeName,
+            eua.answer as userAnswer,
+            if(eua.is_right=1,'正确','错误') as result
+        from
+            exam_user_answer eua
+            left join exam_question eq on eua.qu_id = eq.id
+            left join staff_job pj on eua.user_id = pj.empl_id
+        where eua.details_id = #{detailsId}
+        order by eua.id asc
+    </select>
+
+</mapper>

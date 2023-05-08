@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainConstantMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainConstant" id="trainConstantMap">
+        <result property="id" column="id"/>
+        <result property="pid" column="pid"/>
+        <result property="name" column="name"/>
+        <result property="type" column="type"/>
+        <result property="orderBy" column="order_by"/>
+        <result property="status" column="status"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainConstant_Column_sql">
+        id,pid,name,type,order_by,status,is_deleted,create_user,create_time,update_user,update_time
+    </sql>
+    <select id="selectList" resultType="com.dyys.hr.vo.train.TrainConstantVO">
+        select
+        <include refid="TrainConstant_Column_sql" />
+        from train_constant
+        <where>
+            is_deleted = 0
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="pid != null and pid != ''">
+                and pid = #{pid}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            <if test="nameList != null and nameList.size != 0">
+                and name in
+                <foreach item="nameList" index="index" collection="nameList" open="(" separator="," close=")">
+                    #{nameList}
+                </foreach>
+            </if>
+        </where>
+        order by id asc
+    </select>
+    <select id="pageList" resultType="com.dyys.hr.vo.train.TrainConstantPageVO">
+        select id, pid, name, type,
+        case type
+        when 1 then "课程类别"
+        when 2 then "培训需求依据"
+        when 3 then "培训考核方法"
+        when 4 then "讲师等级"
+        when 5 then "机构类型"
+        when 6 then "计划类型"
+        when 7 then "职序与学习方向"
+        when 8 then "培训科目"
+        when 9 then "机构等级"
+        when 10 then "学习方式"
+        end as typeName,
+        status, if(status=1,'启用','停用') as statusName, FROM_UNIXTIME(create_time) as create_time
+        from train_constant
+        <where>
+            is_deleted = 0
+            <if test="type != null and type != ''">
+                and type = #{type}
+            </if>
+            <if test="pid != null and pid != ''">
+                and pid = #{pid}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="name != null and name != ''">
+                and name like '%${name}%'
+            </if>
+        </where>
+        order by type asc, id asc
+    </select>
+
+    <!-- 学习地图学习方向选择列表 -->
+    <select id="selectListByMap" resultType="com.dyys.hr.vo.train.LearnMapSblSelctVO">
+        SELECT id AS sblId, name AS sblName
+        FROM train_constant
+        WHERE type = 7 AND pid = #{pid} AND status = 1 AND is_deleted = 0
+    </select>
+
+    <!-- 基础设置导出列表 -->
+    <select id="constantExp" resultType="com.dyys.hr.entity.train.excel.ConstantExcel">
+        SELECT tc.id, tc.name,
+        CASE tc.type
+        WHEN 1 THEN "课程类别"
+        WHEN 2 THEN "培训需求依据"
+        WHEN 3 THEN "培训考核方法"
+        WHEN 4 THEN "讲师等级"
+        WHEN 5 THEN "机构类型"
+        WHEN 6 THEN "计划类型"
+        WHEN 7 THEN "职序与学习方向"
+        WHEN 8 THEN "培训科目"
+        WHEN 9 THEN "机构等级"
+        WHEN 10 THEN "学习方式"
+        END AS typeName,
+        CONCAT(sps.id, "-", sps.descr) AS secCodeName
+        FROM train_constant tc
+        LEFT JOIN staff_posn_sec sps ON tc.pid = sps.id AND tc.type = 7
+        <where>
+            tc.status = 1 AND tc.is_deleted = 0
+            <if test="type != null and type != ''">
+                AND tc.type = #{type}
+            </if>
+            <if test="pid != null and pid != ''">
+                AND tc.pid = #{pid}
+            </if>
+            <if test="name != null and name != ''">
+                AND tc.name LIKE '%${name}%'
+            </if>
+        </where>
+        ORDER BY tc.type ASC, tc.id ASC
+    </select>
+</mapper>

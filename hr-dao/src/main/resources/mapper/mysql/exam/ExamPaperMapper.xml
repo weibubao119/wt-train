@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.exam.ExamPaperMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.vo.exam.ExamPaperResp">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="content" property="content"/>
+        <result column="totle" property="totle"/>
+        <result column="creator" property="creator"/>
+        <result column="create_date" property="createDate"/>
+        <result column="updater" property="updater"/>
+        <result column="update_date" property="updateDate"/>
+        <collection property="questions" ofType="com.dyys.hr.vo.exam.ExamPaperQuestionVO"
+                    select="com.dyys.hr.dao.exam.ExamPaperQuestionMapper.listPaperQuestion" column="{paperId=id}"/>
+    </resultMap>
+
+    <resultMap id="PaperDetailsVOMap" type="com.dyys.hr.vo.exam.ExamPaperDetailsVO">
+        <result column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="totle" property="totle"/>
+        <result column="duration" property="duration"/>
+        <result column="is_limit" property="isLimit"/>
+        <collection property="questions" ofType="com.dyys.hr.vo.exam.ExamPaperQuestionVO"
+                    select="com.dyys.hr.dao.exam.ExamPaperQuestionMapper.listQuestionDetails" column="{paperId=id}"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, content, totle, is_deleted,status,company_code,dept_id, creator, create_date, updater, update_date
+    </sql>
+
+    <select id="listExamPaper" parameterType="java.util.Map" resultType="com.dyys.hr.vo.exam.ExamPaperPageVO">
+        SELECT
+            DISTINCT
+            ep.id,ep.name,ep.content,ep.totle,ep.create_date,ep.update_date,ep.status,ep.company_code,ep.dept_id,
+            sd.dept_name_path AS deptPathName, p.empl_name as creator
+        FROM exam_paper ep
+        left join staff_job p on ep.creator = p.empl_id
+        LEFT JOIN staff_department sd ON ep.dept_id = sd.id
+        <where>
+            ep.is_deleted = 0
+            <if test="name!=null and name!=''">
+                AND ep.name LIKE concat('%',#{name},'%')
+            </if>
+            <if test="creator!=null and creator!=''">
+                AND ep.creator LIKE concat('%',#{creator},'%')
+            </if>
+            <if test="status == 1 or status == '0'.toString()">
+                AND ep.status = #{status}
+            </if>
+            <if test="deptList != null and deptList.size > 0">
+                and ep.dept_id in
+                <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="deptId != null and deptId != ''">
+                AND FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+        </where>
+        order by ep.id desc
+    </select>
+
+    <select id="getExamPaper" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM exam_paper ep
+        WHERE ep.id = #{paperId}
+    </select>
+    <select id="selectList" resultType="java.util.Map">
+        select
+            DISTINCT
+            a.id,a.name,totle from
+        exam_paper a
+        left join exam_paper_question b on a.id = b.paper_id
+        <where>
+            a.status = 1 and a.is_deleted = 0
+            <if test="name != null and name != ''">
+                and a.name like '%${name}%'
+            </if>
+        </where>
+        order by id asc
+    </select>
+
+    <select id="getPaperDetails" resultMap="PaperDetailsVOMap">
+        SELECT
+        ep.id as id,
+        ep.name as name,
+        ep.totle as totle,
+        te.duration as duration,
+        te.is_limit as is_limit
+        FROM train_exam te
+        LEFT JOIN exam_paper ep ON te.paper_id = ep.id
+        WHERE te.id = #{examId}
+        LIMIT 1
+    </select>
+    <select id="paperQuestionTotalScore" resultType="java.lang.Integer">
+        select sum(eq.score) as total from
+        exam_paper ep
+        left join exam_paper_question epq on ep.id = epq.paper_id
+        left join exam_question eq on epq.qu_id = eq.id
+        where ep.id = #{paperId} and eq.is_deleted = 0
+
+    </select>
+</mapper>

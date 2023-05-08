@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainInstitutionGradeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.train.TrainInstitutionGrade">
+        <id column="id" property="id" />
+        <result column="institution_id" property="institutionId" />
+        <result column="yearly" property="yearly" />
+        <result column="grade_id" property="gradeId" />
+        <result column="memo" property="memo" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, institution_id, yearly, grade_id, memo, create_user, create_time, update_user, update_time
+    </sql>
+
+    <!-- 培训机构等级列表 -->
+    <select id="institutionGradeList" resultType="com.dyys.hr.vo.train.TrainInstitutionGradeVO">
+        SELECT a.id, a.institution_id AS institutionId, a.yearly, a.grade_id AS gradeId, a.memo,
+        b.name AS gradeName
+        FROM train_institution_grade a
+        LEFT JOIN train_constant b ON a.grade_id = b.id
+        WHERE a.institution_id = #{institutionId}
+        ORDER BY a.yearly DESC
+    </select>
+
+    <!-- 同一个机构设置等级的年度总数 -->
+    <select id="selectCountByYearly" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM train_institution_grade
+        WHERE yearly = #{map.yearly} AND institution_id = #{map.institutionId}
+        <if test="map.id != null">
+            AND id != #{map.id}
+        </if>
+    </select>
+</mapper>

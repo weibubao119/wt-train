@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainTemporaryDemandMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainTemporaryDemand" id="trainTemporaryDemandMap">
+        <result property="id" column="id"/>
+        <result property="planDetailId" column="plan_detail_id"/>
+        <result property="companyCode" column="company_code"/>
+        <result property="departmentCode" column="department_code"/>
+        <result property="initiator" column="initiator"/>
+        <result property="initiationTime" column="initiation_time"/>
+        <result property="trainingPurpose" column="training_purpose"/>
+        <result property="fileList" column="file_list"/>
+        <result property="planId" column="plan_id"/>
+        <result property="status" column="status"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainTemporaryDemand_Column_sql">
+        id,plan_detail_id,company_code,department_code,initiator,initiation_time,training_purpose,file_list,plan_id,status,create_user,create_time,update_user,update_time
+    </sql>
+    <select id="pageList" resultType="com.dyys.hr.vo.train.TrainTemporaryDemandPageVO">
+        select
+            *,
+        CASE
+        WHEN STATUS = 1 THEN "审批中"
+        WHEN STATUS = 2 THEN "已通过"
+        ELSE "已拒绝"
+        END AS statusName
+        from train_temporary_demand
+            <where>
+                <if test="userId != null">
+                    and initiator = #{userId}
+                </if>
+            </where>
+    </select>
+    <select id="getDetailByQuery" resultType="com.dyys.hr.vo.train.TrainTemporaryDemandDetailVO">
+        SELECT
+            a.*,
+            b.descr_short AS companyName,
+            c.descr_short AS departmentName,
+            d.empl_name AS initiatorName,
+            e.title AS planTitle
+        FROM
+            train_temporary_demand a
+            LEFT JOIN staff_company b ON a.company_code = b.id
+            LEFT JOIN staff_department c ON a.department_code = c.id
+            LEFT JOIN staff_job d ON a.initiator = d.empl_id
+            LEFT JOIN train_plan e ON a.plan_id = e.id
+        <where>
+            <if test="id != null">
+                and a.id = #{id}
+            </if>
+        </where>
+    </select>
+    <select id="adminTemporaryDemandList" resultType="com.dyys.hr.vo.train.AdminTemporaryDemandListVO">
+        SELECT DISTINCT
+            tpd.train_name,
+            ttd.id,
+            ttd.initiator,
+            FROM_UNIXTIME( ttd.create_time, '%Y-%m-%d %H:%i:%s' ) AS create_time,
+            sj.empl_name AS initiator_name
+        FROM train_notice tn
+            LEFT JOIN train_temporary_demand ttd ON ttd.id = tn.type_id
+            LEFT JOIN train_plan tp ON ttd.plan_id = tp.id
+            LEFT JOIN train_plan_detail tpd ON ttd.plan_detail_id = tpd.id
+            LEFT JOIN staff_job sj ON ttd.initiator = sj.empl_id
+        <where>
+            tn.type = 10
+            <if test="status != null">
+                and tn.status = #{status}
+            </if>
+            <if test="adminId != null and adminId != ''">
+                and tn.user_id = #{adminId}
+            </if>
+            <if test="year != null and year != ''">
+                and tp.plan_year = #{year}
+            </if>
+        </where>
+    </select>
+</mapper>

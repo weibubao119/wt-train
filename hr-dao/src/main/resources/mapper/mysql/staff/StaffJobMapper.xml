@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.staff.StaffJobMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.staff.StaffJob">
+        <id column="id" property="id" />
+        <result column="empl_id" property="emplId" />
+        <result column="empl_name" property="emplName" />
+        <result column="company" property="company" />
+        <result column="company_descr" property="companyDescr" />
+        <result column="dept_id" property="deptId" />
+        <result column="dept_descr" property="deptDescr" />
+        <result column="post_code" property="postCode" />
+        <result column="post_descr" property="postDescr" />
+        <result column="grade_code" property="gradeCode" />
+        <result column="grade_descr" property="gradeDescr" />
+        <result column="level_code" property="levelCode" />
+        <result column="level_descr" property="levelDescr" />
+        <result column="sec_code" property="secCode" />
+        <result column="sec_descr" property="secDescr" />
+        <result column="sex" property="sex" />
+        <result column="age" property="age" />
+        <result column="eff_date" property="effDate" />
+        <result column="hr_status" property="hrStatus" />
+        <result column="creator" property="creator" />
+        <result column="create_date" property="createDate" />
+        <result column="updater" property="updater" />
+        <result column="update_date" property="updateDate" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, empl_id, empl_name, company, company_descr, dept_id, dept_descr, post_code, post_descr, grade_code, grade_descr, level_code, level_descr, sec_code, sec_descr, sex, age, eff_date, hr_status, creator, create_date, updater, update_date
+    </sql>
+
+    <!-- 员工字典列表 -->
+    <select id="employeeDictList" resultType="com.dyys.hr.vo.common.PsDictVO">
+        SELECT type_val AS dictCode, short_val AS dictName
+        FROM staff_dict
+        WHERE type_name = #{typeName}
+        ORDER BY type_val ASC
+    </select>
+    <select id="studentsList" resultType="com.dyys.hr.vo.train.StudentFilesPageVO">
+        select
+            sj.*,
+            smp.profession,sp.descr as profession_descr,
+            smp.posn_type,spt.descr as posn_type_descr
+        from staff_job sj
+        LEFT JOIN staff_position spn ON sj.post_code = spn.id
+        left join staff_main_post smp on spn.std_posn_id = smp.post_code
+        left join staff_profession sp on smp.profession = sp.code
+        left join staff_posn_type spt on smp.posn_type = spt.id
+        LEFT JOIN staff_department sd ON sj.dept_id = sd.id
+        <where>
+            sj.hr_status = "A"
+            <if test="emplName != null and emplName != ''">
+                and sj.empl_name like '%${emplName}%'
+            </if>
+            <if test="emplId != null and emplId != ''">
+                and sj.empl_id like '%${emplId}%'
+            </if>
+            <if test="departmentCode != null and departmentCode != ''">
+                and FIND_IN_SET(#{departmentCode}, sd.dept_id_path)
+            </if>
+            <if test="deptList != null and deptList.size > 0">
+                and sj.dept_id in
+                <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="posnGradeCode != null and posnGradeCode != ''">
+                and sj.level_code = #{posnGradeCode}
+            </if>
+            <if test="posnSecCode != null and posnSecCode != ''">
+                and sj.sec_code = #{posnSecCode}
+            </if>
+            <if test="dictCode != null and dictCode != ''">
+                and sj.grade_code = #{dictCode}
+            </if>
+            <if test="startTime != null and startTime != ''">
+                and sj.eff_date >= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and sj.eff_date &lt;= #{endTime}
+            </if>
+        </where>
+        order by
+        sj.id asc
+    </select>
+    <select id="emplInfo" resultType="com.dyys.hr.vo.train.EmplInfoVO">
+        SELECT sj.empl_id, sj.empl_name, sj.company, sj.company_descr, sj.dept_id, sj.dept_descr,
+        sj.post_descr, sj.sec_descr, sj.grade_descr, sj.level_descr,
+        se.edct_schl,
+        sui.avatar_file_data, sui.native_place, sui.nation,
+        sdm.short_val AS mar_status,
+        sde.short_val AS edu,
+        sdp.short_val AS political_sta_chn
+        FROM staff_job sj
+        LEFT JOIN staff_user_info sui ON sj.id = sui.id
+        LEFT JOIN (
+            SELECT b.empl_id, b.edct_schl, MIN(b.edct_bakg) AS edct_bakg
+            FROM (SELECT empl_id, edct_schl, edct_bakg FROM staff_edct GROUP BY empl_id, edct_bakg) b
+            GROUP BY b.empl_id
+        ) se ON se.empl_id = sj.empl_id
+        LEFT JOIN staff_dict sdm ON sdm.type_val = sui.mar_status  AND sdm.type_name = "MAR_STATUS"
+        LEFT JOIN staff_dict sde ON sde.type_val = sui.edct_bakg AND sde.type_name = "C_EDCT_BAKG"
+        LEFT JOIN staff_dict sdp ON sdp.type_val = sui.political_sta_chn AND sdp.type_name = "POLITICAL_STA_CHN"
+        WHERE sj.empl_id = #{emplId}
+    </select>
+    <select id="trainList" resultType="com.dyys.hr.vo.train.EmplTrainListVO"></select>
+</mapper>

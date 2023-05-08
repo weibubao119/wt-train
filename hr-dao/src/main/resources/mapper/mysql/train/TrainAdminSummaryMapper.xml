@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainAdminSummaryMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainAdminSummary" id="trainAdminSummaryMap">
+        <result property="id" column="id"/>
+        <result property="programsId" column="programs_id"/>
+        <result property="targetParticipationRate" column="target_participation_rate"/>
+        <result property="actualParticipationRate" column="actual_participation_rate"/>
+        <result property="targetResults" column="target_results"/>
+        <result property="actualResults" column="actual_results"/>
+        <result property="summary" column="summary"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainAdminSummary_Column_sql">
+        id,programs_id,target_participation_rate,actual_participation_rate,target_results,actual_results,summary,create_user,create_time,update_user,update_time
+    </sql>
+    <select id="getDetail" resultType="com.dyys.hr.vo.train.TrainAdminSummaryDetailVO">
+        select * from train_admin_summary
+        <where>
+            <if test="programsId != null">
+                and programs_id = #{programsId}
+            </if>
+        </where>
+    </select>
+</mapper>

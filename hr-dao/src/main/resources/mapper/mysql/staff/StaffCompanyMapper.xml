@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.staff.StaffCompanyMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.staff.StaffCompany">
+        <id column="id" property="id" />
+        <result column="parent_id" property="parentId" />
+        <result column="descr" property="descr" />
+        <result column="descr_short" property="descrShort" />
+        <result column="eff_date" property="effDate" />
+        <result column="eff_status" property="effStatus" />
+        <result column="regist_address" property="registAddress" />
+        <result column="office_address" property="officeAddress" />
+        <result column="creator" property="creator" />
+        <result column="create_date" property="createDate" />
+        <result column="updater" property="updater" />
+        <result column="update_date" property="updateDate" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, parent_id, descr, descr_short, eff_date, eff_status, regist_address, office_address, creator, create_date, updater, update_date
+    </sql>
+
+    <!-- 公司/单位筛选列表 -->
+    <select id="selectList" resultType="com.dyys.hr.vo.common.PsCompanyVO">
+        select id as companyCode, descr_short as companyName from staff_company
+        <where>
+            <if test="companyCode != null and companyCode != ''">
+                and id = #{companyCode}
+            </if>
+        </where>
+        order by id asc
+    </select>
+
+</mapper>

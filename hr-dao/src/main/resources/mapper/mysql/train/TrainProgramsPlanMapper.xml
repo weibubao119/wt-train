@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainProgramsPlanMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainProgramsPlan" id="trainProgramsPlanMap">
+        <result property="id" column="id"/>
+        <result property="programsId" column="programs_id"/>
+        <result property="courseId" column="course_id"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="schooltime" column="schooltime"/>
+        <result property="site" column="site"/>
+        <result property="institutionId" column="institution_id"/>
+        <result property="classHour" column="class_hour"/>
+        <result property="learningForm" column="learning_form"/>
+        <result property="examineForm" column="examine_form"/>
+        <result property="outlay" column="outlay"/>
+        <result property="outlayText" column="outlay_text"/>
+        <result column="is_import" property="isImport"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainProgramsPlan_Column_sql">
+        id,programs_id,course_id,start_time,end_time,schooltime,site,institution_id,class_hour,learning_form,examine_form,outlay,outlay_text,is_import,create_user,create_time,update_user,update_time</sql>
+    <delete id="deleteByParams">
+        delete from train_programs_plan
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="programs_id != null">
+                and programs_id = #{programs_id}
+            </if>
+        </where>
+    </delete>
+    <select id="getDetailList" resultType="com.dyys.hr.vo.train.TrainProgramsPlanDetailVO">
+        SELECT
+            tgp.*,
+            tbc.name AS course_name,tbc.number as course_number,tbc.category,tcc.name as category_name,
+            ti.name AS institution_name,
+            tc.name AS learning_form_name
+        FROM
+            train_programs_plan tgp
+            LEFT JOIN train_base_course tbc ON tgp.course_id = tbc.id
+            LEFT JOIN train_institution ti ON tgp.institution_id = ti.id
+            LEFT JOIN train_constant tc ON tgp.learning_form = tc.id
+            LEFT JOIN train_constant tcc ON tbc.category = tcc.id
+        <where>
+            <if test="id != null">
+                and tgp.id = #{id}
+            </if>
+            <if test="programs_id != null">
+                and tgp.programs_id = #{programs_id}
+            </if>
+        </where>
+    </select>
+    <select id="selectList" resultType="java.util.Map">
+        select id,title as name from
+        train_programs_plan
+        <where>
+            <if test="programsId != null">
+                and programs_id = #{programsId}
+            </if>
+            <if test="name != null and name != ''">
+                and title like '%${name}%'
+            </if>
+        </where>
+        order by id asc
+    </select>
+
+    <!-- 已完成培训总时长统计 -->
+    <select id="getProgramsCourseHoursCountByQuery" resultType="java.lang.Float">
+        select IFNULL(SUM(a.class_hour), 0)
+        from train_programs_course a
+        left join train_programs b on a.programs_id = b.id
+        LEFT JOIN staff_department sd ON b.dept_id = sd.id
+        <where>
+            <if test="status != null and status != ''">
+                and b.status = #{status}
+            </if>
+            <if test="year != null">
+                and b.start_time >= #{startTime} and b.end_time &lt;= #{endTime}
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询某个培训机构参与的培训项目历史分页列表 -->
+    <select id="ProgramsListByInstitutionId" resultType="com.dyys.hr.vo.train.TrainInstitutionHistoryServiceVO">
+        SELECT a.programs_id AS programsId, a.course_id AS courseId,
+        b.train_name AS trainName, b.start_time AS startTime, b.end_time AS endTime,
+        c.name AS courseName
+        FROM train_programs_plan a
+        LEFT JOIN train_programs b ON a.programs_id = b.id
+        LEFT JOIN train_base_course c ON a.course_id = c.id
+        LEFT JOIN train_plan d ON b.plan_id = d.id
+        <where>
+            a.institution_id = #{institutionId} AND b.status = 2
+            <if test="trainName != null and trainName != ''">
+                AND b.train_name LIKE concat('%', #{trainName}, '%')
+            </if>
+            <if test="planYear != null and planYear != ''">
+                AND d.plan_year = #{planYear}
+            </if>
+        </where>
+        ORDER BY a.id DESC
+    </select>
+
+    <!-- 根据课程分类查询统计 -->
+    <select id="getCountByCourseCategory" resultType="java.lang.Integer">
+        select count(a.id)
+        from train_programs_plan a
+        left join train_base_course b on a.course_id = b.id
+        left join train_programs c ON a.programs_id = c.id
+        LEFT JOIN staff_department sd ON c.dept_id = sd.id
+        <where>
+            <if test="category != null and category != ''">
+                and b.category = #{category}
+            </if>
+            <if test="status != null and status != ''">
+                and c.status = #{status}
+            </if>
+            <if test="year != null">
+                and c.end_time >= #{startTime} and c.end_time &lt;= #{endTime}
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+        </where>
+    </select>
+    <!-- 根据条件获取机构服务过的培训项目ID集 -->
+    <select id="selectProgramsIds" resultType="java.lang.Long">
+        SELECT a.programs_id
+        FROM train_programs_plan a
+        LEFT JOIN train_programs b ON a.programs_id = b.id
+        <where>
+            b.status = 2
+            <if test="institutionId != null and institutionId != ''">
+                AND a.institution_id = #{institutionId}
+            </if>
+            <if test="programsId != null and programsId != ''">
+                AND a.programs_id = #{programsId}
+            </if>
+            <if test="courseId != null and courseId != ''">
+                AND a.course_id = #{courseId}
+            </if>
+            GROUP BY a.programs_id
+        </where>
+    </select>
+    <!-- 查询某个机构服务过的培训项目课程ID集 -->
+    <select id="selectCourseIds" resultType="java.lang.Long">
+        SELECT a.course_id
+        FROM train_programs_plan a
+        LEFT JOIN train_programs b ON a.programs_id = b.id
+        <where>
+            b.status = 2
+            <if test="institutionId != null and institutionId != ''">
+                AND a.institution_id = #{institutionId}
+            </if>
+        </where>
+        GROUP BY a.course_id
+    </select>
+</mapper>

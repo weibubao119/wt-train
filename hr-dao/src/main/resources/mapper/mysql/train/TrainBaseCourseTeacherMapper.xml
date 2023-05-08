@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainBaseCourseTeacherMapper">
+    <resultMap id="trainBaseCourseTeacherMap" type="com.dyys.hr.entity.train.TrainBaseCourseTeacher">
+    <result column="id" property="id"/>
+    <result column="course_id" property="courseId"/>
+    <result column="teacher_id" property="teacherId"/>
+    <result column="number" property="number"/>
+    <result column="name" property="name"/>
+    <result column="type" property="type"/>
+    <result column="organization_name" property="organizationName"/>
+    </resultMap>
+    <sql id="TrainBaseCourseTeacher_Column_sql">id,course_id,teacher_id,number,name,type,organization_name</sql>
+    <delete id="deleteByCourseId">
+        delete from train_base_course_teacher where course_id = #{courseId}
+    </delete>
+    <select id="getSelectByCourseId" resultType="com.dyys.hr.dto.train.TeacherDTO">
+        select * from train_base_course_teacher where course_id = #{courseId}
+    </select>
+    <select id="canTeachingRecords" resultType="com.dyys.hr.vo.train.TeacherCanTeachingRecordsVO">
+        select
+            b.*,
+            c.name as categoryName
+        from
+            train_base_course_teacher a
+            left join train_base_course b on a.course_id = b.id
+            left join train_constant c on b.category = c.id
+        where
+            a.teacher_id = #{teacherId}
+    </select>
+    <select id="selectList" resultType="java.util.Map">
+        select
+            teacher_id,name
+        from
+            train_base_course_teacher
+        <where>
+            <if test="courseId != null and courseId != ''">
+                and course_id = #{courseId}
+            </if>
+            <if test="name != null and name != ''">
+                and name like '%${name}%'
+            </if>
+        </where>
+        order by id asc
+    </select>
+</mapper>

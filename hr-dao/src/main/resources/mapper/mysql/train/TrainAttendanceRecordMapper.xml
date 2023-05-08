@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainAttendanceRecordMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainAttendanceRecord" id="trainAttendanceRecordMap">
+        <result property="id" column="id"/>
+        <result property="attendanceRulesId" column="attendance_rules_id"/>
+        <result property="emplId" column="empl_id"/>
+        <result property="signedInTime" column="signed_in_time"/>
+        <result property="status" column="status"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainAttendanceRecord_Column_sql">
+        id,attendance_rules_id,empl_id,signed_in_time,status,create_user,create_time,update_user,update_time
+    </sql>
+    <delete id="deleteByAttendanceRulesId">
+        delete from train_attendance_record where attendance_rules_id = #{rulesId}
+    </delete>
+    <select id="pageList" resultType="com.dyys.hr.vo.train.TrainAttendanceRecordVO">
+        SELECT
+            DISTINCT
+            a.id,a.user_id,a.signed_in_time,a.status,
+            CASE
+            WHEN a.STATUS = 1 THEN "已签到"
+            WHEN a.STATUS = 2 THEN "迟到签到"
+            WHEN a.STATUS = 3 THEN "未签到"
+            ELSE "未开始"
+            END AS statusName,
+            e.company_descr AS companyName,
+            e.dept_descr AS departmentName,
+            e.post_descr AS jobName,
+            e.empl_name AS userName,
+            e.company AS companyCode,e.dept_id AS departmentCode,e.post_code AS jobCode
+        FROM
+            train_attendance_record a
+            LEFT JOIN staff_job e ON e.empl_id = a.user_id
+        <where>
+            <if test="attendanceRulesId != null">
+                and a.attendance_rules_id = #{attendanceRulesId}
+            </if>
+        </where>
+    </select>
+    <select id="studentSignInPageList" resultType="com.dyys.hr.vo.train.TrainAttendanceStudentSignInDataVO">
+        SELECT
+            a.user_id,
+            sum(case when a.`status` = 1 then 1 else 0 end) as attendance_num,
+            sum(case when a.`status` = 2 then 1 else 0 end) as late_num,
+            sum(case when a.`status` = 3 then 1 else 0 end) as absent_num
+        FROM
+            train_attendance_record a
+            LEFT JOIN train_attendance_person b ON a.user_id = b.user_id
+            AND a.attendance_rules_id = b.attendance_rules_id
+            LEFT JOIN staff_job c ON a.user_id = c.empl_id
+            LEFT JOIN train_attendance_rules d ON a.attendance_rules_id = d.id
+        <where>
+            <if test="programsId != null">
+                d.programs_id = #{programsId}
+            </if>
+            <if test="name != null and name != ''">
+                and c.empl_name like '%${name}%'
+            </if>
+        </where>
+        GROUP BY
+            a.user_id
+    </select>
+    <select id="myAttendanceRecordList" resultType="com.dyys.hr.vo.train.EmployeeAttendanceRecordPageVO">
+        SELECT
+            a.id,a.signed_in_time,a.status,
+            CASE
+            WHEN a.STATUS = 1 THEN "已签到"
+            WHEN a.STATUS = 2 THEN "迟到签到"
+            WHEN a.STATUS = 3 THEN "未签到"
+            ELSE "未开始"
+            END AS statusName,
+            b.date,b.start_time,b.end_time
+        FROM
+            train_attendance_record a
+            LEFT JOIN train_attendance_rules b ON a.attendance_rules_id = b.id
+        <where>
+            <if test="programsId != null and programsId != ''">
+                and b.programs_id = #{programsId}
+            </if>
+            <if test="date != null and date != ''">
+                and b.date = #{date}
+            </if>
+            <if test="emplId != null">
+                and a.empl_id = #{emplId}
+            </if>
+        </where>
+    </select>
+    <select id="getRuleInfoByQuery" resultType="com.dyys.hr.vo.train.EmployeeSignInAttendanceVO">
+        SELECT
+            a.id,a.signed_in_time,a.status,
+            concat(b.date," ",b.start_time) as start_time,
+            concat(b.date," ",b.end_time) as end_time,
+            CONCAT(tpc.schooltime, " ", tpc.end_time) AS courseEndTime
+        FROM train_attendance_record a
+        LEFT JOIN train_attendance_rules b ON a.attendance_rules_id = b.id
+        LEFT JOIN train_programs_course tpc ON b.programs_course_id = tpc.id
+        where
+            a.attendance_rules_id = #{attendanceRulesId} and a.empl_id = #{emplId}
+        limit 1
+    </select>
+
+    <select id="selectByRuleAndUser" resultType="com.dyys.hr.vo.train.TrainAttendanceRecordVO">
+        select *
+        from train_attendance_record
+        where attendance_rules_id = #{attendanceRulesId} and user_id = #{userId}
+    </select>
+    <select id="recordPageList" resultType="com.dyys.hr.vo.train.TrainAttendanceRecordPageVO">
+        SELECT
+            tar.id,tar.signed_in_time,tar.status,
+            CASE
+            WHEN tar.STATUS = 1 THEN "已签到"
+            WHEN tar.STATUS = 2 THEN "迟到签到"
+            WHEN tar.STATUS = 3 THEN "未签到"
+            ELSE "未开始"
+            END AS statusName,
+            tars.date,tars.start_time,tars.end_time,
+            tp.train_name,tbc.name as course_name,
+            sj.empl_id,sj.empl_name,sj.company_descr,dept_descr
+        FROM
+            train_attendance_record tar
+            LEFT JOIN train_attendance_rules tars ON tar.attendance_rules_id = tars.id
+            LEFT JOIN train_programs tp ON tars.programs_id = tp.id
+            LEFT JOIN train_base_course tbc ON tars.course_id = tbc.id
+            LEFT JOIN staff_job sj ON tar.empl_id = sj.empl_id
+        <where>
+            tars.programs_id = #{programsId}
+            <if test="emplName != null and emplName != ''">
+                and sj.empl_name like '%${emplName}%'
+            </if>
+            <if test="courseName != null and courseName != ''">
+                and tbc.name like '%${courseName}%'
+            </if>
+            <if test="startTime != null and startTime != ''">
+                and tars.date >= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and tars.date &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+    <select id="recordExportList" resultType="com.dyys.hr.entity.train.excel.TrainAttendanceRecordExcel">
+        SELECT
+        tar.id,tar.signed_in_time,tar.status,
+        CASE
+        WHEN tar.STATUS = 1 THEN "已签到"
+        WHEN tar.STATUS = 2 THEN "迟到签到"
+        WHEN tar.STATUS = 3 THEN "未签到"
+        ELSE "未开始"
+        END AS statusName,
+        tars.date,tars.start_time,tars.end_time,
+        tp.train_name,tbc.name as course_name,
+        sj.empl_id,sj.empl_name,sj.company_descr,dept_descr
+        FROM
+        train_attendance_record tar
+        LEFT JOIN train_attendance_rules tars ON tar.attendance_rules_id = tars.id
+        LEFT JOIN train_programs tp ON tars.programs_id = tp.id
+        LEFT JOIN train_base_course tbc ON tars.course_id = tbc.id
+        LEFT JOIN staff_job sj ON tar.empl_id = sj.empl_id
+        <where>
+            tars.programs_id = #{programsId}
+            <if test="emplName != null and emplName != ''">
+                and sj.empl_name like '%${emplName}%'
+            </if>
+            <if test="courseName != null and courseName != ''">
+                and tbc.name like '%${name}%'
+            </if>
+            <if test="startTime != null and startTime != ''">
+                and tars.date >= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and tars.date &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+</mapper>

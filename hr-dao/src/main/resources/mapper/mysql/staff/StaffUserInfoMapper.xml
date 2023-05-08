@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.staff.StaffUserInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.staff.StaffUserInfo">
+        <id column="id" property="id" />
+        <result column="empl_id" property="emplId" />
+        <result column="name" property="name" />
+        <result column="phone_number" property="phoneNumber" />
+        <result column="email" property="email" />
+        <result column="sex" property="sex" />
+        <result column="mar_status" property="marStatus" />
+        <result column="birth_date" property="birthDate" />
+        <result column="native_place" property="nativePlace" />
+        <result column="nation" property="nation" />
+        <result column="edct_bakg" property="edctBakg" />
+        <result column="title_nm" property="titleNm" />
+        <result column="political_sta_chn" property="politicalStaChn" />
+        <result column="birth_status" property="birthStatus" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, empl_id, name, phone_number, email, sex, mar_status, birth_date, native_place, nation, edct_bakg, title_nm, political_sta_chn, birth_status, update_time
+    </sql>
+
+    <!-- 员工筛选列表 -->
+    <select id="selectList" resultType="map">
+        SELECT sj.empl_id AS id, sj.empl_name AS name, sj.empl_id AS emplId, sj.empl_name AS emplName, sj.company AS companyCode,
+        sj.company_descr AS companyName, sj.dept_id AS departmentCode, sj.dept_descr AS departmentName, sj.post_code AS postCode,
+        sj.post_descr AS postName, sj.post_code AS jobCode, sj.post_descr AS jobName, sj.sec_code AS secCode, sj.sec_descr AS secName,
+        sj.level_code AS gradeCode, sj.level_descr AS gradeName, IF(sj.sex = 'M', '男', '女') AS genderName, sj.age
+        FROM staff_job sj
+        LEFT JOIN staff_department sd ON sj.dept_id = sd.id
+        <where>
+            sj.hr_status = "A"
+            <if test="name != null and name != ''">
+                and (empl_name like '%${name}%' or empl_id = #{name})
+            </if>
+            <if test="deptList != null and deptList.size > 0">
+                and dept_id in
+                <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="departmentCode != null and departmentCode != ''">
+                and FIND_IN_SET(#{departmentCode}, sd.dept_id_path)
+            </if>
+        </where>
+        order by empl_id asc
+    </select>
+
+    <!-- 获取用户信息 -->
+    <select id="getUserInfoById" resultType="com.dyys.hr.vo.common.PsPersionVO">
+        SELECT
+            a.empl_id, a.empl_name, a.company AS companyCode, a.company_descr AS companyName, a.dept_id AS departmentCode,
+            a.dept_descr AS departmentName, a.post_code AS jobCode, a.post_descr AS jobName, a.grade_code AS gradeCode,
+            a.grade_descr AS gradeName, a.level_code AS levelCode, a.level_descr AS levelName, a.sec_code AS secCode,
+            a.sec_descr AS secName, a.sex AS gender, IF(a.sex = 'M', '男', '女') AS genderName,a.age,
+            b.phone_number AS mobile, b.email AS email, b.avatar_file_data, b.edct_bakg, c.short_val AS educationLevel
+            FROM staff_job a
+            LEFT JOIN (
+                SELECT d.empl_id, d.phone_number, d.email, d.edct_bakg, d.avatar_file_data FROM staff_user_info d
+                INNER JOIN (SELECT empl_id, MAX(id) AS  id FROM staff_user_info WHERE 1 = 1 GROUP BY empl_id) e
+                ON d.empl_id = e.empl_id AND  d.id = e.id
+            ) b ON a.empl_id = b.empl_id
+            LEFT JOIN staff_dict c ON b.edct_bakg = c.type_val AND c.type_name = "C_EDCT_BAKG"
+        WHERE
+            a.empl_id = #{emplId}
+    </select>
+
+    <!-- 员工详细信息筛选列表 -->
+    <select id="detailsSelectList" resultType="com.dyys.hr.vo.common.PsPersionVO">
+        SELECT
+            a.empl_id, a.empl_name, a.company AS companyCode, a.company_descr AS companyName, a.dept_id AS departmentCode,
+            a.dept_descr AS departmentName, a.post_code AS jobCode, a.post_descr AS jobName, a.grade_code AS gradeCode,
+            a.grade_descr AS gradeName, a.level_code AS levelCode, a.level_descr AS levelName, a.sec_code AS secCode,
+            a.sec_descr AS secName, a.sex AS gender, IF(a.sex = 'M', '男', '女') AS genderName,a.age,
+            b.phone_number AS mobile, b.email AS email, c.short_val AS educationLevel
+            FROM staff_job a
+            LEFT JOIN (
+                SELECT d.empl_id, d.phone_number, d.email, d.edct_bakg FROM staff_user_info d
+                INNER JOIN (SELECT empl_id, MAX(id) AS  id FROM staff_user_info WHERE 1 = 1 GROUP BY empl_id) e
+                ON d.empl_id = e.empl_id AND  d.id = e.id
+            ) b ON a.empl_id = b.empl_id
+            LEFT JOIN staff_dict c ON b.edct_bakg = c.type_val AND c.type_name = "C_EDCT_BAKG"
+        <where>
+            a.hr_status = "A"
+            <if test="name != null and name != ''">
+                and a.empl_name like '%${name}%'
+            </if>
+            <if test="companyCode != null and companyCode != ''">
+                and a.company = #{companyCode}
+            </if>
+            <if test="departmentCode != null and departmentCode != ''">
+                and a.dept_id = #{departmentCode}
+            </if>
+        </where>
+        order by a.empl_id asc
+    </select>
+    <select id="getSingleUserInfoById" resultType="com.dyys.hr.vo.common.PsPersionVO">
+        SELECT
+        a.empl_id, a.empl_name, a.company AS companyCode, a.company_descr AS companyName, a.dept_id AS departmentCode,
+        a.dept_descr AS departmentName, a.post_code AS jobCode, a.post_descr AS jobName, a.grade_code AS gradeCode,
+        a.grade_descr AS gradeName
+        from staff_job a
+        WHERE
+            a.empl_id = #{emplId}
+    </select>
+</mapper>

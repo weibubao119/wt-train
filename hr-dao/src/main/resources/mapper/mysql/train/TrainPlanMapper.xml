@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainPlanMapper">
+    <resultMap type="com.dyys.hr.entity.train.TrainPlan" id="trainPlanMap">
+        <result property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="companyCode" column="company_code"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="initiator" column="initiator"/>
+        <result property="planYear" column="plan_year"/>
+        <result property="fileList" column="file_list"/>
+        <result property="status" column="status"/>
+        <result property="isDelete" column="is_delete"/>
+        <result property="approveFlowId" column="approve_flow_id"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainPlan_Column_sql">
+        id,title,company_code,dept_id,initiator,type,plan_year,file_list,status,is_delete,approve_flow_id,create_user,create_time,update_user,update_time
+    </sql>
+    <select id="pageList" resultType="com.dyys.hr.vo.train.TrainPlanVO">
+        SELECT
+            a.id,
+            a.title,
+            a.plan_year,
+            a.initiator,
+            a.company_code,
+            a.dept_id,
+            a.STATUS,
+            CASE
+                WHEN a.STATUS = 0 THEN "待审批"
+                WHEN a.STATUS = 1 THEN "已通过"
+                WHEN a.STATUS = 2 THEN "已驳回"
+                ELSE "暂存"
+            END AS statusName,
+            b.descr AS companyName,
+            c.empl_name AS initiatorName,
+            d.dept_name_path AS deptPathName
+        FROM
+            train_plan a
+            LEFT JOIN staff_company b ON a.company_code = b.id
+            LEFT JOIN staff_job c ON a.initiator = c.empl_id
+            LEFT JOIN staff_department d ON a.dept_id = d.id
+        <where>
+            a.is_delete = 0
+            <if test="id != null and id != ''">
+                and a.id = #{id}
+            </if>
+            <if test="planYear != null and planYear != ''">
+                and a.plan_year = #{planYear}
+            </if>
+            <if test="title != null and title != ''">
+                and a.title like '%${title}%'
+            </if>
+            <if test="initiator != null and initiator != ''">
+                and a.initiator = #{initiator}
+            </if>
+            <if test="status != null and status != ''">
+                and a.status = #{status}
+            </if>
+            <if test="deptList != null and deptList.size > 0">
+                and a.dept_id in
+                <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, d.dept_id_path)
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+    <select id="getDetailByQuery" resultType="com.dyys.hr.vo.train.TrainPlanFormVO">
+        SELECT
+            a.id,a.title,a.plan_year,a.initiator,a.status,a.approve_flow_id,
+            a.company_code,
+            b.descr AS companyName,
+            c.empl_name AS initiatorName,
+            d.descr AS deptName
+        FROM
+            train_plan a
+            LEFT JOIN staff_company b ON a.company_code = b.id
+            LEFT JOIN staff_job c ON a.initiator = c.empl_id
+            LEFT JOIN staff_department d ON a.dept_id = d.id
+        <where>
+            <if test="id != null">
+                and a.id = #{id}
+            </if>
+        </where>
+    </select>
+    <select id="selectList" resultType="java.util.Map">
+        select id,title as name from train_plan
+        <where>
+            status = 1
+            <if test="name != null and name != ''">
+                and title like '%${name}%'
+            </if>
+            <if test="companyCode != null and companyCode != ''">
+                and company_code = #{companyCode}
+            </if>
+        </where>
+        order by id asc
+    </select>
+</mapper>

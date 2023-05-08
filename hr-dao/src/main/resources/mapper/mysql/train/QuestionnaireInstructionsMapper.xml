@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.QuestionnaireInstructionsMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.QuestionnaireInstructions" id="questionnaireInstructionsMap">
+        <result property="id" column="id"/>
+        <result property="questionnaireUserId" column="questionnaire_user_id"/>
+        <result property="title" column="title"/>
+        <result property="titleShown" column="title_shown"/>
+        <result property="value" column="value"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="QuestionnaireInstructions_Column_sql">
+        id,questionnaire_user_id,title,title_shown,content,create_user,create_time,update_user,update_time
+    </sql>
+    <select id="getListByQuery" resultType="com.dyys.hr.dto.train.QuestionnaireInstructionsDTO">
+        select * from questionnaire_instructions
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="questionnaireUserId != null">
+                and questionnaire_user_id = #{questionnaireUserId}
+            </if>
+        </where>
+    </select>
+</mapper>

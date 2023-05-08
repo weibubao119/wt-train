@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainInstitutionAssessmentStaffMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.train.TrainInstitutionAssessmentStaff">
+        <id column="id" property="id" />
+        <result column="assessment_id" property="assessmentId" />
+        <result column="questionnaire_id" property="questionnaireId" />
+        <result column="evaluator_empl_id" property="evaluatorEmplId" />
+        <result column="evaluator_company_id" property="evaluatorCompanyId" />
+        <result column="evaluator_dept_id" property="evaluatorDeptId" />
+        <result column="evaluator_job_code" property="evaluatorJobCode" />
+        <result column="answer_id" property="answerId" />
+        <result column="is_finished" property="isFinished" />
+        <result column="is_delete" property="isDelete" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, assessment_id, questionnaire_id, evaluator_empl_id, evaluator_company_id, evaluator_dept_id, evaluator_job_code, answer_id, is_finished, is_delete, create_user, create_time, update_user, update_time
+    </sql>
+
+    <!-- 根据评估记录ID查询该评估记录的参评人员列表数据 -->
+    <select id="assessmentStaffListByAssessmentId" resultType="com.dyys.hr.vo.train.TrainInstitutionAssessmentStaffVO">
+        SELECT a.id, a.evaluator_empl_id AS evaluatorEmplId, a.evaluator_company_id AS evaluatorCompanyId,
+        a.evaluator_dept_id AS evaluatorDeptId, a.evaluator_job_code AS evaluatorJobCode,
+        a.answer_id AS answerId,a.is_finished AS isFinished,
+        b.empl_name AS evaluatorEmplName, b.company_descr AS evaluatorCompanyName, b.dept_descr AS evaluatorDeptName,
+        b.post_descr AS evaluatorJobName
+        FROM train_institution_assessment_staff a
+        LEFT JOIN staff_job b ON a.evaluator_empl_id = b.empl_id
+        WHERE a.assessment_id = #{assessmentId} AND a.is_delete = 0
+        GROUP BY a.evaluator_empl_id
+        ORDER BY a.is_finished DESC
+    </select>
+
+    <!-- 员工端-评估中心-机构评估列表 -->
+    <select id="institutionAssessList" resultType="com.dyys.hr.vo.train.EmplInstitutionAssessVO">
+        SELECT a.assessment_id AS assessmentId, a.is_finished AS status, IF(a.is_finished = 1,'已完成','未完成') AS statusName,
+        b.institution_id AS institutionId, b.title, b.questionnaire_id AS questionnaireId,
+        b.yearly, b.start_time AS startTime, b.end_time AS endTime,
+        c.name AS institutionName, d.title AS questionnaireName
+        FROM train_institution_assessment_staff a
+        LEFT JOIN train_institution_assessment b ON a.assessment_id = b.id
+        LEFT JOIN train_institution c ON b.institution_id = c.id
+        LEFT JOIN questionnaire d ON b.questionnaire_id = d.id
+        WHERE a.is_delete = 0 AND a.evaluator_empl_id = #{evaluatorEmplId}
+        <if test="institutionId != null and institutionId != ''">
+            AND b.institution_id = #{institutionId}
+        </if>
+        <if test="title != null and title != ''">
+            AND b.title LIKE concat('%', #{title}, '%')
+        </if>
+        <if test="startTime != null and startTime != ''">
+            AND b.start_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND b.end_time &lt;= #{endTime}
+        </if>
+        <if test="status != null and status != ''">
+            AND a.is_finished = #{status}
+        </if>
+    </select>
+
+    <!-- 机构评估-人员选择列表 -->
+    <select id="staffList" resultType="com.dyys.hr.vo.train.TrainInstitutionStaffVO">
+        SELECT sj.id AS id, sj.empl_id AS emplId, sj.empl_name AS name, sj.empl_name AS emplName,
+        sj.company AS companyCode, sj.company_descr AS companyName, sj.dept_id AS departmentCode,
+        sj.dept_descr AS departmentName, sj.post_code AS postCode, sj.post_descr AS postName,
+        sj.post_code AS jobCode, sj.post_descr AS jobName, sj.sec_code AS secCode, sj.sec_descr AS secName,
+        sj.level_code AS gradeCode, sj.level_descr AS gradeName, tp.train_name
+        FROM train_programs_participants tpp
+        LEFT JOIN train_programs tp ON tpp.programs_id = tp.id
+        LEFT JOIN staff_job sj ON tpp.user_id = sj.id
+        <where>
+            tpp.programs_id IN
+            <foreach item="programsIds" index="index" collection="programsIds" open="(" separator="," close=")">
+                #{programsIds}
+            </foreach>
+            <if test="params.emplName != null and params.emplName != ''">
+                AND sj.empl_name LIKE concat('%', #{params.emplName}, '%')
+            </if>
+        </where>
+        GROUP BY tpp.user_id
+        ORDER BY tpp.programs_id DESC, tpp.user_id ASC
+    </select>
+    <!-- 机构评估-人员选择列表-课程名称搜索项 -->
+    <select id="courseChoiceList" resultType="com.dyys.hr.vo.common.CourseChoiceVO">
+        SELECT tbc.id AS courseId, tbc.number AS courseNumber, tbc.name AS courseName
+        FROM train_base_course tbc
+        <where>
+            tbc.id IN
+            <foreach item="courseIds" index="index" collection="courseIds" open="(" separator="," close=")">
+                #{courseIds}
+            </foreach>
+            <if test="params.courseName != null and params.courseName != ''">
+                AND tbc.name LIKE concat('%', #{params.courseName}, '%')
+            </if>
+        </where>
+        ORDER BY tbc.id DESC
+    </select>
+    <!-- 机构评估-人员选择列表-培训项目搜索项 -->
+    <select id="programsChoiceList" resultType="com.dyys.hr.vo.common.ProgramsChoiceVO">
+        SELECT tp.id AS programsId, tp.number AS programsNumber, tp.train_name
+        FROM train_programs tp
+        <where>
+            tp.id IN
+            <foreach item="programsIds" index="index" collection="programsIds" open="(" separator="," close=")">
+                #{programsIds}
+            </foreach>
+            <if test="params.trainName != null and params.trainName != ''">
+                AND tp.train_name LIKE concat('%', #{params.trainName}, '%')
+            </if>
+        </where>
+        ORDER BY tp.id DESC
+    </select>
+</mapper>

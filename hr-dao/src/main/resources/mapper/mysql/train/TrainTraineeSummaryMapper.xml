@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainTraineeSummaryMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainTraineeSummary" id="trainTraineeSummaryMap">
+        <result property="id" column="id"/>
+        <result property="programsId" column="programs_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="totalScore" column="total_score"/>
+        <result property="trainingResults" column="training_results"/>
+        <result property="isObtain" column="is_obtain"/>
+        <result property="sourceType" column="source_type"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainTraineeSummary_Column_sql">
+        id,programs_id,user_id,total_score,start_date,end_date,is_obtain,certificate_no,training_results,is_import,create_user,create_time,update_user,update_time
+    </sql>
+    <select id="traineePageList" resultType="com.dyys.hr.vo.train.TrainTraineeSummaryVO">
+        SELECT
+            DISTINCT
+            tts.*,if(tts.is_obtain=1,'是','否') as isObtainName,
+            sj.empl_id, sj.empl_name ,sj.company_descr,sj.dept_descr,sj.post_descr,sj.grade_descr,sj.sec_descr
+        FROM train_trainee_summary tts
+        LEFT JOIN staff_job sj ON tts.user_id = sj.empl_id
+        LEFT JOIN staff_department sd ON sj.dept_id = sd.id
+        <where>
+            <if test="id != null  and id != ''">
+                and tts.id = #{id}
+            </if>
+            <if test="programsId != null and programsId != ''">
+                and tts.programs_id = #{programsId}
+            </if>
+            <if test="isObtain != null  and isObtain != ''">
+                and tts.is_obtain = #{isObtain}
+            </if>
+            <if test="emplName != null">
+                and sj.empl_name like '%${emplName}%'
+            </if>
+            <if test="companyCode != null and companyCode != ''">
+                and sj.company = #{companyCode}
+            </if>
+            <if test="departmentCode != null and departmentCode != ''">
+                and FIND_IN_SET(#{departmentCode}, sd.dept_id_path)
+            </if>
+            <if test="posnGradeCode != null and posnGradeCode != ''">
+                and sj.level_code = #{posnGradeCode}
+            </if>
+            <if test="posnSecCode != null and posnSecCode != ''">
+                and sj.sec_code = #{posnSecCode}
+            </if>
+        </where>
+    </select>
+
+    <select id="getProgramsAverageResult" resultType="java.lang.String">
+        select round(avg(total_score),1) as averageScore from train_trainee_summary
+        <where>
+            <if test="programsId != null">
+                and programs_id = #{programsId}
+            </if>
+        </where>
+    </select>
+</mapper>

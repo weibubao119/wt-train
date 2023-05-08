@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.staff.StaffSkillsLangMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.staff.StaffSkillsLang">
+        <id column="id" property="id" />
+        <result column="empl_id" property="emplId" />
+        <result column="languages" property="languages" />
+        <result column="cert_date" property="certDate" />
+        <result column="ctfct_class" property="ctfctClass" />
+        <result column="score" property="score" />
+        <result column="ctfct_dept" property="ctfctDept" />
+        <result column="rmk" property="rmk" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, empl_id, languages, cert_date, ctfct_class, score, ctfct_dept, rmk, update_time
+    </sql>
+
+</mapper>

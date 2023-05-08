@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainLearnMapStaffSblMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.train.TrainLearnMapStaffSbl">
+        <id column="id" property="id" />
+        <result column="map_staff_id" property="mapStaffId" />
+        <result column="empl_id" property="emplId" />
+        <result column="sbl_id" property="sblId" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, map_staff_id, sbl_id, create_user, create_time
+    </sql>
+
+    <!-- 取员工学习方向名称 -->
+    <select id="querySblNameByEmplId" resultType="java.lang.String">
+        SELECT b.name
+        FROM train_learn_map_staff_sbl a
+        LEFT JOIN train_constant b ON a.sbl_id = b.id
+        WHERE a.empl_id = #{emplId}
+    </select>
+
+    <!-- 员工学习方向记录数量 -->
+    <select id="queryTotalByEmplId" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM train_learn_map_staff_sbl WHERE empl_id = #{emplId}
+    </select>
+
+    <!-- 取员工学习方向ID -->
+    <select id="querySblIdByEmplId" resultType="java.lang.Integer">
+        SELECT sbl_id FROM train_learn_map_staff_sbl WHERE empl_id = #{emplId}
+    </select>
+</mapper>

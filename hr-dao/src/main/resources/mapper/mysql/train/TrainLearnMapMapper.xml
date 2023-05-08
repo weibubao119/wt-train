@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainLearnMapMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.train.TrainLearnMap">
+        <id column="id" property="id" />
+        <result column="map_code" property="mapCode" />
+        <result column="map_name" property="mapName" />
+        <result column="posn_sec_code" property="posnSecCode" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, map_code, map_name, posn_sec_code, create_user, create_time, update_user, update_time
+    </sql>
+
+    <!-- 学习地图列表 -->
+    <select id="mapList" resultType="com.dyys.hr.vo.train.LearnMapVO">
+        SELECT a.id, a.map_code AS mapCode, a.map_name AS mapName, a.posn_sec_code AS posnSecCode,
+        b.descr AS posnSecName
+        FROM train_learn_map a
+        LEFT JOIN (
+            SELECT c.posn_sec_id, c.descr FROM staff_posn_sec c
+            INNER JOIN (SELECT posn_sec_id, MAX(eff_date) AS  eff_date FROM staff_posn_sec WHERE eff_status = "A" GROUP BY posn_sec_id) d
+            ON c.posn_sec_id = d.posn_sec_id AND  c.eff_date = d.eff_date
+        ) b ON a.posn_sec_code = b.posn_sec_id
+        <where>
+            <if test="mapCode != null and mapCode != ''">
+                AND a.map_code LIKE concat('%', #{mapCode}, '%')
+            </if>
+            <if test="mapName != null and mapName != ''">
+                AND a.map_name LIKE concat('%', #{mapName}, '%')
+            </if>
+            <if test="posnSecCode != null and posnSecCode != ''">
+                AND a.posn_sec_code = #{posnSecCode}
+            </if>
+        </where>
+        ORDER BY a.id DESC
+    </select>
+
+    <!-- 校验学习地图编码唯一性 -->
+    <select id="countByMapCode" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM train_learn_map
+        WHERE map_code = #{mapCode}
+        <if test="mapId != null">
+            AND id != #{mapId}
+        </if>
+    </select>
+
+    <!-- 学习地图详情 -->
+    <select id="queryInfoById" resultType="com.dyys.hr.vo.train.LearnMapInfoVO">
+        SELECT a.id, a.map_code AS mapCode, a.map_name AS mapName, a.posn_sec_code AS posnSecCode,
+        b.descr AS posnSecName
+        FROM train_learn_map a
+        LEFT JOIN (
+            SELECT c.posn_sec_id, c.descr FROM staff_posn_sec c
+            INNER JOIN (SELECT posn_sec_id, MAX(eff_date) AS  eff_date FROM staff_posn_sec WHERE eff_status = "A" GROUP BY posn_sec_id) d
+            ON c.posn_sec_id = d.posn_sec_id AND  c.eff_date = d.eff_date
+        ) b ON a.posn_sec_code = b.posn_sec_id
+        WHERE a.id = #{id}
+    </select>
+
+    <!-- 学习地图选择列表 -->
+    <select id="mapSelectList" resultType="com.dyys.hr.vo.train.LearnMapSelectVO">
+        SELECT a.id, a.map_code AS mapCode, a.map_name AS mapName, a.posn_sec_code AS posnSecCode,
+        b.descr AS posnSecName
+        FROM train_learn_map a
+        LEFT JOIN (
+        SELECT c.posn_sec_id, c.descr FROM staff_posn_sec c
+        INNER JOIN (SELECT posn_sec_id, MAX(eff_date) AS  eff_date FROM staff_posn_sec WHERE eff_status = "A" GROUP BY posn_sec_id) d
+        ON c.posn_sec_id = d.posn_sec_id AND  c.eff_date = d.eff_date
+        ) b ON a.posn_sec_code = b.posn_sec_id
+        <where>
+            <if test="mapCode != null and mapCode != ''">
+                AND a.map_code LIKE concat('%', #{mapCode}, '%')
+            </if>
+            <if test="mapName != null and mapName != ''">
+                AND a.map_name LIKE concat('%', #{mapName}, '%')
+            </if>
+        </where>
+        ORDER BY a.id DESC
+    </select>
+</mapper>

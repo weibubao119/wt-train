@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainDemandCollectMapper">
+    <resultMap type="com.dyys.hr.entity.train.TrainDemandCollect" id="trainDemandCollectMap">
+        <result property="id" column="id"/>
+        <result property="demandName" column="demand_name"/>
+        <result property="companyCode" column="company_code"/>
+        <result property="departmentCode" column="department_code"/>
+        <result property="initiator" column="initiator"/>
+        <result property="initiationTime" column="initiation_time"/>
+        <result property="demandDescription" column="demand_description"/>
+        <result property="fileList" column="file_list"/>
+        <result property="feedbackStartTime" column="feedback_start_time"/>
+        <result property="feedbackEndTime" column="feedback_end_time"/>
+        <result property="status" column="status"/>
+        <result property="isDelete" column="is_delete"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainDemandCollect_Column_sql">
+        id,demand_name,company_code,department_code,initiator,initiation_time,demand_description,file_list,feedback_start_time,feedback_end_time,status,is_delete,create_user,create_time,update_user,update_time
+    </sql>
+    <update id="closeCollect">
+        update train_demand_collect set status = 1  where id = #{id}
+    </update>
+    <delete id="deleteByDemandId">
+        update train_demand_collect set is_delete = 1  where id = #{id}
+    </delete>
+    <select id="pageList" resultType="com.dyys.hr.vo.train.TrainDemandCollectVO">
+        select
+            a.id,a.demand_name,a.company_code,a.department_code,a.initiator,
+            a.status,if(a.status=1,'已完成','进行中') as statusName,
+            a.create_time, year(a.feedback_start_time) AS year,
+            b.descr_short as companyName, sd.dept_name_path AS deptPathName
+        from train_demand_collect a
+        left join staff_company b on a.company_code = b.id
+        LEFT JOIN staff_department sd ON a.department_code = sd.id
+        <where>
+            a.is_delete = 0
+            <if test="demandName != null and demandName != ''">
+                and a.demand_name like '%${demandName}%'
+            </if>
+            <if test="year != null and year != ''">
+                and year(a.feedback_start_time) = #{year}
+            </if>
+            <if test="status != null and status != ''">
+                and a.status = #{status}
+            </if>
+            <if test="deptList != null and deptList.size > 0">
+                and a.department_code in
+                <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+    <select id="selectByDemandId" resultType="com.dyys.hr.entity.train.TrainDemandCollect">
+        select
+            <include refid="TrainDemandCollect_Column_sql" />
+        from
+            train_demand_collect
+        where
+            is_delete = 0 and id = #{id}
+    </select>
+    <select id="relateDemandList" resultType="com.dyys.hr.vo.train.TrainRelateDemandCollectVO">
+        select
+            a.id,a.demand_name,a.company_code,a.department_code,initiator,
+            b.descr_short as companyName,
+            c.descr_short as departmentName,
+            d.empl_name as initiatorName
+        from
+            train_demand_collect a
+            left join staff_company b on a.company_code = b.id
+            left join staff_department c on a.department_code = c.id
+            left join staff_job d on a.initiator = d.empl_id
+        <where>
+            a.is_delete = 0 and a.status = 1
+            <if test="demandName != null and demandName != ''">
+                and a.demand_name like '%${demandName}%'
+            </if>
+            <if test="companyCode != null and companyCode != ''">
+                and a.company_code = #{companyCode}
+            </if>
+            <if test="initiator != null and initiator != ''">
+                and a.initiator LIKE concat('%', #{initiator}, '%')
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+</mapper>

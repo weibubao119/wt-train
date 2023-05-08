@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainExaminerMapper">
+    <resultMap type="com.dyys.hr.entity.train.TrainExaminer" id="trainPlanMap">
+        <result property="id" column="id"/>
+        <result property="examId" column="exam_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="status" column="status"/>
+        <result property="highestScore" column="highest_score"/>
+        <result property="examNum" column="exam_num"/>
+        <result property="finalTime" column="final_time"/>
+        <result property="companyCode" column="company_code"/>
+        <result property="departmentCode" column="department_code"/>
+        <result property="jobCode" column="job_code"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainExaminer_Column_sql">
+        id,exam_id,user_id,status,highest_score,exam_num,final_time,company_code,department_code,job_code,create_user,create_time,update_user,update_time
+    </sql>
+    <update id="restExam">
+        update train_examiner set
+            status = 0,highest_score = null,exam_num = 0,final_time = null,update_user = #{update_user},update_time = #{update_time}
+        where id = #{examinerId}
+    </update>
+    <delete id="deleteByParams">
+        delete from train_examiner
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="exam_id != null">
+                and exam_id = #{exam_id}
+            </if>
+        </where>
+    </delete>
+    <select id="getListByQuery" resultType="com.dyys.hr.vo.train.TrainExaminerVO">
+        select
+            DISTINCT
+            a.*,
+            a.id as examinerId,
+            CASE
+            WHEN a.STATUS = 0 THEN "未通过"
+            WHEN a.STATUS = 1 THEN "已通过"
+            ELSE "未答卷"
+            END AS statusName,
+            e.company_descr AS companyName,
+            e.dept_descr AS departmentName,
+            e.post_descr AS jobName,
+            e.empl_name AS userName
+        from
+        train_examiner a
+        LEFT JOIN staff_job e ON e.empl_id = a.user_id
+        <where>
+            <if test="id != null">
+                and a.id = #{id}
+            </if>
+            <if test="exam_id != null">
+                and a.exam_id = #{exam_id}
+            </if>
+        </where>
+    </select>
+
+    <select id="listExamCenter" resultType="com.dyys.hr.vo.exam.ExamCenterVO">
+        SELECT
+        te.id as exam_id,
+        tp.train_name as project,
+        te.title as title,
+        if(te.type=1,'线上考试','线下考试') as typeName,
+        te.duration as duration,
+        te.start_time as start_time,
+        te.end_time as end_time
+        FROM train_examiner trex
+        LEFT JOIN train_exam te ON trex.exam_id = te.id
+        LEFT JOIN train_programs tp ON te.programs_id = tp.id
+        <where>
+            trex.exam_num  &lt; te.exam_count
+            and te.type = 1
+            <if test="userId != null">
+                and trex.user_id = #{userId}
+            </if>
+        </where>
+    </select>
+
+    <select id="listExamCommit" resultType="com.dyys.hr.vo.exam.ExamCenterVO">
+        SELECT
+        te.id as exam_id,
+        ted.id as details_id,
+        tp.train_name as project,
+        te.title as title,
+        if(te.type=1,'线上考试','线下考试') as typeName,
+        te.duration as duration,
+        te.start_time as start_time,
+        te.end_time as end_time,
+        ted.score as score
+        FROM train_examiner_detail ted
+        LEFT JOIN train_examiner trex ON ted.examiner_id = trex.id
+        LEFT JOIN train_exam te ON trex.exam_id = te.id
+        LEFT JOIN train_programs tp ON te.programs_id = tp.id
+        <where>
+            te.type = 1
+            <if test="userId != null">
+                and trex.user_id = #{userId}
+            </if>
+        </where>
+    </select>
+    <select id="allExamUserIds" resultType="java.lang.String">
+        select user_id from train_examiner where exam_id = #{examId}
+    </select>
+
+    <!-- 导入成绩模板-获取某个考试的参考人员 -->
+    <select id="getExaminerListTml" resultType="com.dyys.hr.entity.train.excel.OfflineExamResultsExcel">
+        SELECT a.user_id AS emplId, b.empl_name
+        FROM train_examiner a
+        LEFT JOIN staff_job b ON a.user_id = b.id
+        <where>
+            a.exam_id = #{examId}
+        </where>
+        ORDER BY a.create_time ASC
+    </select>
+
+    <!-- 取员工在某个培训项目某个课程的最后一次考试成绩 -->
+    <select id="getFinalExamResults" resultType="com.dyys.hr.entity.train.TrainExaminer">
+        SELECT a.*
+        FROM train_examiner a
+        LEFT JOIN train_exam b ON a.exam_id = b.id
+        <where>
+            a.user_id = #{userId} AND b.programs_id = #{programsId} AND b.course_id = #{courseId}
+        </where>
+        ORDER BY a.create_time DESC LIMIT 1
+    </select>
+</mapper>

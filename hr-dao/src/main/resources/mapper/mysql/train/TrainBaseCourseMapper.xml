@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainBaseCourseMapper">
+    <resultMap id="trainBaseCourseMap" type="com.dyys.hr.entity.train.TrainBaseCourse">
+    <result column="id" property="id"/>
+    <result column="name" property="name"/>
+    <result column="number" property="number"/>
+    <result column="category" property="category"/>
+    <result column="class_hours" property="classHours"/>
+    <result column="instructions" property="instructions"/>
+    <result column="credit" property="credit"/>
+    <result column="file_list" property="fileList"/>
+    <result column="course_source" property="courseSource"/>
+    <result column="create_user" property="createUser"/>
+    <result column="create_time" property="createTime"/>
+    <result column="update_user" property="updateUser"/>
+    <result column="update_time" property="updateTime"/>
+    <result column="is_delete" property="isDelete"/>
+    <result column="is_import" property="isImport"/>
+</resultMap>
+    <sql id="TrainBaseCourse_Column_sql">id,name,number,category,class_hours,instructions,credit,file_list,course_source,create_user,create_time,update_user,update_time,is_delete,is_import </sql>
+    <select id="pageList" resultType="com.dyys.hr.vo.train.TrainBaseCourseVO">
+        select
+            DISTINCT
+            a.id,a.number,a.name,a.category,a.class_hours,a.instructions,a.course_source,a.status,
+            b.name as categoryName
+        from
+            train_base_course a
+            left join train_constant b ON a.category = b.id
+        <where>
+            a.is_delete = 0
+            <if test="name != null and name != ''">
+                and a.name like '%${name}%'
+            </if>
+            <if test="category != null and category != ''">
+                and a.category = #{category}
+            </if>
+            <if test="courseSource != null and courseSource != ''">
+                and a.course_source = #{courseSource}
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+    <select id="selectByCourseId" resultType="com.dyys.hr.entity.train.TrainBaseCourse">
+        select
+        id,name,number,category,class_hours,credit,instructions,file_list,course_source
+        from
+        train_base_course
+        where is_delete = 0 and id = #{id}
+    </select>
+    <select id="selectList" resultType="java.util.Map">
+        select
+            tbc.id,tbc.name,tbc.number,tbc.category,tc.name as categoryName
+        from
+        train_base_course tbc
+        left join train_constant tc on tbc.category = tc.id
+        <where>
+            tbc.status = 1
+            <if test="name != null and name != ''">
+                and tbc.name like '%${name}%'
+            </if>
+        </where>
+        order by tbc.id asc
+    </select>
+    <select id="allCourseList" resultType="com.dyys.hr.entity.train.TrainBaseCourse">
+        select
+        id,number
+        from
+        train_base_course
+    </select>
+    <!-- 导出课程列表 -->
+    <select id="courseListExport" resultType="com.dyys.hr.entity.train.excel.BaseCourseListExcel">
+        select a.number, a.name, a.class_hours, if(a.course_source=2,'2-自有','1-外部') as course_source_name,
+        CONCAT(a.category, "-", b.name) as categoryName
+        from train_base_course a
+        left join train_constant b ON a.category = b.id
+        <where>
+            a.is_delete = 0
+            <if test="name != null and name != ''">
+                and a.name like '%${name}%'
+            </if>
+            <if test="category != null and category != ''">
+                and a.category = #{category}
+            </if>
+            <if test="courseSource != null and courseSource != ''">
+                and a.course_source = #{courseSource}
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+    <!-- 导出课程可授课讲师 -->
+    <select id="ableTeacherList" resultType="com.dyys.hr.entity.train.excel.AbleTeacherExcel">
+        SELECT a.number AS courseNumber, a.name AS courseName, c.number AS teacherNumber, c.name AS teacherName,
+        CASE
+        WHEN c.type = 1 THEN "1-内部讲师"
+        WHEN c.type = 2 THEN "2-外部讲师"
+        ELSE ""
+        END AS teacherTypeName,
+        c.organization_name
+        FROM train_base_course a
+        LEFT JOIN train_base_course_teacher b ON a.id = b.course_id
+        LEFT JOIN train_base_teacher c ON b.teacher_id = c.id
+        <where>
+            a.is_delete = 0
+            <if test="name != null and name != ''">
+                AND a.name LIKE '%${name}%'
+            </if>
+            <if test="category != null and category != ''">
+                AND a.category = #{category}
+            </if>
+            <if test="courseSource != null and courseSource != ''">
+                AND a.course_source = #{courseSource}
+            </if>
+        </where>
+        ORDER BY a.id DESC
+    </select>
+</mapper>

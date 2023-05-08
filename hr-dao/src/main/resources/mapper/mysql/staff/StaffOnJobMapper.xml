@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.staff.StaffOnJobMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.staff.StaffOnJob">
+        <id column="id" property="id" />
+        <result column="empl_id" property="emplId" />
+        <result column="company" property="company" />
+        <result column="dept_id" property="deptId" />
+        <result column="position" property="position" />
+        <result column="entry_date" property="entryDate" />
+        <result column="job_status" property="jobStatus" />
+        <result column="staff_class" property="staffClass" />
+        <result column="recruit_way" property="recruitWay" />
+        <result column="recruit_chan" property="recruitChan" />
+        <result column="recommend" property="recommend" />
+        <result column="belong_to" property="belongTo" />
+        <result column="location" property="location" />
+        <result column="quit_job_date" property="quitJobDate" />
+        <result column="contract" property="contract" />
+        <result column="contract_begin_date" property="contractBeginDate" />
+        <result column="contract_end_date" property="contractEndDate" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, empl_id, company, dept_id, position, entry_date, job_status, staff_class, recruit_way, recruit_chan, recommend, belong_to, location, quit_job_date, contract, contract_begin_date, contract_end_date, update_time
+    </sql>
+
+</mapper>

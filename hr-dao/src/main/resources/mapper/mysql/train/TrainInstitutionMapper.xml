@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainInstitutionMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.train.TrainInstitution">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="cate_id" property="cateId" />
+        <result column="principal_name" property="principalName" />
+        <result column="principal_phone" property="principalPhone" />
+        <result column="address" property="address" />
+        <result column="rating_year" property="ratingYear" />
+        <result column="grade_id" property="gradeId" />
+        <result column="is_import" property="isImport" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, cate_id, principal_name, principal_phone, address, rating_year, grade_id, is_import, create_user, create_time, update_user, update_time
+    </sql>
+    
+    <!-- 培训机构分页列表 -->
+    <select id="institutionListPage" resultType="com.dyys.hr.vo.train.TrainInstitutionVO">
+        SELECT a.id, a.name, a.cate_id, a.principal_name AS principalName, a.principal_phone AS principalPhone,
+        a.address, a.rating_year AS ratingYear, a.grade_id AS gradeId,
+        b.name AS cateName, c.name AS gradeName
+        FROM train_institution a
+        LEFT JOIN train_constant b ON a.cate_id = b.id
+        LEFT JOIN train_constant c ON a.grade_id = c.id
+        WHERE 1 = 1
+        <if test="name != null and name != ''">
+            AND a.name LIKE concat('%', #{name}, '%')
+        </if>
+        <if test="cateId != null and cateId != ''">
+            AND a.cate_id = #{cateId}
+        </if>
+        <if test="principalName != null and principalName != ''">
+            AND a.principal_name LIKE concat('%', #{principalName}, '%')
+        </if>
+        ORDER BY a.id desc
+    </select>
+    
+    <!-- 培训机构名称存在条数 -->
+    <select id="selectCountByName" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM train_institution
+        WHERE name = #{name}
+        <if test="institutionId != null">
+            AND id != #{institutionId}
+        </if>
+    </select>
+    
+    <!-- 培训机构地址存在条数 -->
+    <select id="selectCountByAddress" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM train_institution
+        WHERE address = #{address}
+        <if test="institutionId != null">
+            AND id != #{institutionId}
+        </if>
+    </select>
+    <select id="selectList" resultType="java.util.Map">
+        select id,name from
+        train_institution
+        <where>
+            <if test="name != null and name != ''">
+                and name like '%${name}%'
+            </if>
+        </where>
+        order by id asc
+    </select>
+
+    <!-- 培训机构详情 -->
+    <select id="getInfoById" resultType="com.dyys.hr.vo.train.TrainInstitutionVO">
+        SELECT a.id, a.name, a.cate_id AS cateId, a.principal_name AS principalName, a.principal_phone AS principalPhone,
+        a.address, a.rating_year AS ratingYear, a.grade_id AS gradeId,
+        b.name AS cateName, c.name AS gradeName
+        FROM train_institution a
+        LEFT JOIN train_constant b ON a.cate_id = b.id
+        LEFT JOIN train_constant c ON a.grade_id = c.id
+        WHERE a.id = #{institutionId}
+    </select>
+
+    <!-- 培训机构导出数据 -->
+    <select id="exportInst" resultType="com.dyys.hr.entity.train.excel.InstitutionExcel">
+        SELECT a.name, CONCAT(a.cate_id, '-', b.name) AS cateIdName, a.principal_name AS principalName,
+        a.principal_phone AS principalPhone, a.address, a.rating_year, CONCAT(a.grade_id, '-', tc.name) AS gradeIdName
+        FROM train_institution a
+        LEFT JOIN train_constant b ON a.cate_id = b.id
+        LEFT JOIN train_constant tc ON a.grade_id = tc.id
+        <where>
+            <if test="name != null and name != ''">
+                AND a.name LIKE concat('%', #{name}, '%')
+            </if>
+            <if test="cateId != null">
+                AND a.cate_id = #{cateId}
+            </if>
+            <if test="principalName != null and principalName != ''">
+                AND a.principal_name LIKE concat('%', #{principalName}, '%')
+            </if>
+        </where>
+    </select>
+</mapper>

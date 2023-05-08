@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainLearnMapCourseMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.train.TrainLearnMapCourse">
+        <id column="id" property="id" />
+        <result column="map_id" property="mapId" />
+        <result column="map_code" property="mapCode" />
+        <result column="posn_grade_code" property="posnGradeCode" />
+        <result column="sbl_id" property="sblId" />
+        <result column="module_name" property="moduleName" />
+        <result column="course_number" property="courseNumber" />
+        <result column="required_flag" property="requiredFlag" />
+        <result column="source_type" property="sourceType" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, map_id, map_code, posn_grade_code, sbl_id, module_name, course_number, required_flag, source_type, create_user, create_time, update_user, update_time
+    </sql>
+
+    <!-- 学习地图详情-职级课程列表 -->
+    <select id="queryList" resultType="com.dyys.hr.vo.train.LearnMapCourseVO">
+        SELECT a.id, a.map_id AS mapId, a.posn_grade_code AS posnGradeCode, a.sbl_id AS sblId, a.module_name AS moduleName,
+        a.course_number AS courseNumber, a.required_flag AS requiredFlag, IF(a.required_flag = 1,'是','否') as requiredName,
+        b.name AS sblName, c.name AS courseName
+        FROM train_learn_map_course a
+        LEFT JOIN train_constant b ON a.sbl_id = b.id
+        LEFT JOIN train_base_course c ON a.course_number = c.number
+        WHERE a.map_id = #{mapId} AND a.posn_grade_code = #{posnGradeCode}
+        ORDER BY a.id ASC
+    </select>
+
+    <!-- 当前地图当前职级当前方向存在此课程的数量 -->
+    <select id="countByCourseNumber" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM train_learn_map_course
+        <where>
+            map_id = #{mapId}
+            AND posn_grade_code = #{posnGradeCode}
+            AND sbl_id = #{sblId}
+            AND course_number = #{courseNumber}
+            <if test="courseId != null">
+                AND id != #{courseId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 学员推荐课程 -->
+    <select id="studentCourseList" resultType="com.dyys.hr.vo.train.LearnMapStuCourseVO">
+        SELECT a.id, a.map_id AS mapId, a.posn_grade_code AS posnGradeCode, a.sbl_id AS sblId, a.module_name AS moduleName,
+        a.course_number AS courseNumber, a.required_flag AS requiredFlag, IF(a.required_flag = 1,'是','否') AS requiredName,
+        b.name AS sblName, c.name AS courseName, c.credit, c.class_hours AS classHours, d.name AS courseCateName
+        FROM train_learn_map_course a
+        LEFT JOIN train_constant b ON a.sbl_id = b.id
+        LEFT JOIN train_base_course c ON a.course_number = c.number
+        LEFT JOIN train_constant d ON c.category = d.id
+        WHERE a.map_id = #{mapId} AND a.posn_grade_code = #{posnGradeCode}
+        AND a.sbl_id IN
+        <foreach item="sblIdList" index="index" collection="sblIdList" open="(" separator="," close=")">
+            #{sblIdList}
+        </foreach>
+        ORDER BY a.id ASC
+    </select>
+
+    <!-- 获取员工推荐课程 -->
+    <select id="recommendCourseList" resultType="com.dyys.hr.vo.train.EmployeeRecommendCourseListVO">
+        SELECT a.course_number AS courseNumber,
+        c.id AS courseId, c.name AS courseName, c.credit, c.class_hours AS classHours,
+        d.name AS cateName
+        FROM train_learn_map_course a
+        LEFT JOIN train_base_course c ON a.course_number = c.number
+        LEFT JOIN train_constant d ON c.category = d.id
+        WHERE a.map_id = #{mapId} AND a.posn_grade_code = #{posnGradeCode}
+        AND a.sbl_id IN
+        <foreach item="sblIdList" index="index" collection="sblIdList" open="(" separator="," close=")">
+            #{sblIdList}
+        </foreach>
+        ORDER BY a.id ASC
+    </select>
+</mapper>

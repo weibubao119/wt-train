@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainDataMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainData" id="trainDataMap">
+        <result property="id" column="id"/>
+        <result property="emplId" column="empl_id"/>
+        <result property="emplName" column="empl_name"/>
+        <result property="trainNumber" column="train_number"/>
+        <result property="trainName" column="train_name"/>
+        <result property="companyCode" column="company_code"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="trainShape" column="train_shape"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="participantsNum" column="participants_num"/>
+        <result property="outlay" column="outlay"/>
+        <result property="avgFee" column="avg_fee"/>
+        <result property="principalId" column="principal_id"/>
+        <result property="principalName" column="principal_name"/>
+        <result property="totalScore" column="total_score"/>
+        <result property="isObtain" column="is_obtain"/>
+        <result property="courseNumber" column="course_number"/>
+        <result property="courseName" column="course_name"/>
+        <result property="courseCategory" column="course_category"/>
+        <result property="courseClassHours" column="course_class_hours"/>
+        <result property="courseInstructions" column="course_instructions"/>
+        <result property="courseCredit" column="course_credit"/>
+        <result property="courseStartTime" column="course_start_time"/>
+        <result property="courseEndTime" column="course_end_time"/>
+        <result property="learningForm" column="learning_form"/>
+        <result property="examineForm" column="examine_form"/>
+        <result property="courseScore" column="course_score"/>
+        <result property="teacherNumber" column="teacher_number"/>
+        <result property="teacherName" column="teacher_name"/>
+        <result property="teacherType" column="teacher_type"/>
+        <result property="teacherSex" column="teacher_sex"/>
+        <result property="teacherContactPhone" column="teacher_contact_phone"/>
+        <result property="teacherEmail" column="teacher_email"/>
+        <result property="teacherOrganizationName" column="teacher_organization_name"/>
+        <result property="finishType" column="finish_type"/>
+        <result property="isPass" column="is_pass"/>
+        <result property="examScore" column="exam_score"/>
+        <result property="credit" column="credit"/>
+        <result property="getCreditTime" column="get_credit_time"/>
+        <result property="type" column="type"/>
+        <result property="status" column="status"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainData_Column_sql">
+        id,empl_id,empl_name,train_number,train_name,company_code,train_shape,start_time,end_time,participants_num,outlay,principal_id,principal_name,total_score,is_obtain,course_number,course_name,course_category,course_class_hours,course_instructions,course_credit,course_start_time,course_end_time,learning_form,examine_form,course_score,teacher_number,teacher_name,teacher_type,teacher_sex,teacher_contact_phone,teacher_email,teacher_organization_name,finish_type,is_pass,exam_score,credit,get_credit_time,type,status,create_user,create_time,update_user,update_time
+    </sql>
+    <select id="eLearningPageList" resultType="com.dyys.hr.vo.train.ELearningPageVO">
+        select
+            td.*,
+            sj.company,sj.company_descr,sj.dept_id,sj.dept_descr,sj.post_code,sj.post_descr,
+            sj.grade_code,sj.grade_descr,sj.sec_code,sj.sec_descr,
+            smp.profession,sp.descr as profession_descr,
+            tc.name as course_category_name
+        from train_data td
+        left join staff_job sj on sj.empl_id = td.empl_id
+        LEFT JOIN staff_position spn ON sj.post_code = spn.id
+        left join staff_main_post smp on spn.std_posn_id = smp.post_code
+        left join staff_profession sp on smp.profession = sp.code
+        left join train_constant tc on td.course_category = tc.id
+        LEFT JOIN staff_department sd ON sj.dept_id = sd.id
+        <where>
+            td.type = 1
+            <if test="emplName != null and emplName != ''">
+                and td.empl_name like '%${emplName}%'
+            </if>
+            <if test="emplId != null and emplId != ''">
+                and td.empl_id like '%${emplId}%'
+            </if>
+            <if test="deptList != null and deptList.size > 0">
+                and sj.dept_id in
+                <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+            <if test="profession != null and profession != ''">
+                and smp.profession = #{profession}
+            </if>
+            <if test="secCode != null and secCode != ''">
+                and sj.sec_code = #{secCode}
+            </if>
+            <if test="gradeCode != null and gradeCode != ''">
+                and sj.grade_code = #{gradeCode}
+            </if>
+            <if test="courseCategory != null and courseCategory != ''">
+                and td.course_category = #{courseCategory}
+            </if>
+            <if test="startTime != null and startTime != ''">
+                and td.get_credit_time >= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and td.get_credit_time &lt;= #{endTime}
+            </if>
+            <if test="isPass != null and isPass != ''">
+                and td.is_pass = #{isPass}
+            </if>
+        </where>
+        order by
+        td.id desc
+    </select>
+    <select id="historyDataPageList" resultType="com.dyys.hr.vo.train.HistoryDataPageVO">
+        select
+            td.*,
+            tc.name as course_category_name
+        from
+            train_data td
+            left join train_constant tc on td.course_category = tc.id
+            left join staff_job sj on sj.empl_id = td.empl_id
+        <where>
+            td.type = 2
+            <if test="emplName != null and emplName != ''">
+                and td.empl_name like '%${emplName}%'
+            </if>
+            <if test="emplId != null and emplId != ''">
+                and td.empl_id like '%${emplId}%'
+            </if>
+            <if test="trainName != null and trainName != ''">
+                and td.train_name like '%${trainName}%'
+            </if>
+            <if test="trainShape != null and trainShape != ''">
+                and td.train_shape = #{trainShape}
+            </if>
+            <if test="courseName != null and courseName != ''">
+                and td.course_name like '%${courseName}%'
+            </if>
+            <if test="courseCategory != null and courseCategory != ''">
+                and td.course_category = #{courseCategory}
+            </if>
+            <if test="isObtain != null and isObtain != ''">
+                and td.is_obtain = #{isObtain}
+            </if>
+            <if test="deptList != null and deptList.size > 0">
+                and sj.dept_id in
+                <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="groupInfoByQuery" resultType="java.lang.String">
+        select ${field} from ${table} group by ${field}
+    </select>
+    <select id="emplELearningList" resultType="com.dyys.hr.vo.train.EmplELearningListVO">
+        select
+            td.id,td.course_number,td.course_name,td.course_class_hours,td.credit,td.course_start_time,td.course_end_time,
+            if(td.is_pass = 1,'是','否') as is_pass,
+            tc.name as courseCategoryName
+        from
+            train_data td
+            left join train_constant tc on td.course_category = tc.id
+        where td.type = 1 and td.empl_id = #{emplId}
+    </select>
+    <select id="getGroupTrainList" resultType="com.dyys.hr.vo.train.EmplTrainListVO">
+        SELECT
+        train_number,
+        train_name,
+        start_time,
+        end_time,
+        total_score
+        FROM
+        train_data
+        WHERE
+        empl_id = #{emplId}
+        GROUP BY
+        train_number,
+        train_name,
+        start_time,
+        end_time,
+        total_score
+    </select>
+    <select id="getTrainCourseList" resultType="com.dyys.hr.vo.train.EmplTrainCourseListVO">
+        SELECT
+        td.course_name,
+        td.train_name,
+        td.course_start_time,
+        td.course_end_time,
+        tc.name as course_category,
+        tcf.name as learning_form,
+        td.course_score
+        FROM
+        train_data td
+        left join train_constant tc on td.course_category = tc.id
+        left join train_constant tcf on td.learning_form = tcf.id
+        WHERE train_number = #{trainNumber} and empl_id = #{emplId}
+    </select>
+
+    <!-- 员工完成地图推荐指定课程或同等课程的数量 -->
+    <select id="countFinishCourse" resultType="java.lang.Integer">
+        SELECT COUNT(id)
+        FROM train_data
+        WHERE empl_id = #{emplId}
+        AND course_number IN
+        <foreach item="courseNums" index="index" collection="courseNums" open="(" separator="," close=")">
+            #{courseNums}
+        </foreach>
+    </select>
+    <select id="getList" resultType="com.dyys.hr.entity.train.TrainData">
+        select * from train_data
+        <where>
+            status = 1
+            <if test="emplId != null and emplId != ''">
+                and empl_id = #{emplId}
+            </if>
+        </where>
+        order by start_time asc
+    </select>
+
+    <!-- 历史数据同步-获取同一培训项目同一课程的最小开始时间 -->
+    <select id="getMinCourseStartTime" resultType="java.util.Date">
+        SELECT MIN(course_start_time) FROM train_data
+        WHERE train_name = #{trainName} AND start_time = #{startTime}
+        AND end_time = #{endTime} AND course_name = #{courseName}
+        AND course_category = #{courseCategory} AND type = #{type}
+    </select>
+
+    <!-- 历史数据同步-获取同一培训项目同一课程的最大结束时间 -->
+    <select id="getMaxCourseEndTime" resultType="java.util.Date">
+        SELECT MAX(course_end_time) FROM train_data
+        WHERE train_name = #{trainName} AND start_time = #{startTime}
+        AND end_time = #{endTime} AND course_name = #{courseName}
+        AND course_category = #{courseCategory} AND type = #{type}
+    </select>
+
+    <!-- 获取培训数据中历史数据同一培训项目的最大培训费用 -->
+    <select id="getMaxOutlay" resultType="java.lang.Float">
+        SELECT MAX(outlay) FROM train_data
+        WHERE train_number = #{trainNumber} AND type = #{type}
+    </select>
+
+    <!-- 获取培训数据中历史数据同一培训项目参与人数 -->
+    <select id="getPartTol" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM train_data
+        WHERE train_number = #{trainNumber} AND type = #{type}
+    </select>
+
+    <!-- 按职级参训人员人次统计 -->
+    <select id="countNumByGradeCode" resultType="com.dyys.hr.vo.statis.PosnGradeCostVO">
+        SELECT COUNT(td.id) AS personTime, IFNULL(SUM(td.avg_fee), 0) AS totalFee
+        FROM train_data td
+        LEFT JOIN staff_job sj ON td.empl_id = sj.empl_id
+        LEFT JOIN train_programs tp ON td.train_number = tp.number
+        LEFT JOIN staff_department sd ON tp.dept_id = sd.id
+        <where>
+            <if test="gradeCode != null and gradeCode != ''">
+                AND sj.level_code = #{gradeCode}
+            </if>
+            <if test="status != null and status != ''">
+                AND tp.status = #{status}
+            </if>
+            <if test="year != null">
+                AND tp.end_time >= #{startTime} and tp.end_time &lt;= #{endTime}
+            </if>
+            <if test="deptId != null and deptId != ''">
+                AND FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+        </where>
+    </select>
+</mapper>

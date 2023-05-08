@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.exam.ExamQuestionMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.exam.ExamQuestion">
+        <id column="id" property="id"/>
+        <result column="qu_type" property="quType"/>
+        <result column="score" property="score"/>
+        <result column="image" property="image"/>
+        <result column="content" property="content"/>
+        <result column="remark" property="remark"/>
+        <result column="right_answer" property="rightAnswer"/>
+        <result column="analysis" property="analysis"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="creator" property="creator"/>
+        <result column="create_date" property="createDate"/>
+    </resultMap>
+
+    <resultMap id="ExamQuDetailsResultMap" type="com.dyys.hr.vo.exam.ExamQuDetialsVO">
+        <id column="id" property="id"/>
+        <result column="qu_type" property="quType"/>
+        <result column="score" property="score"/>
+        <result column="image" property="image"/>
+        <result column="content" property="content"/>
+        <result column="remark" property="remark"/>
+        <result column="right_answer" property="rightAnswer"/>
+        <result column="analysis" property="analysis"/>
+        <collection property="answers" ofType="com.dyys.hr.vo.exam.ExamQuestionAnswerVO"
+                    select="com.dyys.hr.dao.exam.ExamQuestionAnswerMapper.listExamQuestionAnswer" column="{quId=id}"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        eq.id, eq.qu_type, eq.score, eq.image, eq.content, eq.remark, eq.right_answer, eq.analysis, eq.is_deleted, eq.creator, eq.create_date
+    </sql>
+
+    <select id="listExamQuestion" parameterType="map" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM exam_paper_question epq
+        LEFT JOIN exam_question eq ON eq.id=epq.qu_id
+        WHERE eq.is_deleted = 0
+        <if test="paperId != null">
+            AND epq.paper_id=#{paperId}
+        </if>
+        ORDER BY epq.sort
+    </select>
+
+    <select id="getExamQuestion" resultMap="ExamQuDetailsResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM exam_question eq
+        WHERE eq.id = #{id}
+        LIMIT 1
+    </select>
+</mapper>

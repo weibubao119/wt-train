@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainBaseTeacherTaughtMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.train.TrainBaseTeacherTaught">
+        <id column="id" property="id" />
+        <result column="teacher_id" property="teacherId" />
+        <result column="programs_id" property="programsId" />
+        <result column="course_id" property="courseId" />
+        <result column="course_start_time" property="courseStartTime" />
+        <result column="course_end_time" property="courseEndTime" />
+        <result column="learning_form" property="learningForm" />
+        <result column="examine_form" property="examineForm" />
+        <result column="participants_total" property="participantsTotal" />
+        <result column="course_score" property="courseScore" />
+        <result column="teacher_score" property="teacherScore" />
+        <result column="institution_id" property="institutionId" />
+        <result column="train_fee" property="trainFee" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, teacher_id, programs_id, course_id, course_start_time, course_end_time, learning_form, examine_form, participants_total, course_score, teacher_score, institution_id, train_fee, create_user, create_time
+    </sql>
+
+    <!-- 获取某个讲师的已授课程记录 -->
+    <select id="taughtCourseList" resultType="com.dyys.hr.vo.train.TeacherHaveTaughtRecordsVO">
+        SELECT b.programs_id, b.course_id, b.course_start_time AS startTime, b.course_end_time AS endTime,
+        b.participants_total AS studentsNumber, b.teacher_score AS score,
+        tp.train_name, d.name AS courseName, d.number AS courseNumber, d.class_hours AS courseClassHours,
+        CONCAT(e.id, "-", e.name) AS courseCategoryName
+        FROM train_base_teacher a
+        LEFT JOIN train_base_teacher_taught b ON a.id = b.teacher_id
+        LEFT JOIN train_programs tp ON b.programs_id = tp.id
+        LEFT JOIN train_base_course d ON b.course_id = d.id
+        LEFT JOIN train_constant e ON d.category = e.id
+        WHERE a.number = #{teacherNumber}
+    </select>
+</mapper>

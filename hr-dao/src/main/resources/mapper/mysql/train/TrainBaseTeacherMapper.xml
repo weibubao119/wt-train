@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainBaseTeacherMapper">
+    <resultMap type="com.dyys.hr.entity.train.TrainBaseTeacher" id="trainBaseTeacherMap">
+        <result property="id" column="id"/>
+        <result property="number" column="number"/>
+        <result property="name" column="name"/>
+        <result property="type" column="type"/>
+        <result property="sex" column="sex"/>
+        <result property="age" column="age"/>
+        <result property="contactPhone" column="contact_phone"/>
+        <result property="email" column="email"/>
+        <result property="level" column="level"/>
+        <result property="educationLevel" column="education_level"/>
+        <result property="status" column="status"/>
+        <result property="avatar" column="avatar"/>
+        <result property="organizationName" column="organization_name"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="isDelete" column="is_delete"/>
+        <result column="is_import" property="isImport"/>
+    </resultMap>
+
+    <sql id="TrainBaseTeacher_Column_sql">
+        id,number,name,type,sex,age,contact_phone,email,level,education_level,status,avatar,organization_name,create_user,create_time,update_user,update_time,is_delete,is_import
+    </sql>
+    <select id="pageList" resultType="com.dyys.hr.vo.train.TrainBaseTeacherVO">
+        select
+            a.id,a.name,a.number,a.type,if(a.type=1,'内部讲师','外部讲师') as typeName,a.organization_name,a.level,
+            b.name as levelName,a.status,if(a.status=1,'有效','无效') as statusName
+        from
+            train_base_teacher a
+            left join train_constant b on a.level = b.id
+        <where>
+            a.is_delete = 0
+            <if test="name != null and name != ''">
+                and a.name like '%${name}%'
+            </if>
+            <if test="type != null and type != ''">
+                and a.type = #{type}
+            </if>
+            <if test="level != null and level != ''">
+                and a.level = #{level}
+            </if>
+            <if test="organizationName != null and organizationName != ''">
+                and a.organization_name like '%${organizationName}%'
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+    <select id="selectByTeacherId" resultType="com.dyys.hr.vo.train.TrainBaseTeacherDetailVO">
+        select
+            a.*,
+            if(a.type=1,'内部讲师','外部讲师') as typeName,
+            if(a.status=0,'失效','有效') as statusName,
+            if(a.sex="F",'女','男') as sexName,
+            b.name as levelName, c.short_val AS educationLevelName
+        from train_base_teacher a
+            left join train_constant b on a.level = b.id
+            left join staff_dict c on a.education_level = c.type_val and c.type_name = "C_EDCT_BAKG"
+        where
+            a.is_delete = 0 and a.id = #{id}
+    </select>
+    <select id="getAvatarByTeacherId" resultType="string">
+        select avatar from train_base_teacher where is_delete = 0 and id = #{id}
+    </select>
+    <select id="selectList" resultType="java.util.Map">
+        select id,name,number,type, IF(type = 1, "内部讲师", "外部讲师") AS typeName, organization_name
+        from train_base_teacher
+        <where>
+            status = 1
+            <if test="name != null and name != ''">
+                and name like '%${name}%'
+            </if>
+        </where>
+        order by id asc
+    </select>
+    <select id="teacherListExport" resultType="com.dyys.hr.entity.train.excel.BaseTeacherListExcel">
+        select a.id,a.name,a.number,if(a.type=1,'内部讲师','外部讲师') as typeName,a.organization_name,
+        CONCAT(a.level, "-", b.name) as levelName, IF(a.status = 1, "1-有效", "0-无效") AS statusName
+        from train_base_teacher a
+        left join train_constant b on a.level = b.id
+        <where>
+            a.is_delete = 0
+            <if test="name != null and name != ''">
+                and a.name like '%${name}%'
+            </if>
+            <if test="type != null and type != ''">
+                and a.type = #{type}
+            </if>
+            <if test="level != null and level != ''">
+                and a.level = #{level}
+            </if>
+            <if test="organizationName != null and organizationName != ''">
+                and a.organization_name like '%${organizationName}%'
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+
+    <!-- 导出讲师成长历程数据 -->
+    <select id="progressListExport" resultType="com.dyys.hr.entity.train.excel.BaseTeacherProgressExcel">
+        SELECT a.number AS teacherNumber, a.name AS teacherName,
+        CONCAT(b.level, "-", c.name) AS levelName, b.start_time, b.end_time, b.fee, b.instructions
+        FROM train_base_teacher a
+        LEFT JOIN train_base_teacher_progress b ON a.id = b.teacher_id
+        LEFT JOIN train_constant c ON b.level = c.id
+        WHERE a.is_delete = 0
+        <if test="name != null and name != ''">
+            AND a.name LIKE '%${name}%'
+        </if>
+        <if test="type != null and type != ''">
+            AND a.type = #{type}
+        </if>
+        <if test="level != null and level != ''">
+            AND a.level = #{level}
+        </if>
+        <if test="organizationName != null and organizationName != ''">
+            AND a.organization_name LIKE '%${organizationName}%'
+        </if>
+        ORDER BY a.id DESC
+    </select>
+    <!-- 导出讲师可授课程 -->
+    <select id="ableCourseListExport" resultType="com.dyys.hr.entity.train.excel.AbleCourseExcel">
+        SELECT a.number AS teacherNumber, a.name AS teacherName,
+        c.number AS courseNumber, c.name AS courseName, CONCAT(c.category, "-", d.name) AS courseCateName,
+        c.class_hours, c.instructions
+        FROM train_base_teacher a
+        LEFT JOIN train_base_course_teacher b ON a.id = b.teacher_id
+        LEFT JOIN train_base_course c ON b.course_id = c.id
+        LEFT JOIN train_constant d ON c.category = d.id
+        WHERE a.is_delete = 0
+        <if test="name != null and name != ''">
+            AND a.name LIKE '%${name}%'
+        </if>
+        <if test="type != null and type != ''">
+            AND a.type = #{type}
+        </if>
+        <if test="level != null and level != ''">
+            AND a.level = #{level}
+        </if>
+        <if test="organizationName != null and organizationName != ''">
+            AND a.organization_name LIKE '%${organizationName}%'
+        </if>
+        ORDER BY a.id DESC
+    </select>
+    <!-- 导出讲师已授课程 -->
+    <select id="taughtCourseListExport" resultType="com.dyys.hr.entity.train.excel.TaughtCourseExcel">
+        SELECT  a.number AS teacherNumber, a.name AS teacherName,
+        b.course_start_time AS startTime, b.course_end_time AS endTime, b.teacher_score,
+        c.number AS courseNumber, c.name AS courseName, c.class_hours AS classHour,
+        CONCAT(c.category, "-", d.name) AS courseCateName, e.train_name
+        FROM train_base_teacher a
+        LEFT JOIN train_base_teacher_taught b ON a.id = b.teacher_id
+        LEFT JOIN train_base_course c ON b.course_id = c.id
+        LEFT JOIN train_constant d ON c.category = d.id
+        LEFT JOIN train_programs e ON b.programs_id = e.id
+        WHERE a.is_delete = 0
+        <if test="name != null and name != ''">
+            AND a.name LIKE '%${name}%'
+        </if>
+        <if test="type != null and type != ''">
+            AND a.type = #{type}
+        </if>
+        <if test="level != null and level != ''">
+            AND a.level = #{level}
+        </if>
+        <if test="organizationName != null and organizationName != ''">
+            AND a.organization_name LIKE '%${organizationName}%'
+        </if>
+        ORDER BY a.id DESC
+    </select>
+</mapper>

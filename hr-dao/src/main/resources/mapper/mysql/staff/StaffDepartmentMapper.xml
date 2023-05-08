@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.staff.StaffDepartmentMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.staff.StaffDepartment">
+        <id column="id" property="id" />
+        <result column="set_id" property="setId" />
+        <result column="eff_date" property="effDate" />
+        <result column="eff_status" property="effStatus" />
+        <result column="descr" property="descr" />
+        <result column="descr_short" property="descrShort" />
+        <result column="company" property="company" />
+        <result column="business_unit" property="businessUnit" />
+        <result column="location" property="location" />
+        <result column="manager_id" property="managerId" />
+        <result column="manager_name" property="managerName" />
+        <result column="manager_posn" property="managerPosn" />
+        <result column="dept_code" property="deptCode" />
+        <result column="dept_level" property="deptLevel" />
+        <result column="parent_deptid" property="parentDeptid" />
+        <result column="dept_id_path" property="deptIdPath" />
+        <result column="dept_name_path" property="deptNamePath" />
+        <result column="creator" property="creator" />
+        <result column="create_date" property="createDate" />
+        <result column="updater" property="updater" />
+        <result column="update_date" property="updateDate" />
+    </resultMap>
+
+    <!-- 部门组织树 -->
+    <resultMap id="deptTreeMap" type="com.dyys.hr.vo.common.StaffDepartmentVO">
+        <result property="deptId" column="id"/>
+        <result property="deptName" column="descr"/>
+        <result property="deptPathName" column="dept_name_path"/>
+        <result property="deptLevel" column="dept_level"/>
+        <result property="parentDeptid" column="parent_deptid"/>
+        <result property="companyCode" column="company"/>
+        <collection property="children"
+                    ofType="com.dyys.hr.vo.common.StaffDepartmentVO"
+                    select="deptTreeList"
+                    column="id">
+        </collection>
+    </resultMap>
+
+    <!-- 公司级部门组织树 -->
+    <resultMap id="deptCompanyTreeMap" type="com.dyys.hr.vo.common.StaffDepartmentVO">
+        <result property="deptId" column="id"/>
+        <result property="deptName" column="descr"/>
+        <result property="deptPathName" column="dept_name_path"/>
+        <result property="deptLevel" column="dept_level"/>
+        <result property="parentDeptid" column="parent_deptid"/>
+        <result property="companyCode" column="company"/>
+        <collection property="children"
+                    ofType="com.dyys.hr.vo.common.StaffDepartmentVO"
+                    select="deptCompanyTreeList"
+                    column="id">
+        </collection>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, set_id, eff_date, eff_status, descr, descr_short, company, business_unit, location, manager_id, manager_posn, dept_code, dept_level, creator, create_date, updater, update_date
+    </sql>
+
+    <!-- 部门筛选列表 -->
+    <select id="selectList" resultType="com.dyys.hr.vo.common.PsDepartmentVO">
+        select id as departmentCode,descr_short as departmentName from staff_department
+        <where>
+            dept_code != ''
+            <if test="companyCode != null and companyCode != ''">
+                and company = #{companyCode}
+            </if>
+        </where>
+        order by id asc
+    </select>
+
+    <select id="selectById" resultType="com.dyys.hr.vo.common.StaffDepartmentVO">
+        select
+            a.id AS deptId,a.descr AS deptName,a.parent_deptid,a.dept_level, a.dept_name_path AS deptPathName,
+            a.company AS companyCode,b.descr as companyName
+        from staff_department a
+            left join staff_company b on a.company = b.id
+        where a.id = #{deptId}
+    </select>
+    <select id="getDeptChildren" resultType="com.dyys.hr.vo.common.StaffDepartmentVO">
+        select
+            a.id AS deptId,a.descr AS deptName,a.parent_deptid,a.dept_level, a.dept_name_path AS deptPathName,
+            a.company AS companyCode,b.descr as companyName
+        from staff_department a
+            left join staff_company b on a.company = b.id
+        where a.parent_deptid = #{deptId}
+    </select>
+    <select id="queryOrgByParams" resultType="com.dyys.hr.entity.staff.StaffDepartment">
+        select * from staff_department where manager_id = #{ManagerId}
+    </select>
+
+    <!-- 部门组织树 -->
+    <select id="deptTreeList" resultMap="deptTreeMap">
+        SELECT sd.id, sd.descr, sd.company, sd.dept_level, sd.parent_deptid, sd.dept_name_path AS deptPathName,
+        sc.descr_short AS companyName, 0 AS disabled
+        FROM staff_department sd
+        LEFT JOIN staff_company sc ON sd.company = sc.id
+        WHERE sd.parent_deptid = #{deptId} AND sd.eff_status = "A"
+    </select>
+
+    <!-- 公司级部门组织树 -->
+    <select id="deptCompanyTreeList" resultMap="deptCompanyTreeMap">
+        SELECT sd.id, sd.descr, sd.company, sd.dept_level, sd.parent_deptid, sd.dept_name_path AS deptPathName,
+        sc.descr_short AS companyName, 0 AS disabled
+        FROM staff_department sd
+        LEFT JOIN staff_company sc ON sd.company = sc.id
+        WHERE sd.parent_deptid = #{deptId} AND sd.eff_status = "A" AND sd.dept_level = "10"
+    </select>
+
+    <!-- 获取当前部门的下一级部门列表 -->
+    <select id="getChildDeptById" resultType="com.dyys.hr.vo.common.StaffDeptTerseVO">
+        SELECT sd.id AS deptId, sd.descr AS deptName
+        FROM staff_department sd
+        WHERE sd.parent_deptid = #{deptId} AND sd.eff_status = "A"
+    </select>
+
+    <!-- 组织单位列表 -->
+    <select id="getDeptList" resultType="com.dyys.hr.entity.train.excel.DeptTerseExcel">
+        SELECT id AS deptId, descr AS deptName FROM staff_department WHERE eff_status = "A"
+    </select>
+</mapper>

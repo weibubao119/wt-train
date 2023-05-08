@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainLearnMapStaffMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.train.TrainLearnMapStaff">
+        <id column="id" property="id" />
+        <result column="empl_id" property="emplId" />
+        <result column="map_id" property="mapId" />
+        <result column="map_code" property="mapCode" />
+        <result column="posn_sec_code" property="posnSecCode" />
+        <result column="posn_grade_code" property="posnGradeCode" />
+        <result column="source_type" property="sourceType" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, empl_id, map_id, map_code, posn_sec_code, posn_grade_code, source_type, create_user, create_time, update_user, update_time
+    </sql>
+
+    <!-- 学员地图列表 -->
+    <select id="studentMapList" resultType="com.dyys.hr.vo.train.LearnMapStaffVO">
+        SELECT a.empl_id AS emplId, a.empl_name AS emplName, a.company_descr AS companyName, a.dept_descr AS deptName,
+        a.sec_descr AS secName, a.level_descr AS gradeCodeName,
+        c.map_name AS mapName, concat(d.id, "-", d.descr_short) AS mapGradeCodeName
+        FROM staff_job a
+        LEFT JOIN train_learn_map_staff b ON a.empl_id = b.empl_id
+        LEFT JOIN train_learn_map c ON b.map_id = c.id
+        LEFT JOIN staff_posn_grade d ON b.posn_grade_code = d.id
+        LEFT JOIN staff_department sd ON a.dept_id = sd.id
+        WHERE a.hr_status = "A"
+        <if test="null != emplId and emplId != ''">
+            AND a.empl_id LIKE concat('%', #{emplId}, '%')
+        </if>
+        <if test="null != emplName and emplName != ''">
+            AND a.empl_name LIKE concat('%', #{emplName}, '%')
+        </if>
+        <if test="null != companyCode and companyCode != ''">
+            AND a.company = #{companyCode}
+        </if>
+        <if test="null != deptId and deptId != ''">
+            AND FIND_IN_SET(#{deptId}, sd.dept_id_path)
+        </if>
+        <if test="null != secCode and secCode != ''">
+            AND a.sec_code = #{secCode}
+        </if>
+        <if test="null != gradeCode and gradeCode != ''">
+            AND a.level_code = #{gradeCode}
+        </if>
+        <if test="deptList != null and deptList.size > 0">
+            and a.dept_id in
+            <foreach collection="deptList" index="index" item="id" separator="," close=")" open="(">
+                #{id}
+            </foreach>
+        </if>
+        ORDER BY a.empl_id ASC
+    </select>
+
+    <!-- 学员基本信息 -->
+    <select id="queryInfoByEmplId" resultType="com.dyys.hr.vo.train.LearnMapStaffInfoVO">
+        SELECT a.empl_id AS emplId, a.empl_name AS emplName, a.company_descr AS companyName, a.dept_descr AS deptName,
+        a.post_descr AS postName, a.sec_descr AS secName, a.level_descr AS gradeCodeName,
+        c.map_name AS mapName, d.descr AS mapSecName, concat(e.id, "-", e.descr_short) AS mapGradeCodeName
+        FROM staff_job a
+        LEFT JOIN train_learn_map_staff b ON a.empl_id = b.empl_id
+        LEFT JOIN train_learn_map c ON b.map_id = c.id
+        LEFT JOIN staff_posn_sec d ON c.posn_sec_code = d.posn_sec_id
+        LEFT JOIN staff_posn_grade e ON b.posn_grade_code = e.id
+        WHERE a.empl_id = #{emplId}
+    </select>
+</mapper>

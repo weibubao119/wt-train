@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.QuestionnaireScoreSheetsDetailMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.QuestionnaireScoreSheetsDetail" id="questionnaireScoreSheetsValuesMap">
+        <result property="id" column="id"/>
+        <result property="sheetsId" column="sheets_id"/>
+        <result property="tableDataName" column="table_data_name"/>
+        <result property="tableDataKey" column="table_data_key"/>
+        <result property="tableHeaderName" column="table_header_name"/>
+        <result property="tableHeaderKey" column="table_header_key"/>
+        <result property="value" column="value"/>
+        <result property="headerScoreValue" column="header_score_value"/>
+        <result property="descr" column="descr"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="QuestionnaireScoreSheetsValues_Column_sql">
+        id,sheets_id,table_data_name,table_data_key,table_header_name,table_header_key,value,header_score_value,descr,create_user,create_time,update_user,update_time
+    </sql>
+    <select id="getListByQuery" resultType="com.dyys.hr.dto.train.QuestionnaireScoreSheetsDetailDTO">
+        select * from questionnaire_score_sheets_detail
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="sheetsId != null">
+                and sheets_id = #{sheetsId}
+            </if>
+            <if test="tableDataName != null">
+                and table_data_name = #{tableDataName}
+            </if>
+        </where>
+    </select>
+    <select id="getGroupName" resultType="java.lang.String">
+        SELECT
+            ${field}
+        FROM
+            questionnaire_score_sheets_detail
+        WHERE
+            sheets_id = #{sheetsId}
+        GROUP BY
+            ${field}
+        ORDER BY
+            min( id ) ASC
+    </select>
+    <select id="getAvgData" resultType="java.lang.Double">
+        select
+            avg(qssd.value) as avg
+        from
+            questionnaire_score_sheets_detail qssd
+            left join questionnaire_score_sheets qss on qss.id = qssd.sheets_id
+            left join questionnaire_user qu on qu.id = qss.questionnaire_user_id
+        <where>
+            qu.train_appraise_id = #{trainAppraiseId}
+            and qu.status = 1
+            and qu.type = #{type}
+            <if test="tableDataName != null">
+                and qssd.table_data_name = #{tableDataName}
+            </if>
+            <if test="tableHeaderName != null">
+                and qssd.table_header_name = #{tableHeaderName}
+            </if>
+        </where>
+
+    </select>
+    <select id="getGroupTableDataNameData" resultType="java.util.Map">
+        SELECT
+            qssd.table_data_name,
+            qssd.id AS id,
+            count( qssd.id ) AS total
+        FROM
+            questionnaire_score_sheets_detail qssd
+            LEFT JOIN questionnaire_score_sheets qss ON qssd.sheets_id = qss.id
+            LEFT JOIN questionnaire_user qu ON qss.questionnaire_user_id = qu.id
+        WHERE
+            qu.train_appraise_id = #{trainAppraiseId}
+            AND qu.type = #{type}
+            AND qu.STATUS = 1
+        GROUP BY
+            table_data_name
+        ORDER BY
+            id ASC
+    </select>
+    <select id="getGroupTableHeaderNameData" resultType="java.util.Map">
+        SELECT
+            qssd.table_header_name,
+            qssd.id AS id,
+            count( qssd.id ) AS total
+        FROM
+            questionnaire_score_sheets_detail qssd
+            LEFT JOIN questionnaire_score_sheets qss ON qssd.sheets_id = qss.id
+            LEFT JOIN questionnaire_user qu ON qss.questionnaire_user_id = qu.id
+        WHERE
+            qu.train_appraise_id = #{trainAppraiseId}
+            AND qssd.table_data_name = #{tableDataName}
+            AND qu.type = #{type}
+            AND qu.STATUS = 1
+        GROUP BY
+            table_header_name
+        ORDER BY
+            id ASC
+    </select>
+    <select id="getGroupTextTitleData" resultType="java.util.Map">
+        SELECT
+            qt.title,
+            qt.id AS id
+        FROM
+            questionnaire_text qt
+            LEFT JOIN questionnaire_user qu ON qt.questionnaire_user_id = qu.id
+        WHERE
+            qu.train_appraise_id = #{trainAppraiseId}
+            AND qu.type = #{type}
+            AND qu.STATUS = 1
+        GROUP BY
+            title
+        ORDER BY
+            id ASC
+    </select>
+    <select id="getTextTitleValueList" resultType="java.util.Map">
+        SELECT
+            sj.empl_name,
+            qt.value
+        FROM
+            questionnaire_text qt
+            LEFT JOIN questionnaire_user qu ON qt.questionnaire_user_id = qu.id
+            LEFT JOIN staff_job sj ON qu.user_id = sj.empl_id
+        WHERE
+            qu.train_appraise_id = #{trainAppraiseId}
+            AND qu.type = #{type}
+            AND qu.STATUS = 1
+            AND qt.title = #{title}
+        ORDER BY
+            qt.id ASC
+    </select>
+</mapper>

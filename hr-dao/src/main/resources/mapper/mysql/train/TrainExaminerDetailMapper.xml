@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainExaminerDetailMapper">
+    <resultMap type="com.dyys.hr.entity.train.TrainExaminerDetail" id="trainExaminerDetailMap">
+        <result property="id" column="id"/>
+        <result property="examinerId" column="examiner_id"/>
+        <result property="examTime" column="exam_time"/>
+        <result property="useTime" column="use_time"/>
+        <result property="score" column="score"/>
+        <result property="isPass" column="is_pass"/>
+        <result property="status" column="status"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainExaminerDetail_Column_sql">
+        id,examiner_id,exam_time,use_time,score,is_pass,status,create_user,create_time,update_user,update_time
+    </sql>
+    <delete id="deleteByQuery">
+        delete from train_examiner_detail
+        <where>
+            <if test="examiner_id != null">
+                and examiner_id = #{examiner_id}
+            </if>
+        </where>
+    </delete>
+    <select id="getListByQuery" resultType="com.dyys.hr.vo.train.TrainExaminerDetailVO">
+        select
+        *,
+        if(is_pass=1,'已通过','未通过') as isPassName,
+        if(status=1,'已完成','未完成') as statusName
+        from
+        train_examiner_detail
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="examiner_id != null">
+                and examiner_id = #{examiner_id}
+            </if>
+        </where>
+
+    </select>
+
+    <select id="getExamDetails" resultType="com.dyys.hr.vo.exam.ExamResultDetailsVO">
+        SELECT
+        te.paper_id as paper_id,
+        te.title as title,
+        te.total_score as total_score,
+        ted.use_time as use_time,
+        ted.score as score
+        FROM train_examiner_detail ted
+        LEFT JOIN train_examiner ten ON ted.examiner_id = ten.id
+        LEFT JOIN train_exam te ON ten.exam_id = te.id
+        WHERE ted.id = #{detailsId}
+        LIMIT 1
+    </select>
+    <select id="getIdsByQuery" resultType="java.lang.String">
+        select id from
+        train_examiner_detail
+        <where>
+            <if test="examinerId != null">
+                and examiner_id = #{examinerId}
+            </if>
+        </where>
+    </select>
+</mapper>

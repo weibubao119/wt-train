@@ -1,0 +1,209 @@
+#测试环境
+#logback日志等级
+logging:
+  path: logs/
+  level:
+    com:
+      dyys:
+        hr:
+          dao: debug
+
+spring:
+  datasource:
+    #数据库连接池druid配置
+    druid:
+      driver-class-name: com.mysql.jdbc.Driver
+      url: jdbc:mysql://158.58.50.79:3306/kn-hr?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&serverTimezone=Asia/Shanghai&useSSL=false
+      username: root
+      password: kn123@qwe
+      #连接池配置
+      #初始化大小、最小、最大
+      initial-size: 25
+      min-idle: 25
+      max-active: 100
+      #配置获取连接等待超时的时间
+      max-wait: 60000
+      #配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      time-between-eviction-runs-millis: 60000
+      # 配置一个连接在池中最小生存的时间，单位是毫秒
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1 FROM DUAL
+      validation-query-timeout: 10000
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      # 打开PSCache，并且指定每个连接上PSCache的大小
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      filters: stat,wall
+      # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+      stat-view-servlet:
+        login-username: druid
+        login-password: druid
+      aop-patterns: com.dyys.hr.*
+      keep-alive: true
+  # redis配置信息
+  redis:
+    # Redis服务器地址
+    host: 158.58.50.78
+    # Redis服务器连接端口
+    port: 6379
+    # Redis服务器连接密码（默认为空）
+    password: kn123@qwe
+    # 连接超时时间（毫秒）
+    timeout: 60000
+    # Redis数据库索引（默认为0）
+    database: 0
+    lettuce:
+      pool:
+        # 连接池最大连接数（使用负值表示没有限制）
+        max-active: 8
+        # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-wait: -1
+        # 连接池中的最大空闲连接
+        max-idle: 8
+        # 连接池中的最小空闲连接
+        min-idle: 0
+      shutdown-timeout: 0
+
+# 项目相关配置
+dyys-hr:
+  organization-root-id: 147052
+  nginx-web-url: http://10.60.251.222/#/
+  network-url: http://10.60.251.222/network/#/
+  position-page: position?id=%d
+  update-resume-page: updateResume?resumeId=%d&positionId=%d
+  file-path: /file
+  nginx-file-url: http://10.60.251.222:8020
+  questionnaire-url: train/bus/signIn2?trainClassId=%d&trainClassName=%s
+  signup-url: train/bus/signIn?trainClassId=%d&signCodeId=%d&trainClassName=%s
+  picture_url: http://10.60.251.223
+  menu:
+    username-token: C0C23220417CFBB2B415668368916951
+    username: asadmin
+    password: welcome
+    client-code: WEB
+  role:
+    train-super-admin: CNMC_TS_ADMIN_133
+    trainer: CNMC_TS_USER_133
+    recruit-super-admin: CNMC_RS_ADMIN_133
+    recruiter: CNMC_RS_USER_133
+# ebs相关配置
+ebs:
+  post-url: http://trnerp.cnmc.com.cn:8050/webservices/SOAProvider/plsql/cux_pub_xml_soap_pub_hr/?wsdl
+  soap-action: http://trnerp.cnmc.com.cn:8050/webservices/SOAProvider/plsql/cux_pub_xml_soap_pub_hr/
+  user-name: asadmin
+  password: welcome
+# BPM相关配置
+bpm:
+  sys-id: hrzp
+  sys-pw: zp@123dyys
+  # BPM接口地址
+  wsdl-host: http://10.60.251.101:80
+  web-url: http://10.60.251.222/#/
+  method:
+    # 运行流程
+    run-process: /WF_RunProcessPort
+    # 打开流程
+    open-process: /WF_OpenProcessPort
+    # 流程规则
+    run-rule: /WF_RunRulePort
+  process:
+    # 招聘-需求申请（总部）
+    recruit_demand:
+      # 流程ID
+      process-id: bf64d85e06f2f04aaa08164043e3ead89620
+      # 默认下一节点ID
+      default-node-id: T10002
+      # 流程嵌套表单URL（本系统免登陆页面）
+      form-url: feedbackfill
+      # 嵌套页面宽度 %
+      form-width: 85
+      # 嵌套页面高度 %
+      form-height: 100
+      # 审批完成是否更新业务信息
+      is_update_status: true
+    # 招聘-临时需求申请
+    recruit_demand_temp:
+      process-id: 81d55bc506d81041bd0912b0df22f87ffc85
+      default-node-id: T10002
+      form-url: tempdemand
+      form-width: 85
+      form-height: 100
+      is_update_status: true
+    # 招聘-计划申请
+    recruit_plan:
+      process-id: b020cb1b0b75c0423508526061056d95a51e
+      default-node-id: T10002
+      form-url: recruitplan
+      form-width: 85
+      form-height: 100
+      is_update_status: true
+    # 招聘-内部招聘申请
+    recruit_inside:
+      process-id: 188e3b150d6f30463d0a0e60d0df50ed072e
+      default-node-id: T10002
+      form-url: innerapplyinfo
+      form-width: 85
+      form-height: 100
+      is_update_status: true
+    # 招聘-录用人员审批
+    recruit_entry:
+      process-id: 916bfbf807c6904c5908bbb0273a6d20d333
+      default-node-id: T10002
+      form-url: employsubmit
+      form-width: 85
+      form-height: 100
+      is_update_status: true
+    # 培训-需求申请
+    train_demand:
+      process-id: 4e3620390ccf0046df088b60d5d39155d68f
+      default-node-id: T10002
+      form-url: train/requirementManagement/feedbackInput_bpm
+      form-width: 85
+      form-height: 100
+      is_update_status: true
+    # 培训-内部培训报名
+    train_inside:
+      process-id: b83f0e610011904c140b0cd03c7726a12d6c
+      default-node-id: T10002
+      form-url: train/workbench/internalRegistration_bpm
+      form-width: 85
+      form-height: 100
+      is_update_status: true
+    # 培训-外部培训报名
+    train_outside:
+      process-id: 102adb9e04d6b040790b5020be0e96f0830b
+      default-node-id: T10002
+      form-url: train/workbench/externalRegistration_bpm
+      form-width: 85
+      form-height: 100
+      is_update_status: true
+    # 培训-开班申请
+    train_class:
+      process-id: f48d3aed02ecf04baf0b4f5042d2213382a1
+      default-node-id: T10002
+      form-url: train/TrainingImplementation/inTrainPage_bpm
+      form-width: 85
+      form-height: 100
+      is_update_status: true
+
+# 开启actuator所有监控端点，2.0后默认值开启info和health
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: '*'
+#  server:
+#    port: 9203
+
+knps:
+  auth:
+    driver: com.mysql.jdbc.Driver
+    url: jdbc:mysql://158.58.50.79:3306/kn-auth-prod?characterEncoding=utf-8&useSSL=false&serverTimezone=GMT%2B8
+    user: root
+    password: kn123@qwe
+aes:
+  security: 9K6Pu0gDlGS3eUPp6xNRoBznAc9duLV4
+  iv: dpg#pV6pGhb.Yo3$

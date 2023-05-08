@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.sys.SysFileMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.sys.SysFile">
+        <id column="id" property="id" />
+        <result column="file_name" property="fileName" />
+        <result column="file_name_encode" property="fileNameEncode" />
+        <result column="file_size" property="fileSize" />
+        <result column="file_suffix" property="fileSuffix" />
+        <result column="server_path" property="serverPath" />
+        <result column="web_path" property="webPath" />
+        <result column="status" property="status" />
+        <result column="creator" property="creator" />
+        <result column="create_date" property="createDate" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, file_name, file_name_encode, file_size, file_suffix, server_path, web_path, status, creator, create_date
+    </sql>
+
+</mapper>

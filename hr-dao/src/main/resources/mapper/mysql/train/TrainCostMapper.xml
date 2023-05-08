@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainCostMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainCost" id="trainCostMap">
+        <result property="id" column="id"/>
+        <result property="programsId" column="programs_id"/>
+        <result property="subjectsId" column="subjects_id"/>
+        <result property="amount" column="amount"/>
+        <result property="fileList" column="file_list"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainCost_Column_sql">
+        id,programs_id,subjects_id,amount,file_list,create_user,create_time,update_user,update_time
+    </sql>
+    <select id="pageList" resultType="com.dyys.hr.vo.train.TrainCostVO">
+        select
+            a.*,a.file_list as fileListString,
+            b.name as subjectsName
+        from
+            train_cost a
+            left join train_constant b on a.subjects_id = b.id
+        <where>
+            <if test="programsId != null">
+                and a.programs_id = #{programsId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 已完成培训费用统计(包括按组织、按年份、按培训形式) -->
+    <select id="getSumCostByQuery" resultType="java.lang.Float">
+        select IFNULL(SUM(a.amount), 0)
+        from train_cost a
+        left join train_programs b on a.programs_id = b.id
+        LEFT JOIN staff_department sd ON b.dept_id = sd.id
+        <where>
+            <if test="trainShape != null and trainShape != ''">
+                and b.train_shape = #{trainShape}
+            </if>
+            <if test="status != null and status != ''">
+                and b.status = #{status}
+            </if>
+            <if test="year != null">
+                and b.start_time >= #{startTime} and b.end_time &lt;= #{endTime}
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+        </where>
+    </select>
+    <select id="getParticipantsLevelGroupList" resultType="java.util.Map">
+        SELECT
+            c.level_code,c.level_descr,a.programs_id,a.amount,
+            (select count(id) from train_programs_participants where programs_id = a.programs_id and status = 1) as total_participants_num,
+            (select count(tpp.id) from train_programs_participants tpp left join staff_job sj on tpp.user_id = sj.empl_id where tpp.programs_id = a.programs_id and tpp.status = 1 and sj.level_code = c.level_code) as level_participants_num
+        FROM train_cost a
+        LEFT JOIN train_programs_participants b ON a.programs_id = b.programs_id
+        LEFT JOIN staff_job c ON b.user_id = c.empl_id
+        LEFT JOIN train_programs d on a.programs_id = d.id
+        LEFT JOIN staff_department sd ON d.dept_id = sd.id
+        <where>
+            b.`status` = 1
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+            <if test="year != null">
+                and d.end_time >= #{startTime} and d.end_time &lt;= #{endTime}
+            </if>
+        </where>
+        GROUP BY
+            c.level_code,a.programs_id
+    </select>
+    <select id="getParticipantsGradeGroupList" resultType="java.util.Map">
+        SELECT
+        c.grade_code,c.grade_descr,a.programs_id,a.amount,
+        (select count(id) from train_programs_participants where programs_id = a.programs_id and status = 1) as total_participants_num,
+        (select count(tpp.id) from train_programs_participants tpp left join staff_job sj on tpp.user_id = sj.empl_id where tpp.programs_id = a.programs_id and tpp.status = 1 and sj.grade_code = c.grade_code) as grade_participants_num
+        FROM
+        train_cost a
+        LEFT JOIN train_programs_participants b ON a.programs_id = b.programs_id
+        LEFT JOIN staff_job c ON b.user_id = c.empl_id
+        LEFT JOIN train_programs d on a.programs_id = d.id
+        LEFT JOIN staff_department sd ON d.dept_id = sd.id
+        <where>
+            b.`status` = 1
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+            <if test="year != null">
+                and d.end_time >= #{startTime} and d.end_time &lt;= #{endTime}
+            </if>
+        </where>
+        GROUP BY
+        c.grade_code,a.programs_id
+    </select>
+
+    <!-- 获取项目培训总费用 -->
+    <select id="getTotalFeeByProgramsId" resultType="java.lang.Float">
+        SELECT SUM(amount) FROM train_cost WHERE programs_id = #{programsId}
+    </select>
+    <select id="subjectAmountList" resultType="java.util.Map">
+        SELECT
+            b.NAME,
+            a.amount
+        FROM
+            train_cost a LEFT join train_constant b ON a.subjects_id = b.id AND b.type = 8
+        WHERE
+            a.programs_id = #{programsId}
+        ORDER BY
+            a.id DESC
+    </select>
+    <select id="getSubjectAmount" resultType="java.lang.Float">
+        select amount from train_cost where programs_id = #{programsId} and subjects_id = #{subjectsId}
+    </select>
+</mapper>

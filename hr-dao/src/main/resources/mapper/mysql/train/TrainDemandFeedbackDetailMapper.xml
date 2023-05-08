@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainDemandFeedbackDetailMapper">
+    <resultMap type="com.dyys.hr.entity.train.TrainDemandFeedbackDetail" id="trainDemandFeedbackDetailMap">
+        <result property="id" column="id"/>
+        <result property="demandId" column="demand_id"/>
+        <result property="feedbackUserId" column="feedback_user_id"/>
+        <result property="trainName" column="train_name"/>
+        <result property="courseType" column="course_type"/>
+        <result property="trainShape" column="train_shape"/>
+        <result property="trainSubject" column="train_subject"/>
+        <result property="trainCompleteTime" column="train_complete_time"/>
+        <result property="trainRequirements" column="train_requirements"/>
+        <result property="participantsNum" column="participants_num"/>
+        <result property="assessmentMethod" column="assessment_method"/>
+        <result property="outlay" column="outlay"/>
+        <result property="remark" column="remark"/>
+        <result property="teacherId" column="teacher_id"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainDemandFeedbackDetail_Column_sql">
+        id,demand_id,feedback_user_id,train_name,course_type,train_shape,train_subject,train_complete_time,train_requirements,participants_num,assessment_method,outlay,remark,teacher_id,is_delete,create_user,create_time,update_user,update_time
+    </sql>
+    <delete id="deleteByDetailId">
+        delete from train_demand_feedback_detail where id = #{id}
+    </delete>
+    <delete id="deleteByQuery">
+        delete from train_demand_feedback_detail
+        <where>
+            <if test="demand_id != null" >
+                and demand_id = #{demand_id}
+            </if>
+            <if test="feedback_user_id != null and feedback_user_id != ''">
+                and feedback_user_id = #{feedback_user_id}
+            </if>
+        </where>
+    </delete>
+    <select id="pageList" resultType="com.dyys.hr.vo.train.TrainDemandFeedbackDetailVO">
+        SELECT
+            a.*,
+            if(a.train_shape=1,'内部培训','外部培训') as trainShapeName,
+            b.company_code as companyCode,b.department_code as departmentCode,
+            d.descr_short AS companyName,
+            e.descr_short AS departmentName,
+            f.empl_name AS feedbackUserName,
+            g.NAME AS teacherName,
+            h.NAME AS courseTypeName,
+            i.NAME AS trainRequirementsName,
+            j.NAME AS assessmentMethodName
+        FROM
+            train_demand_feedback_detail a
+            LEFT JOIN train_demand_feedback b ON a.feedback_user_id = b.feedback_user_id AND a.demand_id = b.demand_id
+            LEFT JOIN staff_company d ON b.company_code = d.id
+            LEFT JOIN staff_department e ON b.department_code = e.id
+            LEFT JOIN staff_job f ON a.feedback_user_id = f.id
+            LEFT JOIN train_base_teacher g ON a.teacher_id = g.id
+            LEFT JOIN train_constant h ON a.course_type = h.id
+            LEFT JOIN train_constant i ON a.train_requirements = i.id
+            LEFT JOIN train_constant j ON a.assessment_method = j.id
+
+        <where>
+            <if test="demandId != null">
+                and a.demand_id in (${demandId})
+            </if>
+            <if test="feedbackUserId != null and feedbackUserId != ''">
+                and a.feedback_user_id = #{feedbackUserId}
+            </if>
+            <if test="trainName != null and trainName != ''">
+                and a.train_name like  '%${trainName}%'
+            </if>
+            <if test="trainShape != null and trainShape != ''">
+                and a.train_shape = #{trainShape}
+            </if>
+            <if test="courseType != null and courseType != ''">
+                and a.course_type = #{courseType}
+            </if>
+            <if test="demandIds != null">
+                and a.demand_id in
+                <foreach item="demandIds" index="index" collection="demandIds" open="(" separator="," close=")">
+                    #{demandIds}
+                </foreach>
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, e.dept_id_path)
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+    <select id="selectByDetailId" resultType="com.dyys.hr.vo.train.TrainDemandFeedbackDetailVO">
+        SELECT
+            a.*,
+            if(a.train_shape=1,'内部','外部') as trainShapeName,
+            b.company_code as companyCode,b.department_code as departmentCode,
+            d.descr_short AS companyName,
+            e.descr_short AS departmentName,
+            f.empl_name AS feedbackUserName,
+            g.NAME AS teacherName,
+            h.NAME AS courseTypeName,
+            i.NAME AS trainRequirementsName,
+            j.NAME AS assessmentMethodName
+        FROM
+            train_demand_feedback_detail a
+            LEFT JOIN train_demand_feedback b ON a.feedback_user_id = b.feedback_user_id AND a.demand_id = b.demand_id
+            LEFT JOIN staff_company d ON b.company_code = d.id
+            LEFT JOIN staff_department e ON b.department_code = e.id
+            LEFT JOIN staff_job f ON a.feedback_user_id = f.id
+            LEFT JOIN train_base_teacher g ON a.teacher_id = g.id
+            LEFT JOIN train_constant h ON a.course_type = h.id
+            LEFT JOIN train_constant i ON a.train_requirements = i.id
+            LEFT JOIN train_constant j ON a.assessment_method = j.id
+        where a.id = #{id}
+    </select>
+    <select id="selectByQuery" resultType="com.dyys.hr.entity.train.TrainDemandFeedbackDetail">
+        select * from train_demand_feedback_detail
+        <where>
+            <if test="demand_id != null" >
+                and demand_id = #{demand_id}
+            </if>
+            <if test="feedback_user_id != null and feedback_user_id != ''">
+                and feedback_user_id = #{feedback_user_id}
+            </if>
+        </where>
+    </select>
+
+    <!-- 需求汇总-反馈列表导出 -->
+    <select id="exportList" resultType="com.dyys.hr.entity.train.excel.DemandFeedbackExcel">
+        SELECT
+            a.*,
+            if(a.train_shape=1,'内部','外部') as trainShapeName,
+            f.company_descr,f.dept_descr,f.empl_name as feedback_user_name,
+            g.NAME AS teacherName,
+            h.NAME AS courseTypeName,
+            i.NAME AS trainRequirementsName,
+            j.NAME AS assessmentMethodName
+        FROM
+            train_demand_feedback_detail a
+            LEFT JOIN train_demand_feedback b ON a.feedback_user_id = b.feedback_user_id AND a.demand_id = b.demand_id
+            LEFT JOIN staff_company d ON b.company_code = d.id
+            LEFT JOIN staff_department e ON b.department_code = e.id
+            LEFT JOIN staff_job f ON a.feedback_user_id = f.id
+            LEFT JOIN train_base_teacher g ON a.teacher_id = g.id
+            LEFT JOIN train_constant h ON a.course_type = h.id
+            LEFT JOIN train_constant i ON a.train_requirements = i.id
+            LEFT JOIN train_constant j ON a.assessment_method = j.id
+        where a.demand_id = #{demandId}
+        order by a.id desc
+    </select>
+</mapper>

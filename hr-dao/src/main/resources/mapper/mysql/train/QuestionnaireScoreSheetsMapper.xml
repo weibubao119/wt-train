@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.QuestionnaireScoreSheetsMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.QuestionnaireScoreSheets" id="questionnaireScoreSheetsMap">
+        <result property="id" column="id"/>
+        <result property="questionnaireUserId" column="questionnaire_user_id"/>
+        <result property="title" column="title"/>
+        <result property="titleShown" column="title_shown"/>
+        <result property="scoreObject" column="score_object"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="QuestionnaireScoreSheets_Column_sql">
+        id,questionnaire_user_id,title,title_shown,score_object,create_user,create_time,update_user,update_time
+    </sql>
+    <select id="getListByQuery" resultType="com.dyys.hr.dto.train.QuestionnaireScoreSheetsDTO">
+        select * from questionnaire_score_sheets
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="questionnaireUserId != null">
+                and questionnaire_user_id = #{questionnaireUserId}
+            </if>
+        </where>
+    </select>
+</mapper>

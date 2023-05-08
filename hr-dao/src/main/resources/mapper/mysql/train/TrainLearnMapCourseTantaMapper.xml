@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainLearnMapCourseTantaMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.dyys.hr.entity.train.TrainLearnMapCourseTanta">
+        <id column="id" property="id" />
+        <result column="map_course_id" property="mapCourseId" />
+        <result column="map_course_number" property="mapCourseNumber" />
+        <result column="tanta_course_number" property="tantaCourseNumber" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, map_course_id, map_course_number, tanta_course_number, create_user, create_time
+    </sql>
+
+    <!-- 同等课程列表 -->
+    <select id="queryListByMapCourseId" resultType="com.dyys.hr.vo.train.LearnMapCourseTantaVO">
+        SELECT a.map_course_id AS mapCourseId, a.tanta_course_number AS tantaCourseNumber,
+        b.name AS tantaCourseName, b.category AS tantaCourseCate, c.name AS tantaCourseCateName
+        FROM train_learn_map_course_tanta a
+        LEFT JOIN train_base_course b ON a.tanta_course_number = b.number
+        LEFT JOIN train_constant c ON b.category = c.id
+        WHERE a.map_course_id = #{map_course_id}
+    </select>
+
+    <!-- 查询课程的同等课程数量 -->
+    <select id="queryTotalByCourseId" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM train_learn_map_course_tanta WHERE map_course_id = #{courseId}
+    </select>
+</mapper>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainProgramsCourseMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainProgramsCourse" id="trainProgramsCourseMap">
+        <result property="id" column="id"/>
+        <result property="programsId" column="programs_id"/>
+        <result property="courseId" column="course_id"/>
+        <result property="courseName" column="course_name"/>
+        <result property="schooltime" column="schooltime"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="siteId" column="site_id"/>
+        <result property="content" column="content"/>
+        <result property="teacherId" column="teacher_id"/>
+        <result property="classHour" column="class_hour"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainProgramsCourse_Column_sql">
+        id,programs_id,course_id,course_name,schooltime,start_time,end_time,site_id,content,teacher_id,class_hour,create_user,create_time,update_user,update_time
+    </sql>
+    <delete id="deleteByParams">
+        delete from train_programs_course
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="programs_id != null">
+                and programs_id = #{programs_id}
+            </if>
+        </where>
+    </delete>
+    <select id="getDetailList" resultType="com.dyys.hr.vo.train.TrainProgramsCourseDetailVO">
+        SELECT
+            tpc.*,
+            tbs.site_name,
+            tbt.name AS teacher_name
+        FROM
+            train_programs_course tpc
+            LEFT JOIN train_base_site tbs ON tpc.site_id = tbs.id
+            LEFT JOIN train_base_teacher tbt ON tpc.teacher_id = tbt.id
+        <where>
+            <if test="id != null">
+                and tpc.id = #{id}
+            </if>
+            <if test="programs_id != null">
+                and tpc.programs_id = #{programs_id}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据项目ID和课程ID获取授课讲师姓名 -->
+    <select id="getTeacherNameList" resultType="java.lang.String">
+        SELECT b.name
+        FROM train_programs_course a
+        LEFT JOIN train_base_teacher b ON a.teacher_id = b.id
+        WHERE a.programs_id = #{programsId} AND a.course_id = #{courseId}
+    </select>
+
+    <!-- 场地详情-场地使用情况 -->
+    <select id="usagePageList" resultType="com.dyys.hr.vo.train.TrainBaseSiteUsageVO">
+        SELECT a.schooltime, a.start_time AS startTime, a.end_time AS endTime,
+        b.train_name AS trainName, c.name AS courseName
+        FROM train_programs_course a
+        LEFT JOIN train_programs b ON a.programs_id = b.id
+        LEFT JOIN train_base_course c ON a.course_id = c.id
+        WHERE a.site_id = #{id}
+    </select>
+
+    <!-- 获取某个培训项目的讲师已授课程 -->
+    <select id="teacherCourseList" resultType="com.dyys.hr.entity.train.TrainProgramsCourse">
+        SELECT * FROM train_programs_course WHERE programs_id = #{programsId} GROUP BY course_id, teacher_id
+    </select>
+</mapper>

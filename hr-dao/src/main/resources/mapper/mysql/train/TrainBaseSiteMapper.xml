@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainBaseSiteMapper">
+    <resultMap id="trainBaseSiteMap" type="com.dyys.hr.entity.train.TrainBaseSite">
+        <result column="id" property="id"/>
+        <result column="site_name" property="siteName"/>
+        <result column="company_code" property="companyCode"/>
+        <result column="dept_id" property="deptId"/>
+        <result column="principal" property="principal"/>
+        <result column="contact_phone" property="contactPhone"/>
+        <result column="max_capacity" property="maxCapacity"/>
+        <result column="address" property="address"/>
+        <result column="is_import" property="isImport"/>
+        <result column="is_delete" property="isDelete"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <sql id="TrainBaseSite_Column_sql">id,site_name,company_code,principal,contact_phone,max_capacity,address,is_import,is_delete,create_user,create_time,update_user,update_time </sql>
+    <select id="getTrainSiteLeaseInfo" resultType="com.dyys.hr.vo.train.TrainSiteLeaseInfoVO">
+  SELECT
+        from_unixtime(tbp.train_date, '%Y-%m-%d') trainDate,
+        tbp.train_time trainTime,
+        tbc.course_name courseName,
+        tbca.organisers organisers,
+        tbca.leading_ids leadingIds
+    FROM
+        train_bus_plan tbp,
+        train_bus_class_application tbca,
+        train_base_course tbc
+    WHERE
+        tbp.train_class_id = tbca.id
+    AND tbca.audit_status = 3
+    AND tbp.course_id = tbc.id
+    AND tbp.site_id = #{siteId}
+    <if test="trainDate != null and trainDate.trim() != ''">
+      AND from_unixtime(tbp.train_date, '%Y-%m-%d') = #{trainDate}
+    </if>
+  </select>
+    <select id="selectBySiteId" resultType="com.dyys.hr.dto.train.TrainBaseSiteDTO">
+        select * from train_base_site where id = #{id}
+    </select>
+    <select id="pageList" resultType="com.dyys.hr.vo.train.TrainBaseSiteVO">
+        select
+            a.*,
+            sd.dept_name_path as deptPathName
+        from train_base_site a
+        left join staff_department sd ON a.dept_id = sd.id
+        <where>
+            a.is_delete = 0
+            <if test="siteName != null and siteName != ''">
+                and a.site_name like '%${siteName}%'
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and FIND_IN_SET(#{deptId}, sd.dept_id_path)
+            </if>
+            <if test="principal != null and principal != ''">
+                and a.principal like '%${principal}%'
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+    <select id="selectList" resultType="java.util.Map">
+        select id,site_name as name from
+        train_base_site
+        <where>
+            is_delete = 0
+            <if test="name != null and name != ''">
+                and site_name like '%${name}%'
+            </if>
+        </where>
+        order by id asc
+    </select>
+
+    <!-- 同一场地名称的总量 -->
+    <select id="selectCountByName" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM train_base_site
+        WHERE is_delete = 0
+        <if test="siteId != null">
+            AND id != #{siteId}
+        </if>
+        <if test="siteName != null and siteName != ''">
+            AND site_name = #{siteName}
+        </if>
+    </select>
+
+    <!-- 导出培训场地 -->
+    <select id="exportSiteList" resultType="com.dyys.hr.entity.train.excel.TrainSiteExcel">
+        SELECT a.site_name AS siteName, a.dept_id AS deptId, a.principal, a.contact_phone AS contactPhone,
+        a.max_capacity AS maxCapacity, a.address, sd.descr AS deptName
+        FROM train_base_site a
+        LEFT JOIN staff_department sd ON a.dept_id = sd.id
+        <where>
+            a.is_delete = 0
+            <if test="siteName != null and siteName != ''">
+                and a.site_name like '%${siteName}%'
+            </if>
+            <if test="deptId != null and deptId != ''">
+                and a.dept_id = #{deptId}
+            </if>
+            <if test="principal != null and principal != ''">
+                and a.principal like '%${principal}%'
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+</mapper>

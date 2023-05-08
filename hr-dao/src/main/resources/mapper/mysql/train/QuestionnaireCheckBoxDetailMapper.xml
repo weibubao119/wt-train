@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.QuestionnaireCheckBoxDetailMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.QuestionnaireCheckBoxDetail" id="questionnaireCheckBoxDetailMap">
+        <result property="id" column="id"/>
+        <result property="checkBoxId" column="check_box_id"/>
+        <result property="label" column="label"/>
+        <result property="value" column="value"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="QuestionnaireCheckBox_Column_sql">
+        id,check_box_id,label,value,create_user,create_time,update_user,update_time
+    </sql>
+    <select id="getListByQuery" resultType="com.dyys.hr.dto.train.QuestionnaireCheckBoxDetailDTO">
+        select * from questionnaire_check_box_detail
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="checkBoxId != null">
+                and check_box_id = #{checkBoxId}
+            </if>
+        </where>
+    </select>
+</mapper>

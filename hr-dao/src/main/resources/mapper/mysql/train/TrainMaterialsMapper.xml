@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dyys.hr.dao.train.TrainMaterialsMapper">
+
+    <resultMap type="com.dyys.hr.entity.train.TrainMaterials" id="trainMaterialsMap">
+        <result property="id" column="id"/>
+        <result property="programsId" column="programs_id"/>
+        <result property="content" column="content"/>
+        <result property="file" column="file"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="TrainMaterials_Column_sql">
+        id,programs_id,content,file,create_user,create_time,update_user,update_time
+    </sql>
+    <select id="pageList" resultType="com.dyys.hr.vo.train.TrainMaterialsVO">
+        select *,file as fileString from train_materials
+        <where>
+            <if test="programsId != null">
+                and programs_id = #{programsId}
+            </if>
+        </where>
+    </select>
+</mapper>
