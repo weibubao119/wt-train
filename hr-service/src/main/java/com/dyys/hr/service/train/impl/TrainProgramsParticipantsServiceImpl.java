@@ -2,6 +2,7 @@ package com.dyys.hr.service.train.impl;
 
 import cn.hutool.core.convert.Convert;
 import com.dagongma.mybatis.core.service.impl.AbstractCrudService;
+import com.dyys.hr.dao.train.TrainNoticeMapper;
 import com.dyys.hr.dao.train.TrainProgramsParticipantsMapper;
 import com.dyys.hr.dto.train.IdDTO;
 import com.dyys.hr.dto.train.TrainProgramsParticipantsDTO;
@@ -34,6 +35,8 @@ public class TrainProgramsParticipantsServiceImpl extends AbstractCrudService<Tr
     private TrainProgramsParticipantsMapper trainProgramsParticipantsMapper;
     @Autowired
     private TrainNoticeService trainNoticeService;
+    @Autowired
+    private TrainNoticeMapper trainNoticeMapper;
 
     @Override
     public void deleteByParams(Map<String,Object> params){
@@ -56,6 +59,7 @@ public class TrainProgramsParticipantsServiceImpl extends AbstractCrudService<Tr
         if(dtoList != null && !dtoList.isEmpty()){
             List<TrainNotice> noticeList = new ArrayList<>();
             //循环给参训人员发送通知
+            Map<String, Object> dataParams = new HashMap<>();
             String ids = "";
             for (IdDTO dto : dtoList){
                 TrainProgramsParticipants participants = this.selectById(dto.getId());

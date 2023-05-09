@@ -4,10 +4,8 @@ import com.dagongma.mybatis.core.service.ICrudService;
 import com.dyys.hr.dto.train.EmploySignInAttendanceDTO;
 import com.dyys.hr.entity.train.TrainAttendanceRecord;
 import com.dyys.hr.entity.train.excel.TrainAttendanceRecordExcel;
-import com.dyys.hr.vo.train.EmployeeAttendanceRecordPageVO;
-import com.dyys.hr.vo.train.TrainAttendanceRecordPageVO;
-import com.dyys.hr.vo.train.TrainAttendanceRecordVO;
-import com.dyys.hr.vo.train.TrainAttendanceStudentSignInDataVO;
+import com.dyys.hr.entity.train.excel.TrainAttendanceRecordImportExcel;
+import com.dyys.hr.vo.train.*;
 import com.github.pagehelper.PageInfo;
 
 import java.text.ParseException;
@@ -31,4 +29,18 @@ public interface TrainAttendanceRecordService extends ICrudService<TrainAttendan
     PageInfo<TrainAttendanceRecordPageVO> recordPageList(Map<String, Object> params);
 
     List<TrainAttendanceRecordExcel> recordExportList(Map<String, Object> params);
+
+    /**
+     * 考勤导入模板下拉框数据
+     * @return
+     */
+    Map<Integer, List<String>> excelSelectMap();
+
+    /**
+     * 考勤导入数据处理
+     * @param excelList
+     * @param attendanceRulesId
+     * @return
+     */
+    TrainAttendanceRecordImportExcelVO handleAttendanceImportExcel(List<TrainAttendanceRecordImportExcel> excelList,Long attendanceRulesId, String loginUserId);
 }

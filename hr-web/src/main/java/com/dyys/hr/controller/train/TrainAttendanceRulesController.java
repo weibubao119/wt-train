@@ -1,6 +1,7 @@
 package com.dyys.hr.controller.train;
 
 import com.alibaba.excel.EasyExcelFactory;
+import com.alibaba.excel.support.ExcelTypeEnum;
 import com.dagongma.kernel.annotation.ResponseResult;
 import com.dagongma.kernel.commons.enums.ResultCode;
 import com.dagongma.kernel.commons.exceptions.BusinessException;
@@ -9,11 +10,15 @@ import com.dyys.hr.dto.train.IdDTO;
 import com.dyys.hr.dto.train.TrainAttendancePersonDTO;
 import com.dyys.hr.dto.train.TrainAttendanceRulesDTO;
 import com.dyys.hr.entity.train.excel.TrainAttendanceRecordExcel;
+import com.dyys.hr.entity.train.excel.TrainAttendanceRecordImportExcel;
 import com.dyys.hr.entity.train.excel.TrainAttendanceRulesExcel;
+import com.dyys.hr.examUtils.EasyExcelListener;
 import com.dyys.hr.helper.UserHelper;
 import com.dyys.hr.service.train.TrainAttendancePersonService;
 import com.dyys.hr.service.train.TrainAttendanceRecordService;
 import com.dyys.hr.service.train.TrainAttendanceRulesService;
+import com.dyys.hr.utils.Result;
+import com.dyys.hr.utils.SelectSheetWriteHandler;
 import com.dyys.hr.vo.train.*;
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.Api;
@@ -24,11 +29,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -127,18 +134,6 @@ public class TrainAttendanceRulesController {
         EasyExcelFactory.write(response.getOutputStream(), TrainAttendanceRecordExcel.class).sheet("记录列表").doWrite(excelList);
     }
 
-//
-//    @GetMapping("pageListOfAttendPerson")
-//    @ApiOperation(value = "获取考勤人员列表")
-//    @ApiImplicitParams({
-//            @ApiImplicitParam(name = Constant.PAGE, value = "当前页码，从1开始", paramType = "query", required = true, dataType="int") ,
-//            @ApiImplicitParam(name = Constant.LIMIT, value = "每页显示记录数", paramType = "query",required = true, dataType="int") ,
-//            @ApiImplicitParam(name = "attendance_rules_id", value = "考勤id", paramType = "query", required = true,dataType="int"),
-//    })
-//    public PageInfo<TrainAttendancePersonVO> pageListOfAttendPerson(@ApiIgnore @RequestParam Map<String, Object> params){
-//        return trainAttendancePersonService.pageList(params);
-//    }
-
     @PostMapping("save")
     @ApiOperation(value = "创建考勤")
     public Long save(@RequestBody @Validated(TrainAttendanceRulesDTO.Insert.class) TrainAttendanceRulesDTO dto) {
@@ -180,26 +175,51 @@ public class TrainAttendanceRulesController {
         return trainAttendancePersonService.removeStudents(dtoList,userHelper.getLoginEmplId());
     }
 
-//    @GetMapping("signRecordPageList")
-//    @ApiOperation(value = "签到明细列表")
-//    @ApiImplicitParams({
-//            @ApiImplicitParam(name = Constant.PAGE, value = "当前页码，从1开始", paramType = "query", required = true, dataType="int") ,
-//            @ApiImplicitParam(name = Constant.LIMIT, value = "每页显示记录数", paramType = "query",required = true, dataType="int") ,
-//            @ApiImplicitParam(name = "attendanceRulesId", value = "考勤id", paramType = "query", required = true,dataType="int")
-//    })
-//    public PageInfo<TrainAttendanceRecordVO> signRecordPageList(@ApiIgnore @RequestParam Map<String, Object> params){
-//        return trainAttendanceRecordService.pageList(params);
-//    }
-//
-//    @GetMapping("studentSignInPageList")
-//    @ApiOperation(value = "学员签到情况列表")
-//    @ApiImplicitParams({
-//            @ApiImplicitParam(name = Constant.PAGE, value = "当前页码，从1开始", paramType = "query", required = true, dataType="int") ,
-//            @ApiImplicitParam(name = Constant.LIMIT, value = "每页显示记录数", paramType = "query",required = true, dataType="int") ,
-//            @ApiImplicitParam(name = "programsId", value = "项目id", paramType = "query", required = true,dataType="int"),
-//            @ApiImplicitParam(name = "name", value = "学员名称", paramType = "query", dataType="String"),
-//    })
-//    public PageInfo<TrainAttendanceStudentSignInDataVO> studentSignInPageList(@ApiIgnore @RequestParam Map<String, Object> params){
-//        return trainAttendanceRecordService.studentSignInPageList(params);
-//    }
+
+    @GetMapping("exportAttendanceRecordTml")
+    @ApiOperation(value = "下载考勤结果导入模板")
+    public void exportAttendanceRecordTml(HttpServletResponse response) throws IOException {
+        List<TrainAttendanceRecordImportExcel> excelList = new ArrayList<>();
+        response.setContentType("application/vnd.ms-excel");
+        response.setCharacterEncoding("utf-8");
+        String fileName = URLEncoder.encode("培训班考勤结果导入模板", "UTF-8").replaceAll("\\+", "%20");
+        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ExcelTypeEnum.XLS.getValue());
+
+        // 列下拉框数据
+        Map<Integer, List<String>> selectMap = trainAttendanceRecordService.excelSelectMap();
+
+        // 绕过了创建临时文件，直接将数据读到流中传递至客户端
+        EasyExcelFactory.write(response.getOutputStream(), TrainAttendanceRecordImportExcel.class)
+                .registerWriteHandler(new SelectSheetWriteHandler(selectMap))
+                .excelType(ExcelTypeEnum.XLS)
+                .sheet("培训班考勤结果导入模板")
+                .doWrite(excelList);
+    }
+
+
+    @PostMapping(value = "exportAttendanceRecord", headers = "content-type=multipart/form-data")
+    @ApiOperation(value = "考勤结果导入")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "考勤结果excel", dataTypeClass = MultipartFile.class, required = true, allowMultiple = true),
+            @ApiImplicitParam(name = "id", value = "考勤规则id", paramType = "query", required = true,dataType="Long")
+    })
+    public Result<TrainAttendanceRecordImportExcelVO> exportAttendanceRecord(@RequestBody MultipartFile file,Long id) throws IOException {
+        EasyExcelListener<TrainAttendanceRecordImportExcel> listener = new EasyExcelListener<>();
+        List<TrainAttendanceRecordImportExcel> excelList = new ArrayList<>();
+        try {
+            excelList = EasyExcelFactory.read(file.getInputStream(), TrainAttendanceRecordImportExcel.class, listener)
+                    .sheet(0)
+                    .doReadSync();
+        } catch (Exception e) {
+            return new Result<TrainAttendanceRecordImportExcelVO>().error("文件识别异常：" + e.getMessage());
+        }
+        if (excelList.isEmpty()) {
+            return new Result<TrainAttendanceRecordImportExcelVO>().error("培训计划数据不能为空");
+        }
+        TrainAttendanceRecordImportExcelVO excelVO = trainAttendanceRecordService.handleAttendanceImportExcel(excelList,id,userHelper.getLoginEmplId());
+        if (!excelVO.getErrorList().isEmpty()) {
+            return new Result<TrainAttendanceRecordImportExcelVO>().error("数据校验不通过", excelVO);
+        }
+        return new Result<TrainAttendanceRecordImportExcelVO>().success("数据校验通过", excelVO);
+    }
 }
