@@ -3,6 +3,7 @@ package com.dyys.hr.service.train.impl;
 import cn.hutool.core.convert.Convert;
 import com.dagongma.mybatis.core.service.impl.AbstractCrudService;
 import com.dyys.hr.dao.train.TrainAppraiseMapper;
+import com.dyys.hr.dao.train.TrainNoticeMapper;
 import com.dyys.hr.dto.train.*;
 import com.dyys.hr.entity.train.*;
 import com.dyys.hr.service.train.*;
@@ -37,6 +38,8 @@ public class TrainAppraiseServiceImpl extends AbstractCrudService<TrainAppraise,
     private QuestionnaireUserService questionnaireUserService;
     @Autowired
     private QuestionnaireService questionnaireService;
+    @Autowired
+    private TrainNoticeMapper trainNoticeMapper;
 
     @Override
     public PageInfo<TrainAppraiseVO> pageList(Map<String, Object> params){
@@ -234,5 +237,36 @@ public class TrainAppraiseServiceImpl extends AbstractCrudService<TrainAppraise,
     @Override
     public TrainAppraise getFinalInfo(Long programsId, Long courseId, Integer scoreObject) {
         return trainAppraiseMapper.getFinalInfo(programsId, courseId, scoreObject);
+    }
+
+    /**
+     * 批量通知评估
+     * @param dtoList
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean batchAppraiseNotice(List<IdDTO> dtoList){
+        boolean result = false;
+        if(dtoList != null && !dtoList.isEmpty()){
+            //循环给参训人员发送通知
+            Map<String, Object> dataParams = new HashMap<>();
+            Map<String, Object> query = new HashMap<>();
+            for (IdDTO dto : dtoList){
+                //获取所有参考人员
+                query.put("appraiseId",dto.getId());
+                List<String> allUserIds = trainAppraisePersonService.getPersonIdsByQuery(query);
+                for (String userId : allUserIds){
+                    //自助平台插入代办
+                    dataParams.put("typeId",dto.getId());
+                    dataParams.put("type",11);
+                    dataParams.put("emplId",userId);
+                    dataParams.put("url","http://218.13.91.107:38000/kn-front/emp/center");
+                    trainNoticeMapper.createEmployeeSelfNotice(dataParams);
+                }
+            }
+            result = true;
+        }
+        return result;
     }
 }

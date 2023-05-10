@@ -107,4 +107,4 @@ storage-config:
   fastdfsDomain:  #FastDFS绑定的域名
   localDomain:  #本地上传绑定的域名
   localPrefix:  #本地上传路径前缀
-  localPath: D:\java\wt-train\upload  #本地上传存储目录
+  localPath: /home/hcm/wt-train/upload  #本地上传存储目录

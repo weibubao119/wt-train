@@ -1,6 +1,7 @@
 package com.dyys.hr.service.train;
 
 import com.dagongma.mybatis.core.service.ICrudService;
+import com.dyys.hr.dto.train.IdDTO;
 import com.dyys.hr.dto.train.QuestionnaireUserSubmitDTO;
 import com.dyys.hr.dto.train.TrainAppraiseDTO;
 import com.dyys.hr.entity.train.TrainAppraise;
@@ -48,4 +49,12 @@ public interface TrainAppraiseService extends ICrudService<TrainAppraise, Long> 
      * @return
      */
     TrainAppraise getFinalInfo(Long programsId, Long courseId, Integer scoreObject);
+
+
+    /**
+     * 批量通知评估
+     * @param dtoList
+     * @return
+     */
+    Boolean batchAppraiseNotice(List<IdDTO> dtoList);
 }
