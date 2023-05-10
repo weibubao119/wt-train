@@ -197,13 +197,13 @@ public class TrainAttendanceRulesController {
     }
 
 
-    @PostMapping(value = "exportAttendanceRecord", headers = "content-type=multipart/form-data")
+    @PostMapping(value = "importAttendanceRecord", headers = "content-type=multipart/form-data")
     @ApiOperation(value = "考勤结果导入")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "file", value = "考勤结果excel", dataTypeClass = MultipartFile.class, required = true, allowMultiple = true),
             @ApiImplicitParam(name = "id", value = "考勤规则id", paramType = "query", required = true,dataType="Long")
     })
-    public Result<TrainAttendanceRecordImportExcelVO> exportAttendanceRecord(@RequestBody MultipartFile file,Long id) throws IOException {
+    public Result<TrainAttendanceRecordImportExcelVO> importAttendanceRecord(@RequestBody MultipartFile file,Long id) throws IOException {
         EasyExcelListener<TrainAttendanceRecordImportExcel> listener = new EasyExcelListener<>();
         List<TrainAttendanceRecordImportExcel> excelList = new ArrayList<>();
         try {
@@ -214,12 +214,12 @@ public class TrainAttendanceRulesController {
             return new Result<TrainAttendanceRecordImportExcelVO>().error("文件识别异常：" + e.getMessage());
         }
         if (excelList.isEmpty()) {
-            return new Result<TrainAttendanceRecordImportExcelVO>().error("培训计划数据不能为空");
+            return new Result<TrainAttendanceRecordImportExcelVO>().error("考勤数据不能为空");
         }
         TrainAttendanceRecordImportExcelVO excelVO = trainAttendanceRecordService.handleAttendanceImportExcel(excelList,id,userHelper.getLoginEmplId());
         if (!excelVO.getErrorList().isEmpty()) {
             return new Result<TrainAttendanceRecordImportExcelVO>().error("数据校验不通过", excelVO);
         }
-        return new Result<TrainAttendanceRecordImportExcelVO>().success("数据校验通过", excelVO);
+        return new Result<TrainAttendanceRecordImportExcelVO>().success("导入成功", excelVO);
     }
 }

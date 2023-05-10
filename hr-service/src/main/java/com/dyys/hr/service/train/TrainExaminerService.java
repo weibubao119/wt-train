@@ -2,11 +2,15 @@ package com.dyys.hr.service.train;
 
 import com.dagongma.kernel.core.entity.PageView;
 import com.dagongma.mybatis.core.service.ICrudService;
+import com.dyys.hr.dto.train.IdDTO;
 import com.dyys.hr.entity.train.TrainExaminer;
 import com.dyys.hr.entity.train.excel.OfflineExamResultsExcel;
+import com.dyys.hr.entity.train.excel.TrainExamResultImportExcel;
 import com.dyys.hr.vo.exam.ExamCenterVO;
+import com.dyys.hr.vo.train.TrainExamResultImportExcelVO;
 import com.dyys.hr.vo.train.TrainExaminerVO;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -63,4 +67,22 @@ public interface TrainExaminerService extends ICrudService<TrainExaminer, Long> 
      * @return
      */
     TrainExaminer getFinalExamResults(String userId, Long programsId, Long courseId);
+
+    /**
+     * 批量通知考试
+     * @param dtoList
+     * @param loginUserId
+     * @return
+     */
+    Boolean batchExamNotice(List<IdDTO> dtoList, String loginUserId);
+
+
+    /**
+     * 考试结果导入数据处理
+     * @param excelList
+     * @param examId
+     * @return
+     */
+    TrainExamResultImportExcelVO handleResultImportExcel(List<TrainExamResultImportExcel> excelList, Long examId, String loginUserId) throws ParseException;
+
 }

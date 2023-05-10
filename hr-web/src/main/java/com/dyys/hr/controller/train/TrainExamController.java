@@ -9,9 +9,7 @@ import com.dyys.hr.constants.Constant;
 import com.dyys.hr.dto.train.*;
 import com.dyys.hr.entity.train.TrainExam;
 import com.dyys.hr.entity.train.TrainExaminer;
-import com.dyys.hr.entity.train.excel.ExamDetailListExcel;
-import com.dyys.hr.entity.train.excel.OfflineExamResultsExcel;
-import com.dyys.hr.entity.train.excel.UserExamDetailExcel;
+import com.dyys.hr.entity.train.excel.*;
 import com.dyys.hr.examUtils.EasyExcelListener;
 import com.dyys.hr.helper.UserHelper;
 import com.dyys.hr.service.exam.IExamUserAnswerService;
@@ -36,6 +34,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -307,5 +306,54 @@ public class TrainExamController {
         trainExaminer.setUpdateUser(userHelper.getLoginEmplId());
         trainExaminer.setUpdateTime(System.currentTimeMillis() / 1000);
         return trainExaminerService.updateSelective(trainExaminer);
+    }
+
+    @PostMapping("batchExamNotice")
+    @ApiOperation(value = "批量考试通知提醒")
+    public Boolean batchExamNotice(@RequestBody @Validated(IdDTO.Insert.class) List<IdDTO> dtoList) {
+        return trainExaminerService.batchExamNotice(dtoList,userHelper.getLoginEmplId());
+    }
+
+    @GetMapping("exportExamResultTml")
+    @ApiOperation(value = "下载考试结果导入模板")
+    public void exportExamResultTml(HttpServletResponse response) throws IOException {
+        List<TrainExamResultImportExcel> excelList = new ArrayList<>();
+        response.setContentType("application/vnd.ms-excel");
+        response.setCharacterEncoding("utf-8");
+        String fileName = URLEncoder.encode("培训班考试结果导入模板", "UTF-8").replaceAll("\\+", "%20");
+        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ExcelTypeEnum.XLS.getValue());
+
+        // 绕过了创建临时文件，直接将数据读到流中传递至客户端
+        EasyExcelFactory.write(response.getOutputStream(), TrainExamResultImportExcel.class)
+                .excelType(ExcelTypeEnum.XLS)
+                .sheet("培训班考试结果导入模板")
+                .doWrite(excelList);
+    }
+
+
+    @PostMapping(value = "importExamResult", headers = "content-type=multipart/form-data")
+    @ApiOperation(value = "考试结果导入")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "考试结果excel", dataTypeClass = MultipartFile.class, required = true, allowMultiple = true),
+            @ApiImplicitParam(name = "id", value = "考试id", paramType = "query", required = true,dataType="Long")
+    })
+    public Result<TrainExamResultImportExcelVO> importExamResult(@RequestBody MultipartFile file,Long id) throws IOException, ParseException {
+        EasyExcelListener<TrainExamResultImportExcel> listener = new EasyExcelListener<>();
+        List<TrainExamResultImportExcel> excelList = new ArrayList<>();
+        try {
+            excelList = EasyExcelFactory.read(file.getInputStream(), TrainExamResultImportExcel.class, listener)
+                    .sheet(0)
+                    .doReadSync();
+        } catch (Exception e) {
+            return new Result<TrainExamResultImportExcelVO>().error("文件识别异常：" + e.getMessage());
+        }
+        if (excelList.isEmpty()) {
+            return new Result<TrainExamResultImportExcelVO>().error("考试结果数据不能为空");
+        }
+        TrainExamResultImportExcelVO excelVO = trainExaminerService.handleResultImportExcel(excelList,id,userHelper.getLoginEmplId());
+        if (!excelVO.getErrorList().isEmpty()) {
+            return new Result<TrainExamResultImportExcelVO>().error("数据校验不通过", excelVO);
+        }
+        return new Result<TrainExamResultImportExcelVO>().success("导入成功", excelVO);
     }
 }
