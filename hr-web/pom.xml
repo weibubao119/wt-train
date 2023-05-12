@@ -68,6 +68,13 @@
             <groupId>net.sf.jxls</groupId>
             <artifactId>jxls-core</artifactId>
         </dependency>
+        <!-- 获取上传视频时长依赖 -->
+        <dependency>
+            <groupId>ws.schild</groupId>
+            <artifactId>jave-all-deps</artifactId>
+            <version>3.3.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>

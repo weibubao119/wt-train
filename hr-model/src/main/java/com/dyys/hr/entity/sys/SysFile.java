@@ -56,6 +56,14 @@ public class SysFile extends BaseEntity<Long> {
     @Column(name = "status")
     private Integer status;
 
+    @ApiModelProperty("类型：1.音视频 2.其他")
+    @Column(name = "type")
+    private Integer type;
+
+    @ApiModelProperty("时长")
+    @Column(name = "duration")
+    private String duration;
+
     @ApiModelProperty("创建人")
     @Column(name = "creator")
     private String creator;

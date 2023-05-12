@@ -8,6 +8,8 @@ import com.dyys.hr.entity.train.excel.DeptTerseExcel;
 import com.dyys.hr.vo.common.PsDepartmentVO;
 import com.dyys.hr.vo.common.StaffDepartmentVO;
 import com.dyys.hr.vo.common.StaffDeptTerseVO;
+import com.dyys.hr.vo.train.CommonDepartmentVO;
+import com.github.pagehelper.PageInfo;
 
 import java.util.List;
 import java.util.Map;
@@ -70,4 +72,11 @@ public interface IStaffDepartmentService extends ICrudService<StaffDepartment, S
      * @return
      */
     List<DeptTerseExcel> getDeptList();
+
+    /**
+     * 组织架构列表
+     * @param params
+     * @return
+     */
+    PageInfo<CommonDepartmentVO> departmentList(Map<String, Object> params);
 }

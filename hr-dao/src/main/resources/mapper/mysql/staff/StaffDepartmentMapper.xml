@@ -123,4 +123,7 @@
     <select id="getDeptList" resultType="com.dyys.hr.entity.train.excel.DeptTerseExcel">
         SELECT id AS deptId, descr AS deptName FROM staff_department WHERE eff_status = "A"
     </select>
+    <select id="departmentList" resultType="com.dyys.hr.vo.train.CommonDepartmentVO">
+        SELECT *,(@i:=@i+1) AS number FROM staff_department,(SELECT @i:=0) AS itable
+    </select>
 </mapper>

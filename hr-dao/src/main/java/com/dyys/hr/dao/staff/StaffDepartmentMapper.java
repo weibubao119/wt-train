@@ -6,6 +6,7 @@ import com.dyys.hr.entity.train.excel.DeptTerseExcel;
 import com.dyys.hr.vo.common.PsDepartmentVO;
 import com.dyys.hr.vo.common.StaffDepartmentVO;
 import com.dyys.hr.vo.common.StaffDeptTerseVO;
+import com.dyys.hr.vo.train.CommonDepartmentVO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -75,4 +76,12 @@ public interface StaffDepartmentMapper extends ICrudMapper<StaffDepartment> {
      * @return
      */
     List<DeptTerseExcel> getDeptList();
+
+
+    /**
+     * 组织架构列表
+     * @param params
+     * @return
+     */
+    List<CommonDepartmentVO> departmentList(Map<String, Object> params);
 }

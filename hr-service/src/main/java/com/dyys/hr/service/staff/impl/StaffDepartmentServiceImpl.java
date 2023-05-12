@@ -1,5 +1,6 @@
 package com.dyys.hr.service.staff.impl;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.json.JSONUtil;
 import com.dagongma.mybatis.core.service.impl.AbstractCrudService;
 import com.dagongma.redis.common.util.RedisUtil;
@@ -12,6 +13,9 @@ import com.dyys.hr.service.staff.IStaffDepartmentService;
 import com.dyys.hr.vo.common.PsDepartmentVO;
 import com.dyys.hr.vo.common.StaffDepartmentVO;
 import com.dyys.hr.vo.common.StaffDeptTerseVO;
+import com.dyys.hr.vo.train.CommonDepartmentVO;
+import com.github.pagehelper.PageInfo;
+import com.github.pagehelper.page.PageMethod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -204,5 +208,19 @@ public class StaffDepartmentServiceImpl extends AbstractCrudService<StaffDepartm
             }
         }
         return deptEmpl;
+    }
+
+
+    /**
+     * 组织架构列表
+     * @param params
+     * @return
+     */
+    public PageInfo<CommonDepartmentVO> departmentList(Map<String, Object> params){
+        int page = Convert.toInt(params.get("page"));
+        int limit = Convert.toInt(params.get("limit"));
+        PageMethod.startPage(page, limit);
+        List<CommonDepartmentVO> voList = staffDepartmentMapper.departmentList(params);
+        return new PageInfo<>(voList);
     }
 }
