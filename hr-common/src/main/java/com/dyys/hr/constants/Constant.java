@@ -59,58 +59,58 @@ public class Constant {
     /**
      * BPM申请编号 KEY [string]
      */
-    public static final String REDIS_NO = "dyyshr:no:%s:%s";
+    public static final String REDIS_NO = "wtrain:no:%s:%s";
 
     /**
      * 字典code KEY [string]
      */
-    public static final String REDIS_DICT_TYPE_CODE = "dyyshr:dictTypeCode:%s";
+    public static final String REDIS_DICT_TYPE_CODE = "wtrain:dictTypeCode:%s";
 
     /**
      * 用户登录token KEY [string]
      */
-    public static final String REDIS_TOKEN = "dyyshr:user:token:%s";
+    public static final String REDIS_TOKEN = "wtrain:user:token:%s";
 
 
     /**
      * 用户信息 KEY [hash]
      */
-    public static final String REDIS_USER_INFO = "dyyshr:user:%d:info";
+    public static final String REDIS_USER_INFO = "wtrain:user:%d:info";
 
     /**
      * 部门信息 KEY [hash]
      */
-    public static final String REDIS_DEPT_INFO = "dyyshr:dept:%d:info";
+    public static final String REDIS_DEPT_INFO = "wtrain:dept:%d:info";
 
     /**
      * 岗位信息 KEY [hash]
      */
-    public static final String REDIS_POST_INFO = "dyyshr:post:%d:info";
+    public static final String REDIS_POST_INFO = "wtrain:post:%d:info";
 
     /**
      * 字典信息 KEY [String]
      */
-    public static final String REDIS_DICT_INFO = "dyyshr:dict:%s:info";
+    public static final String REDIS_DICT_INFO = "wtrain:dict:%s:info";
 
     /**
      * 全部部门 KEY
      */
-    public static final String REDIS_DEPT_ALL_INFO = "dyyshr:dept:all:info";
+    public static final String REDIS_DEPT_ALL_INFO = "wtrain:dept:all:info";
 
     /**
      * 全部人员 KEY
      */
-    public static final String REDIS_USER_ALL_INFO = "dyyshr:user:all:info";
+    public static final String REDIS_USER_ALL_INFO = "wtrain:user:all:info";
 
     /**
      * 全部职位 KEY
      */
-    public static final String REDIS_POST_ALL_INFO = "dyyshr:post:all:info";
+    public static final String REDIS_POST_ALL_INFO = "wtrain:post:all:info";
 
     /**
      * 正在申请的职位
      */
-    public static final String REDIS_IDENTITY_POST = "dyyshr:identity:%s:post:%d";
+    public static final String REDIS_IDENTITY_POST = "wtrain:identity:%s:post:%d";
 
     /**
      * Title 各类标题
@@ -180,10 +180,10 @@ public class Constant {
     /**
      * 部门组织树 KEY [string]
      */
-    public static final String DEPT_CRUMB = "dyyshr:dept:crumb:%s";
+    public static final String DEPT_CRUMB = "wtrain:dept:crumb:%s";
 
     /**
      * 部门组织树筛选 KEY [string]
      */
-    public static final String DEPT_COMPANY_CRUMB = "dyyshr:dept:crumb:company:%s";
+    public static final String DEPT_COMPANY_CRUMB = "wtrain:dept:crumb:company:%s";
 }
