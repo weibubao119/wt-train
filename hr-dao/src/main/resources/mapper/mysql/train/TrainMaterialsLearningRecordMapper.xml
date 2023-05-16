@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainMaterialsLearningRecordMapper">
+    <resultMap id="trainMaterialsLearningRecordMap" type="com.dyys.hr.entity.train.TrainMaterialsLearningRecord">
+        <result column="id" property="id"/>
+        <result column="materials_id" property="materialsId"/>
+        <result column="type" property="type"/>
+        <result column="user_id" property="userId"/>
+        <result column="status" property="status"/>
+        <result column="materials_type" property="materialsType"/>
+        <result column="last_duration" property="lastDuration"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+    <sql id="TrainMaterialsLearningRecord_Column_sql">
+        id,materials_id,user_id,type,status,materials_type,last_duration,create_user,create_time,update_user,update_time
+    </sql>
+</mapper>

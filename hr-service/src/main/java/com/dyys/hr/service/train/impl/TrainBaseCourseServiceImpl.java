@@ -1,18 +1,12 @@
 package com.dyys.hr.service.train.impl;
 
 import cn.hutool.core.convert.Convert;
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONUtil;
 import com.dagongma.mybatis.core.service.impl.AbstractCrudService;
 import com.dyys.hr.dao.train.TrainBaseCourseMapper;
-import com.dyys.hr.dto.train.FileDTO;
 import com.dyys.hr.dto.train.TeacherDTO;
 import com.dyys.hr.dto.train.TrainBaseCourseDTO;
 import com.dyys.hr.dto.train.TrainBaseCourseMaterialsDTO;
-import com.dyys.hr.entity.train.TrainBaseCourse;
-import com.dyys.hr.entity.train.TrainBaseCourseMaterials;
-import com.dyys.hr.entity.train.TrainBaseCourseTeacher;
-import com.dyys.hr.entity.train.TrainBaseTeacher;
+import com.dyys.hr.entity.train.*;
 import com.dyys.hr.entity.train.excel.AbleTeacherExcel;
 import com.dyys.hr.entity.train.excel.BaseCourseExcel;
 import com.dyys.hr.entity.train.excel.BaseCourseListExcel;
@@ -48,6 +42,8 @@ public class TrainBaseCourseServiceImpl extends AbstractCrudService<TrainBaseCou
     private TrainBaseTeacherService trainBaseTeacherService;
     @Autowired
     private TrainBaseCourseMaterialsService trainBaseCourseMaterialsService;
+    @Autowired
+    private TrainMaterialsLearningRecordService trainMaterialsLearningRecordService;
 
     @Override
     public PageInfo<TrainBaseCourseVO> pageList(Map<String, Object> params){
@@ -441,12 +437,24 @@ public class TrainBaseCourseServiceImpl extends AbstractCrudService<TrainBaseCou
         TrainBaseCourseVO vo = new TrainBaseCourseVO();
         if(entity != null){
             BeanUtils.copyProperties(entity,vo);
+            //查询共学人数
+            vo.setLearnedNum(trainBaseCourseMaterialsService.totalLearningNumByCourseId(courseId));
             List<TrainBaseCourseMaterialsVO> materialsVOList = new ArrayList<>();
             List<TrainBaseCourseMaterialsDTO> materialsDTO = trainBaseCourseMaterialsService.getSelectByCourseId(courseId);
             for (TrainBaseCourseMaterialsDTO dto : materialsDTO){
                 TrainBaseCourseMaterialsVO materialsVO = new TrainBaseCourseMaterialsVO();
                 BeanUtils.copyProperties(dto,materialsVO);
-                materialsVO.setHaveLearned(true);
+                //获取当前用户该资料的学习完成状态
+                TrainMaterialsLearningRecord queryEntity = new TrainMaterialsLearningRecord();
+                queryEntity.setMaterialsId(dto.getId());
+                queryEntity.setType(1);
+                queryEntity.setUserId(loginEmplId);
+                TrainMaterialsLearningRecord selectOne = trainMaterialsLearningRecordService.selectOne(queryEntity);
+                materialsVO.setLearnedStatus(0);
+                if(selectOne != null){
+                    materialsVO.setLearnedStatus(selectOne.getStatus());
+                }
+
                 materialsVOList.add(materialsVO);
             }
             vo.setMaterialsList(materialsVOList);

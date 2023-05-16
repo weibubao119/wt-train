@@ -16,6 +16,7 @@ import com.dyys.hr.entity.train.excel.BaseCourseListExcel;
 import com.dyys.hr.examUtils.EasyExcelListener;
 import com.dyys.hr.helper.UserHelper;
 import com.dyys.hr.service.train.TrainBaseCourseService;
+import com.dyys.hr.service.train.TrainMaterialsLearningRecordService;
 import com.dyys.hr.utils.Result;
 import com.dyys.hr.utils.SelectSheetWriteHandler;
 import com.dyys.hr.vo.train.TrainBaseCourseVO;
@@ -43,6 +44,8 @@ import java.util.Map;
 public class TrainBaseCourseController {
     @Autowired
     private TrainBaseCourseService trainBaseCourseService;
+    @Autowired
+    private TrainMaterialsLearningRecordService trainMaterialsLearningRecordService;
 
     @Autowired
     private UserHelper userHelper;
@@ -192,6 +195,21 @@ public class TrainBaseCourseController {
     public TrainBaseCourseVO materialsLearningPageData(@ApiIgnore @RequestParam Long id) {
         return trainBaseCourseService.materialsLearningPageData(id, userHelper.getLoginEmplId());
     }
+
+    @ResponseResult
+    @PostMapping("/materialsLearningRecord")
+    @ApiOperation(value = "课程材料学习记录")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "材料ID", paramType = "path", required = true, dataType="int") ,
+            @ApiImplicitParam(name = "materialsType", value = "材料类型 1.音视频 2.其他", paramType = "path", required = true, dataType="int"),
+            @ApiImplicitParam(name = "duration", value = "学习时长", paramType = "path", dataType="string"),
+    })
+    public Integer materialsLearningRecord(@ApiIgnore @RequestBody Map<String, Object> params) {
+        params.put("userId",userHelper.getLoginEmplId());
+        params.put("type",1);
+        return trainMaterialsLearningRecordService.materialsLearningRecord(params);
+    }
+
 
 
 

@@ -17,4 +17,9 @@
     <select id="getSelectByCourseId" resultType="com.dyys.hr.dto.train.TrainBaseCourseMaterialsDTO">
         select * from train_base_course_materials where course_id = #{courseId}
     </select>
+    <select id="totalLearningNumByCourseId" resultType="java.lang.Integer">
+        select count(b.id) from
+            train_base_course_materials a left join train_materials_learning_record b on a.id = b.materials_id and b.type = 1
+        where a.course_id = #{courseId}
+    </select>
 </mapper>

@@ -18,4 +18,11 @@ public interface TrainBaseCourseMaterialsService extends ICrudService<TrainBaseC
      * @param courseId
      */
     void deleteByCourseId(Long courseId);
+
+    /**
+     * 课程已学人数总计
+     * @param courseId
+     * @return
+     */
+    Integer totalLearningNumByCourseId(Long courseId);
 }

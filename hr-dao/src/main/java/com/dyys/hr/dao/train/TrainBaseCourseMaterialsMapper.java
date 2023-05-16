@@ -12,4 +12,6 @@ public interface TrainBaseCourseMaterialsMapper extends ICrudMapper<TrainBaseCou
     List<TrainBaseCourseMaterialsDTO> getSelectByCourseId(Long courseId);
 
     void deleteByCourseId(Long courseId);
+
+    Integer totalLearningNumByCourseId(Long courseId);
 }

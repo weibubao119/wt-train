@@ -27,4 +27,14 @@ public class TrainBaseCourseMaterialsServiceImpl extends AbstractCrudService<Tra
         trainBaseCourseMaterialsMapper.deleteByCourseId(courseId);
     }
 
+    /**
+     * 课程已学人数总计
+     * @param courseId
+     * @return
+     */
+    @Override
+    public Integer totalLearningNumByCourseId(Long courseId){
+        return trainBaseCourseMaterialsMapper.totalLearningNumByCourseId(courseId);
+    }
+
 }

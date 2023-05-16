@@ -40,5 +40,5 @@ public class TrainBaseCourseMaterialsVO implements Serializable {
 	private String duration;
 
 	@ApiModelProperty(value = "学习状态：1.已学 0.未学")
-	private Boolean haveLearned;
+	private Integer learnedStatus;
 }
