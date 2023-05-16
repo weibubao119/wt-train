@@ -11,9 +11,9 @@ spring:
     #数据库连接池druid配置
     druid:
       driver-class-name: com.mysql.jdbc.Driver
-      url: jdbc:mysql://127.0.0.1:3306/wt-train?useUnicode=true&characterEncoding=utf8&useSSL=false&tinyInt1isBit=false
+      url: jdbc:mysql://218.13.91.107:39046/wt-train?useUnicode=true&characterEncoding=utf8&useSSL=false&tinyInt1isBit=false
       username: root
-      password: root
+      password: sie2022^^O^^
       #连接池配置
       #初始化大小、最小、最大
       initial-size: 25

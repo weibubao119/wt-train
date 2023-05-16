@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dyys.hr.dao.train.TrainBaseCourseMaterialsMapper">
+    <resultMap id="trainBaseCourseMaterialsMap" type="com.dyys.hr.entity.train.TrainBaseCourseMaterials">
+    <result column="id" property="id"/>
+    <result column="course_id" property="courseId"/>
+    <result column="category" property="category"/>
+    <result column="filename" property="filename"/>
+    <result column="src" property="src"/>
+    <result column="type" property="type"/>
+    <result column="duration" property="duration"/>
+    </resultMap>
+    <sql id="TrainBaseCourseMaterials_Column_sql">id,course_id,category,filename,src,duration</sql>
+    <delete id="deleteByCourseId">
+        delete from train_base_course_materials where course_id = #{courseId}
+    </delete>
+    <select id="getSelectByCourseId" resultType="com.dyys.hr.dto.train.TrainBaseCourseMaterialsDTO">
+        select * from train_base_course_materials where course_id = #{courseId}
+    </select>
+</mapper>

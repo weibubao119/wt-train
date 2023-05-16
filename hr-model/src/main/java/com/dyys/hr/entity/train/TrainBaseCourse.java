@@ -49,15 +49,11 @@ public class TrainBaseCourse extends BaseEntity<Long> {
      */
     private BigDecimal credit;
     /**
-     * 附件列表
-     */
-    private String fileList;
-    /**
      * 课程来源 1.外部 2.自有
      */
     private Integer courseSource;
     /**
-     * 状态 1.生效 0.失效
+     * 状态 1.已发布 0.未发布
      */
     private Integer status;
     /**
@@ -84,4 +80,8 @@ public class TrainBaseCourse extends BaseEntity<Long> {
      * 是否是导入数据
      */
     private Integer isImport;
+    /**
+     * 已学人数
+     */
+    private Integer learnedNum;
 }

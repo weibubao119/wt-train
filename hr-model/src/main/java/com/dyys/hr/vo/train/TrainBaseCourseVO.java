@@ -1,5 +1,6 @@
 package com.dyys.hr.vo.train;
 
+import com.dyys.hr.dto.train.TrainBaseCourseMaterialsDTO;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -7,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -35,6 +37,12 @@ public class TrainBaseCourseVO implements Serializable {
     @ApiModelProperty(value = "课程来源 1.外部 2.自有")
     private Integer courseSource;
 
-    @ApiModelProperty(value = "状态 1.生效 0.失效")
+    @ApiModelProperty(value = "状态 1.已发布 0.未发布")
     private Integer status;
+
+    @ApiModelProperty(value = "已学人数")
+    private Integer learnedNum;
+
+    @ApiModelProperty(value = "课程材料列表")
+    private List<TrainBaseCourseMaterialsVO> materialsList;
 }

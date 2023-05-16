@@ -86,4 +86,12 @@ public interface TrainBaseCourseService extends ICrudService<TrainBaseCourse, Lo
      * @return
      */
     Boolean checkUniqueData(TrainBaseCourseDTO dto);
+
+    /**
+     * 课程材料学习页数据
+     * @param courseId
+     * @param loginEmplId
+     * @return
+     */
+    TrainBaseCourseVO materialsLearningPageData(Long courseId,String loginEmplId);
 }

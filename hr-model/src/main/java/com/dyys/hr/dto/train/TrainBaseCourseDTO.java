@@ -50,16 +50,15 @@ public class TrainBaseCourseDTO implements Serializable {
 	private BigDecimal credit;
 
 	@ApiModelProperty(value = "课程简介")
-	// @NotBlank(message = "课程简介不能为空", groups = {Update.class, Insert.class})
 	private String instructions;
-
-	@ApiModelProperty(value = "附件文件列表")
-	private List<FileDTO> fileList;
 
 	@ApiModelProperty(value = "授课讲师列表")
 	@NotEmpty(message = "授课讲师列表不能为空", groups = {Update.class, Insert.class})
 	@Valid
 	private List<TeacherDTO> teacherList;
+
+	@ApiModelProperty(value = "课程材料列表")
+	private List<TrainBaseCourseMaterialsDTO> materialsList;
 
 	@ApiIgnore
 	public interface Insert{}

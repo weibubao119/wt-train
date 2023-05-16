@@ -1,7 +1,5 @@
 package com.dyys.hr.controller.common;
 
-import com.dagongma.kernel.filter.XssHttpServletRequestWrapper;
-import com.dyys.hr.entity.exam.ExamPaper;
 import com.dyys.hr.entity.sys.SysFile;
 import com.dyys.hr.exception.ErrorCode;
 import com.dyys.hr.helper.UserHelper;
@@ -91,6 +89,7 @@ public class OssController {
             data.put("src", path);
             data.put("fileId", sysFile.getId());
             data.put("filename", file.getOriginalFilename());
+            data.put("duration", sysFile.getDuration());
             return new Result<Map<String, Object>>().ok(data);
         }
         return new Result<Map<String, Object>>().error("上传失败，请重试");

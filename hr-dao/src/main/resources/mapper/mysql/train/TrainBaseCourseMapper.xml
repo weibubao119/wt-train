@@ -9,7 +9,6 @@
     <result column="class_hours" property="classHours"/>
     <result column="instructions" property="instructions"/>
     <result column="credit" property="credit"/>
-    <result column="file_list" property="fileList"/>
     <result column="course_source" property="courseSource"/>
     <result column="create_user" property="createUser"/>
     <result column="create_time" property="createTime"/>
@@ -17,8 +16,9 @@
     <result column="update_time" property="updateTime"/>
     <result column="is_delete" property="isDelete"/>
     <result column="is_import" property="isImport"/>
+    <result column="learned_num" property="learnedNum"/>
 </resultMap>
-    <sql id="TrainBaseCourse_Column_sql">id,name,number,category,class_hours,instructions,credit,file_list,course_source,create_user,create_time,update_user,update_time,is_delete,is_import </sql>
+    <sql id="TrainBaseCourse_Column_sql">id,name,number,category,class_hours,instructions,credit,course_source,create_user,create_time,update_user,update_time,is_delete,is_import,learned_num</sql>
     <select id="pageList" resultType="com.dyys.hr.vo.train.TrainBaseCourseVO">
         select
             DISTINCT
@@ -43,7 +43,7 @@
     </select>
     <select id="selectByCourseId" resultType="com.dyys.hr.entity.train.TrainBaseCourse">
         select
-        id,name,number,category,class_hours,credit,instructions,file_list,course_source
+        id,name,number,category,class_hours,credit,instructions,course_source
         from
         train_base_course
         where is_delete = 0 and id = #{id}

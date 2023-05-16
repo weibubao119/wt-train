@@ -8,16 +8,16 @@ import com.dyys.hr.dao.train.TrainBaseCourseMapper;
 import com.dyys.hr.dto.train.FileDTO;
 import com.dyys.hr.dto.train.TeacherDTO;
 import com.dyys.hr.dto.train.TrainBaseCourseDTO;
+import com.dyys.hr.dto.train.TrainBaseCourseMaterialsDTO;
 import com.dyys.hr.entity.train.TrainBaseCourse;
+import com.dyys.hr.entity.train.TrainBaseCourseMaterials;
 import com.dyys.hr.entity.train.TrainBaseCourseTeacher;
 import com.dyys.hr.entity.train.TrainBaseTeacher;
 import com.dyys.hr.entity.train.excel.AbleTeacherExcel;
 import com.dyys.hr.entity.train.excel.BaseCourseExcel;
 import com.dyys.hr.entity.train.excel.BaseCourseListExcel;
-import com.dyys.hr.service.train.TrainBaseCourseService;
-import com.dyys.hr.service.train.TrainBaseCourseTeacherService;
-import com.dyys.hr.service.train.TrainBaseTeacherService;
-import com.dyys.hr.service.train.TrainConstantService;
+import com.dyys.hr.service.train.*;
+import com.dyys.hr.vo.train.TrainBaseCourseMaterialsVO;
 import com.dyys.hr.vo.train.TrainBaseCourseVO;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
@@ -46,6 +46,8 @@ public class TrainBaseCourseServiceImpl extends AbstractCrudService<TrainBaseCou
     private TrainConstantService trainConstantService;
     @Autowired
     private TrainBaseTeacherService trainBaseTeacherService;
+    @Autowired
+    private TrainBaseCourseMaterialsService trainBaseCourseMaterialsService;
 
     @Override
     public PageInfo<TrainBaseCourseVO> pageList(Map<String, Object> params){
@@ -71,16 +73,15 @@ public class TrainBaseCourseServiceImpl extends AbstractCrudService<TrainBaseCou
     public Long save(TrainBaseCourseDTO dto,String loginUserId){
         TrainBaseCourse trainBaseCourse = new TrainBaseCourse();
         BeanUtils.copyProperties(dto,trainBaseCourse);
-        List<FileDTO> fileList = dto.getFileList();
-        trainBaseCourse.setFileList(JSONUtil.toJsonStr(fileList));
         trainBaseCourse.setNumber("C" + System.currentTimeMillis() + RandomStringUtils.randomNumeric(1));
-        //默认生效状态
-        trainBaseCourse.setStatus(1);
+        //默认未发布状态
+        trainBaseCourse.setStatus(0);
         trainBaseCourse.setCreateUser(loginUserId);
         trainBaseCourse.setCreateTime(System.currentTimeMillis()/1000);
         this.insertSelective(trainBaseCourse);
         Long courseId = trainBaseCourse.getId();
         if(courseId > 0){
+            //授课讲师
             List<TeacherDTO> teacherList = dto.getTeacherList();
             List<TrainBaseCourseTeacher> entityList = new ArrayList<>();
             for (TeacherDTO teacherDTO : teacherList){
@@ -92,6 +93,18 @@ public class TrainBaseCourseServiceImpl extends AbstractCrudService<TrainBaseCou
             if(!entityList.isEmpty()){
                 trainBaseCourseTeacherService.insertBatchSelective(entityList);
             }
+            //课程材料
+            List<TrainBaseCourseMaterialsDTO> materialsList = dto.getMaterialsList();
+            List<TrainBaseCourseMaterials> mEnList = new ArrayList<>();
+            for (TrainBaseCourseMaterialsDTO materialsDTO : materialsList){
+                TrainBaseCourseMaterials materials = new TrainBaseCourseMaterials();
+                BeanUtils.copyProperties(materialsDTO,materials);
+                materials.setCourseId(courseId);
+                mEnList.add(materials);
+            }
+            if(!mEnList.isEmpty()){
+                trainBaseCourseMaterialsService.insertBatchSelective(mEnList);
+            }
         }
         return courseId;
     }
@@ -102,9 +115,8 @@ public class TrainBaseCourseServiceImpl extends AbstractCrudService<TrainBaseCou
         TrainBaseCourseDTO dto = new TrainBaseCourseDTO();
         if(entity != null){
             BeanUtils.copyProperties(entity,dto);
-            JSONArray objects = JSONUtil.parseArray(entity.getFileList());
-            dto.setFileList(JSONUtil.toList(objects,FileDTO.class));
             dto.setTeacherList(trainBaseCourseTeacherService.getSelectByCourseId(courseId));
+            dto.setMaterialsList(trainBaseCourseMaterialsService.getSelectByCourseId(courseId));
         }
         return dto;
     }
@@ -114,14 +126,12 @@ public class TrainBaseCourseServiceImpl extends AbstractCrudService<TrainBaseCou
     public Integer update(TrainBaseCourseDTO dto,String loginUserId){
         TrainBaseCourse trainBaseCourse = new TrainBaseCourse();
         BeanUtils.copyProperties(dto,trainBaseCourse);
-        List<FileDTO> fileList = dto.getFileList();
-        trainBaseCourse.setFileList(JSONUtil.toJsonStr(fileList));
         trainBaseCourse.setId(dto.getId());
         trainBaseCourse.setUpdateUser(loginUserId);
         trainBaseCourse.setUpdateTime(System.currentTimeMillis()/1000);
         int updateRes = this.updateSelective(trainBaseCourse);
         if(updateRes > 0 ){
-            //删除之前的关联positionCode
+            //删除之前的授课讲师
             trainBaseCourseTeacherService.deleteByCourseId(dto.getId());
             List<TeacherDTO> teacherList = dto.getTeacherList();
             List<TrainBaseCourseTeacher> entityList = new ArrayList<>();
@@ -133,6 +143,20 @@ public class TrainBaseCourseServiceImpl extends AbstractCrudService<TrainBaseCou
             }
             if(!entityList.isEmpty()){
                 trainBaseCourseTeacherService.insertBatchSelective(entityList);
+            }
+
+            //删除之前的课程材料
+            trainBaseCourseMaterialsService.deleteByCourseId(dto.getId());
+            List<TrainBaseCourseMaterialsDTO> materialsList = dto.getMaterialsList();
+            List<TrainBaseCourseMaterials> mEnList = new ArrayList<>();
+            for (TrainBaseCourseMaterialsDTO materialsDTO : materialsList){
+                TrainBaseCourseMaterials materials = new TrainBaseCourseMaterials();
+                BeanUtils.copyProperties(materialsDTO,materials);
+                materials.setCourseId(dto.getId());
+                mEnList.add(materials);
+            }
+            if(!mEnList.isEmpty()){
+                trainBaseCourseMaterialsService.insertBatchSelective(mEnList);
             }
         }
         return updateRes;
@@ -402,5 +426,31 @@ public class TrainBaseCourseServiceImpl extends AbstractCrudService<TrainBaseCou
         }
         int res = trainBaseCourseMapper.selectCountByCondition(condition);
         return res > 0;
+    }
+
+
+    @Override
+    /**
+     * 课程材料学习页数据
+     * @param courseId
+     * @param loginEmplId
+     * @return
+     */
+    public TrainBaseCourseVO materialsLearningPageData(Long courseId,String loginEmplId){
+        TrainBaseCourse entity = trainBaseCourseMapper.selectByCourseId(courseId);
+        TrainBaseCourseVO vo = new TrainBaseCourseVO();
+        if(entity != null){
+            BeanUtils.copyProperties(entity,vo);
+            List<TrainBaseCourseMaterialsVO> materialsVOList = new ArrayList<>();
+            List<TrainBaseCourseMaterialsDTO> materialsDTO = trainBaseCourseMaterialsService.getSelectByCourseId(courseId);
+            for (TrainBaseCourseMaterialsDTO dto : materialsDTO){
+                TrainBaseCourseMaterialsVO materialsVO = new TrainBaseCourseMaterialsVO();
+                BeanUtils.copyProperties(dto,materialsVO);
+                materialsVO.setHaveLearned(true);
+                materialsVOList.add(materialsVO);
+            }
+            vo.setMaterialsList(materialsVOList);
+        }
+        return vo;
     }
 }

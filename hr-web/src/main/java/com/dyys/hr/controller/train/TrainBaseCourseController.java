@@ -172,7 +172,7 @@ public class TrainBaseCourseController {
     @ApiOperation(value = "修改课程状态")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "id", value = "课程ID", paramType = "path", required = true, dataType="int") ,
-            @ApiImplicitParam(name = "status", value = "状态 1.生效 0.失效", paramType = "path", required = true, dataType="int") ,
+            @ApiImplicitParam(name = "status", value = "状态 1.已发布 0.未发布", paramType = "path", required = true, dataType="int") ,
     })
     public Integer changeStatus(@ApiIgnore @RequestBody Map<String, Object> params) {
         TrainBaseCourse baseCourse = new TrainBaseCourse();
@@ -182,5 +182,19 @@ public class TrainBaseCourseController {
         baseCourse.setUpdateTime(System.currentTimeMillis()/1000);
         return trainBaseCourseService.updateSelective(baseCourse);
     }
+
+    @ResponseResult
+    @GetMapping("materialsLearningPageData")
+    @ApiOperation(value = "课程材料学习页数据")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "课程ID", paramType = "path", required = true, dataType="int") ,
+    })
+    public TrainBaseCourseVO materialsLearningPageData(@ApiIgnore @RequestParam Long id) {
+        return trainBaseCourseService.materialsLearningPageData(id, userHelper.getLoginEmplId());
+    }
+
+
+
+
 
 }
