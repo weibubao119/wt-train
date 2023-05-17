@@ -6,8 +6,12 @@
     <resultMap type="com.dyys.hr.entity.train.TrainMaterials" id="trainMaterialsMap">
         <result property="id" column="id"/>
         <result property="programsId" column="programs_id"/>
-        <result property="content" column="content"/>
-        <result property="file" column="file"/>
+        <result column="category" property="category"/>
+        <result column="filename" property="filename"/>
+        <result column="src" property="src"/>
+        <result column="type" property="type"/>
+        <result column="duration" property="duration"/>
+        <result column="status" property="status"/>
         <result property="createUser" column="create_user"/>
         <result property="createTime" column="create_time"/>
         <result property="updateUser" column="update_user"/>
@@ -15,14 +19,22 @@
     </resultMap>
 
     <sql id="TrainMaterials_Column_sql">
-        id,programs_id,content,file,create_user,create_time,update_user,update_time
+        id,programs_id,category,filename,src,type,duration,status,create_user,create_time,update_user,update_time
     </sql>
     <select id="pageList" resultType="com.dyys.hr.vo.train.TrainMaterialsVO">
-        select *,file as fileString from train_materials
+        select * from train_programs_materials
         <where>
             <if test="programsId != null">
                 and programs_id = #{programsId}
             </if>
         </where>
+    </select>
+    <select id="totalLearningNumByProgramsId" resultType="java.lang.Integer">
+        select count(b.id) from
+            train_programs_materials a left join train_materials_learning_record b on a.id = b.materials_id and b.type = 2
+        where a.programs_id = #{programsId}
+    </select>
+    <select id="getMaterialsByProgramsId" resultType="com.dyys.hr.vo.train.TrainMaterialsVO">
+        select * from train_programs_materials where programs_id = #{programsId} and status = 1
     </select>
 </mapper>

@@ -10,12 +10,20 @@
     <result column="type" property="type"/>
     <result column="duration" property="duration"/>
     </resultMap>
-    <sql id="TrainBaseCourseMaterials_Column_sql">id,course_id,category,filename,src,duration</sql>
+    <sql id="TrainBaseCourseMaterials_Column_sql">id,course_id,category,type,filename,src,duration</sql>
     <delete id="deleteByCourseId">
         delete from train_base_course_materials where course_id = #{courseId}
     </delete>
     <select id="getSelectByCourseId" resultType="com.dyys.hr.dto.train.TrainBaseCourseMaterialsDTO">
-        select * from train_base_course_materials where course_id = #{courseId}
+        select * from train_base_course_materials
+        <where>
+            <if test="courseId != null and courseId != ''">
+                and course_id = #{courseId}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{courseId}
+            </if>
+        </where>
     </select>
     <select id="totalLearningNumByCourseId" resultType="java.lang.Integer">
         select count(b.id) from

@@ -33,10 +33,7 @@ public class TrainNotice extends BaseEntity<Long> {
     private String userId;
     /**
      * 通知类型
-     1.人员参训
-     2.考试通知
-     3.参训评估
-     4.机构评估
+     1.人员参训 2考试通知 3.课程评估 4.机构评估 10.临时需求审批 11.培训计划审批 12.培训资料学习
      */
     private Integer type;
     /**

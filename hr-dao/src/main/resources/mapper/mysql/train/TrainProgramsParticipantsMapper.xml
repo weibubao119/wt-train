@@ -171,6 +171,9 @@
             <if test="programsId != null">
                 and programs_id = #{programsId}
             </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
         </where>
     </select>
     <select id="exportList" resultType="com.dyys.hr.entity.train.excel.ProgramsParticipantsExcel">

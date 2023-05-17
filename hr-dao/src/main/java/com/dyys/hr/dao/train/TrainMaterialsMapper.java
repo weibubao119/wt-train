@@ -11,4 +11,19 @@ import java.util.Map;
 @Repository
 public interface TrainMaterialsMapper extends ICrudMapper<TrainMaterials> {
     List<TrainMaterialsVO> pageList(Map<String, Object> params);
+
+    /**
+     * 统计资料已学人数
+     * @param programsId
+     * @return
+     */
+    Integer totalLearningNumByProgramsId(Long programsId);
+
+
+    /**
+     * 获取已发布培训班资料列表
+     * @param programsId
+     * @return
+     */
+    List<TrainMaterialsVO> getMaterialsByProgramsId(Long programsId);
 }

@@ -48,7 +48,7 @@ public class TrainMaterialsLearningRecordServiceImpl extends AbstractCrudService
             finishDuration = trainBaseCourseMaterialsService.selectById(materialsId).getDuration();
         }
         else{
-            finishDuration = trainMaterialsService.selectById(materialsId).getContent();
+            finishDuration = trainMaterialsService.selectById(materialsId).getDuration();
         }
         if(selectOne == null){
             //判断资料类型，根据学习时长处理学习状态

@@ -4,14 +4,15 @@ import com.dagongma.mybatis.core.service.ICrudService;
 import com.dyys.hr.dto.train.TrainBaseCourseMaterialsDTO;
 import com.dyys.hr.entity.train.TrainBaseCourseMaterials;
 import java.util.List;
+import java.util.Map;
 
 public interface TrainBaseCourseMaterialsService extends ICrudService<TrainBaseCourseMaterials, Long> {
     /**
      * 课程材料列表
-     * @param courseId
+     * @param params
      * @return
      */
-    List<TrainBaseCourseMaterialsDTO> getSelectByCourseId(Long courseId);
+    List<TrainBaseCourseMaterialsDTO> getSelectByCourseId(Map<Object, Object> params);
 
     /**
      * 删除课程材料

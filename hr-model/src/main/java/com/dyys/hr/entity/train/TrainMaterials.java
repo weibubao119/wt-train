@@ -10,7 +10,7 @@ import javax.persistence.Table;
 
 @Data
 @ApiModel(value = "培训项目-项目资料表")
-@Table(name = "train_materials")
+@Table(name = "train_programs_materials")
 public class TrainMaterials extends BaseEntity<Long> {
     /**
      * 主键
@@ -23,13 +23,31 @@ public class TrainMaterials extends BaseEntity<Long> {
      */
     private Long programsId;
     /**
-     * 材料内容
+     * 材料分类
      */
-    private String content;
+    private String category;
     /**
-     * 附件
+     * 材料名称
      */
-    private String file;
+    private String filename;
+    /**
+     * 材料地址
+     */
+    private String src;
+    /**
+     * 类别
+     * 1.音视频
+     * 2.其他
+     */
+    private Integer type;
+    /**
+     * 时长
+     */
+    private String duration;
+    /**
+     * 状态 1.已发布 0.未发布
+     */
+    private Integer status;
     /**
      * 创建人
      */

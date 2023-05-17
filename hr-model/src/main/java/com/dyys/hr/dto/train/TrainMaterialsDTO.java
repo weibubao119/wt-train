@@ -5,8 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import springfox.documentation.annotations.ApiIgnore;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 
@@ -22,16 +21,27 @@ public class TrainMaterialsDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	@ApiModelProperty(value = "培训项目ID")
-	@NotNull(message = "培训项目ID不能为空", groups = {Insert.class,Update.class})
+	@NotBlank(message = "培训项目ID不能为空", groups = {Insert.class,Update.class})
 	private Long programsId;
 
-	@ApiModelProperty(value = "材料内容")
-	@NotNull(message = "材料内容不能为空", groups = {Insert.class,Update.class})
-	private String content;
+	@ApiModelProperty(value = "材料分类")
+	@NotBlank(message = "材料分类不能为空", groups = {Insert.class,Update.class})
+	private String category;
 
-	@ApiModelProperty(value = "附件")
-	@Valid
-	private FileDTO file;
+	@ApiModelProperty(value = "材料名称")
+	@NotBlank(message = "材料名称不能为空", groups = {Insert.class,Update.class})
+	private String filename;
+
+	@ApiModelProperty(value = "材料地址")
+	@NotBlank(message = "材料地址不能为空", groups = {Insert.class,Update.class})
+	private String src;
+
+	@ApiModelProperty(value = "类别 1.音视频 2.其他")
+	@NotBlank(message = "材料类别不能为空", groups = {Insert.class,Update.class})
+	private Integer type;
+
+	@ApiModelProperty(value = "时长")
+	private String duration;
 
 	@ApiIgnore
 	public interface Insert{}

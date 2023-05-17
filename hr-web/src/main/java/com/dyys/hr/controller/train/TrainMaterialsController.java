@@ -2,9 +2,13 @@ package com.dyys.hr.controller.train;
 
 import com.dagongma.kernel.annotation.ResponseResult;
 import com.dyys.hr.constants.Constant;
+import com.dyys.hr.dto.train.IdDTO;
 import com.dyys.hr.dto.train.TrainMaterialsDTO;
 import com.dyys.hr.helper.UserHelper;
+import com.dyys.hr.service.train.TrainMaterialsLearningRecordService;
 import com.dyys.hr.service.train.TrainMaterialsService;
+import com.dyys.hr.vo.train.TrainBaseCourseVO;
+import com.dyys.hr.vo.train.TrainMaterialsLearnVO;
 import com.dyys.hr.vo.train.TrainMaterialsVO;
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.Api;
@@ -17,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,6 +37,8 @@ import java.util.Map;
 public class TrainMaterialsController {
     @Autowired
     private TrainMaterialsService trainMaterialsService;
+    @Autowired
+    private TrainMaterialsLearningRecordService trainMaterialsLearningRecordService;
     @Autowired
     private UserHelper userHelper;
 
@@ -59,5 +66,44 @@ public class TrainMaterialsController {
     })
     public Integer delete(@ApiIgnore @RequestParam Long id) {
         return trainMaterialsService.deleteById(id);
+    }
+
+    @PostMapping("batchChangeStatus")
+    @ApiOperation(value = "批量发布")
+    public Boolean batchChangeStatus(@RequestBody @Validated(IdDTO.Insert.class) List<IdDTO> dtoList) {
+        return trainMaterialsService.batchChangeStatus(dtoList,userHelper.getLoginEmplId());
+    }
+
+    @PostMapping("pushLearningNotice")
+    @ApiOperation(value = "推送学习")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "programsId", value = "培训班id", paramType = "path", required = true, dataType="int") ,
+    })
+    public Boolean pushLearningNotice(@RequestBody @RequestParam Long programsId) {
+        return trainMaterialsService.pushLearningNotice(programsId,userHelper.getLoginEmplId());
+    }
+
+    @ResponseResult
+    @GetMapping("materialsLearningPageData")
+    @ApiOperation(value = "培训材料学习页数据")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "programsId", value = "培训班ID", paramType = "path", required = true, dataType="int") ,
+    })
+    public TrainMaterialsLearnVO materialsLearningPageData(@ApiIgnore @RequestParam Long programsId) {
+        return trainMaterialsService.materialsLearningPageData(programsId, userHelper.getLoginEmplId());
+    }
+
+    @ResponseResult
+    @PostMapping("/materialsLearningRecord")
+    @ApiOperation(value = "培训材料学习记录")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "材料ID", paramType = "path", required = true, dataType="int") ,
+            @ApiImplicitParam(name = "materialsType", value = "材料类型 1.音视频 2.其他", paramType = "path", required = true, dataType="int"),
+            @ApiImplicitParam(name = "duration", value = "学习时长", paramType = "path", dataType="string"),
+    })
+    public Integer materialsLearningRecord(@ApiIgnore @RequestBody Map<String, Object> params) {
+        params.put("userId",userHelper.getLoginEmplId());
+        params.put("type",2);
+        return trainMaterialsLearningRecordService.materialsLearningRecord(params);
     }
 }

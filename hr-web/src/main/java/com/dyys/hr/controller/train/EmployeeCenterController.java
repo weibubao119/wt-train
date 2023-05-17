@@ -89,7 +89,7 @@ public class EmployeeCenterController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = Constant.PAGE, value = "当前页码，从1开始", paramType = "query", required = true, dataType="int") ,
             @ApiImplicitParam(name = Constant.LIMIT, value = "每页显示记录数", paramType = "query",required = true, dataType="int") ,
-            @ApiImplicitParam(name = "type", value = "通知类型 2.考试 3.培训评估 4.机构评估 11.计划审批", paramType = "query", dataType="int")
+            @ApiImplicitParam(name = "type", value = "通知类型 2.考试 3.培训评估 4.机构评估 11.计划审批 12.培训资料学习", paramType = "query", dataType="int")
     })
     public PageInfo<EmployeeToDoNoticeListVO> toDoNoticeList(@ApiIgnore @RequestParam Map<String, Object> params){
         params.put("user_id",userHelper.getLoginEmplId());

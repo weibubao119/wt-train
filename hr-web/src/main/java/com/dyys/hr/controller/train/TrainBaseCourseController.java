@@ -209,10 +209,4 @@ public class TrainBaseCourseController {
         params.put("type",1);
         return trainMaterialsLearningRecordService.materialsLearningRecord(params);
     }
-
-
-
-
-
-
 }

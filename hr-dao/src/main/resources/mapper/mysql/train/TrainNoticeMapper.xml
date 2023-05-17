@@ -60,30 +60,35 @@
                 when '3' then '评估'
                 when '4' then '机构评估'
                 when '11' then '计划审批'
+                when '12' then '培训资料学习'
                 end as typeName,
             case a.type
                 when '2' then c.id
                 when '3' then d.id
                 when '4' then e.id
                 when '11' then f.id
+                when '12' then a.type_id
                 end as id,
             case a.type
                 when '2' then c.title
                 when '3' then d.title
                 when '4' then e.title
                 when '11' then f.title
+                when '12' then CONCAT(b.train_name,'-资料学习')
                 end as title,
             case a.type
                 when '2' then c.start_time
                 when '3' then d.start_time
                 when '4' then e.start_time
                 when '11' then f.plan_year
+                when '12' then b.start_time
                 end as start_time,
             case a.type
                 when '2' then c.end_time
                 when '3' then d.end_time
                 when '4' then e.end_time
                 when '11' then f.plan_year
+                when '12' then b.end_time
                 end as end_time
         from
             train_notice a
@@ -92,6 +97,7 @@
             left join train_appraise d on a.type_id = d.id
             left join train_institution_assessment e on a.type_id = e.id
             left join train_plan f on a.type_id = f.id
+            left join train_materials g on a.type_id = g.id
         <where>
             a.status = 0
             <if test="user_id != null and user_id != ''">
@@ -121,6 +127,6 @@
         </where>
     </select>
     <insert id="createEmployeeSelfNotice">
-        insert into wt-common.notice into (type,type_id,empl_id,url) values (#{type},#{typeId},#{emplId},#{url});
+        insert into wt_common_notice into (type,type_id,empl_id,url) values (#{type},#{typeId},#{emplId},#{url});
     </insert>
 </mapper>

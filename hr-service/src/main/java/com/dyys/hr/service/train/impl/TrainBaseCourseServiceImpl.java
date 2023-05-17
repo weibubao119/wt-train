@@ -112,7 +112,9 @@ public class TrainBaseCourseServiceImpl extends AbstractCrudService<TrainBaseCou
         if(entity != null){
             BeanUtils.copyProperties(entity,dto);
             dto.setTeacherList(trainBaseCourseTeacherService.getSelectByCourseId(courseId));
-            dto.setMaterialsList(trainBaseCourseMaterialsService.getSelectByCourseId(courseId));
+            HashMap<Object, Object> map = new HashMap<>();
+            map.put("courseId",courseId);
+            dto.setMaterialsList(trainBaseCourseMaterialsService.getSelectByCourseId(map));
         }
         return dto;
     }
@@ -440,7 +442,10 @@ public class TrainBaseCourseServiceImpl extends AbstractCrudService<TrainBaseCou
             //查询共学人数
             vo.setLearnedNum(trainBaseCourseMaterialsService.totalLearningNumByCourseId(courseId));
             List<TrainBaseCourseMaterialsVO> materialsVOList = new ArrayList<>();
-            List<TrainBaseCourseMaterialsDTO> materialsDTO = trainBaseCourseMaterialsService.getSelectByCourseId(courseId);
+            HashMap<Object, Object> map = new HashMap<>();
+            map.put("courseId",courseId);
+            map.put("status",1);
+            List<TrainBaseCourseMaterialsDTO> materialsDTO = trainBaseCourseMaterialsService.getSelectByCourseId(map);
             for (TrainBaseCourseMaterialsDTO dto : materialsDTO){
                 TrainBaseCourseMaterialsVO materialsVO = new TrainBaseCourseMaterialsVO();
                 BeanUtils.copyProperties(dto,materialsVO);
