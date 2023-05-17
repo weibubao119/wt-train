@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -19,8 +18,8 @@ public class TrainBaseCourseMaterialsServiceImpl extends AbstractCrudService<Tra
     private TrainBaseCourseMaterialsMapper trainBaseCourseMaterialsMapper;
 
     @Override
-    public List<TrainBaseCourseMaterialsDTO> getSelectByCourseId(Map<Object, Object> params){
-        return trainBaseCourseMaterialsMapper.getSelectByCourseId(params);
+    public List<TrainBaseCourseMaterialsDTO> getSelectByCourseId(Long courseId){
+        return trainBaseCourseMaterialsMapper.getSelectByCourseId(courseId);
     }
 
     @Override

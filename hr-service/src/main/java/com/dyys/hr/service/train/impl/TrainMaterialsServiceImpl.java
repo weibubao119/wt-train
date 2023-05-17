@@ -2,15 +2,15 @@ package com.dyys.hr.service.train.impl;
 
 import cn.hutool.core.convert.Convert;
 import com.dagongma.mybatis.core.service.impl.AbstractCrudService;
-import com.dyys.hr.dao.train.TrainMaterialsMapper;
-import com.dyys.hr.dao.train.TrainNoticeMapper;
-import com.dyys.hr.dao.train.TrainProgramsParticipantsMapper;
+import com.dyys.hr.dao.train.*;
 import com.dyys.hr.dto.train.IdDTO;
+import com.dyys.hr.dto.train.TrainBaseCourseMaterialsDTO;
 import com.dyys.hr.dto.train.TrainMaterialsDTO;
 import com.dyys.hr.entity.train.*;
 import com.dyys.hr.service.train.*;
 import com.dyys.hr.vo.train.TrainMaterialsLearnVO;
 import com.dyys.hr.vo.train.TrainMaterialsVO;
+import com.dyys.hr.vo.train.TrainProgramsCourseDetailVO;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +41,10 @@ public class TrainMaterialsServiceImpl extends AbstractCrudService<TrainMaterial
     private TrainProgramsService trainProgramsService;
     @Autowired
     private TrainMaterialsLearningRecordService trainMaterialsLearningRecordService;
-
+    @Autowired
+    private TrainProgramsCourseMapper trainProgramsCourseMapper;
+    @Autowired
+    private TrainBaseCourseMaterialsMapper trainBaseCourseMaterialsMapper;
 
     @Override
     public PageInfo<TrainMaterialsVO> pageList(Map<String, Object> params){
@@ -90,6 +93,39 @@ public class TrainMaterialsServiceImpl extends AbstractCrudService<TrainMaterial
         return result;
     }
 
+
+    /**
+     * 培训班课程带出材料
+     * @param programsId
+     * @param loginUserId
+     * @return
+     */
+    @Override
+    public Boolean courseBroughtOut(Long programsId,String loginUserId){
+        //获取培训班课表课程,然后取课程对应已发布材料进行录入
+        Map<String, Object> map = new HashMap<>();
+        map.put("programsId",programsId);
+        List<TrainProgramsCourseDetailVO> courseDetailList = trainProgramsCourseMapper.getDetailList(map);
+        List<TrainMaterials> insertList = new ArrayList<>();
+        for (TrainProgramsCourseDetailVO courseDetail : courseDetailList){
+            List<TrainBaseCourseMaterialsDTO> materialsDTOS = trainBaseCourseMaterialsMapper.getSelectByCourseId(courseDetail.getCourseId());
+            for (TrainBaseCourseMaterialsDTO materials : materialsDTOS){
+                TrainMaterials entity = new TrainMaterials();
+                BeanUtils.copyProperties(materials,entity);
+                entity.setId(null);
+                entity.setProgramsId(programsId);
+                entity.setStatus(0);
+                entity.setCreateUser(loginUserId);
+                entity.setCreateTime(System.currentTimeMillis()/1000);
+                insertList.add(entity);
+            }
+        }
+        if(!insertList.isEmpty()){
+            return this.insertBatchSelective(insertList);
+        }
+        return false;
+    }
+
     /**
      * 推送学习
      * @param programsId
@@ -104,6 +140,7 @@ public class TrainMaterialsServiceImpl extends AbstractCrudService<TrainMaterial
         map.put("status",1);
         List<String> userIds = trainProgramsParticipantsMapper.getUserIdsByQuery(map);
         List<TrainNotice> noticeList = new ArrayList<>();
+        List<TrainMaterialsLearningRecord> learnRecordList = new ArrayList<>();
         if(userIds != null && !userIds.isEmpty()){
             //循环给参训人员发送通知
             Map<String, Object> dataParams = new HashMap<>();
@@ -117,6 +154,22 @@ public class TrainMaterialsServiceImpl extends AbstractCrudService<TrainMaterial
                 trainNotice.setCreateTime(System.currentTimeMillis()/1000);
                 noticeList.add(trainNotice);
 
+                //获取培训班所有已发布材料
+                List<TrainMaterialsVO> materialsVOList = trainMaterialsMapper.getMaterialsByProgramsId(programsId);
+                for (TrainMaterialsVO materialsVO : materialsVOList){
+                    //往材料学习记录表初始化待学习数据
+                    TrainMaterialsLearningRecord learningRecord = new TrainMaterialsLearningRecord();
+                    learningRecord.setMaterialsId(materialsVO.getId());
+                    learningRecord.setType(2);
+                    learningRecord.setUserId(userId);
+                    learningRecord.setStatus(0);
+                    learningRecord.setMaterialsType(materialsVO.getType());
+                    learningRecord.setLastDuration(null);
+                    learningRecord.setCreateUser(loginUserId);
+                    learningRecord.setCreateTime(System.currentTimeMillis()/1000);
+                    learnRecordList.add(learningRecord);
+                }
+
                 //自助平台插入代办
                 dataParams.put("typeId",11);
                 dataParams.put("type",11);
@@ -124,6 +177,9 @@ public class TrainMaterialsServiceImpl extends AbstractCrudService<TrainMaterial
                 dataParams.put("url","http://218.13.91.107:38000/kn-front/emp/center");
                 trainNoticeMapper.createEmployeeSelfNotice(dataParams);
             }
+        }
+        if(!learnRecordList.isEmpty()){
+            trainMaterialsLearningRecordService.insertBatchSelective(learnRecordList);
         }
         return trainNoticeService.insertBatchSelective(noticeList);
     }
@@ -141,7 +197,7 @@ public class TrainMaterialsServiceImpl extends AbstractCrudService<TrainMaterial
         TrainMaterialsLearnVO vo = new TrainMaterialsLearnVO();
         if(entity != null){
             vo.setProgramsId(programsId);
-            vo.setTitle(programsEntity.getTrainName() + "-学习资料");
+            vo.setTitle(programsEntity.getTrainName() + "-材料学习");
             //查询共学人数
             vo.setLearnedNum(trainMaterialsMapper.totalLearningNumByProgramsId(programsId));
             List<TrainMaterialsVO> materialsVOList = trainMaterialsMapper.getMaterialsByProgramsId(programsId);

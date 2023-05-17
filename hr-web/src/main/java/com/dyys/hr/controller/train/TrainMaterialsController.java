@@ -7,7 +7,6 @@ import com.dyys.hr.dto.train.TrainMaterialsDTO;
 import com.dyys.hr.helper.UserHelper;
 import com.dyys.hr.service.train.TrainMaterialsLearningRecordService;
 import com.dyys.hr.service.train.TrainMaterialsService;
-import com.dyys.hr.vo.train.TrainBaseCourseVO;
 import com.dyys.hr.vo.train.TrainMaterialsLearnVO;
 import com.dyys.hr.vo.train.TrainMaterialsVO;
 import com.github.pagehelper.PageInfo;
@@ -43,7 +42,7 @@ public class TrainMaterialsController {
     private UserHelper userHelper;
 
     @GetMapping("pageList")
-    @ApiOperation(value = "资料列表")
+    @ApiOperation(value = "材料列表")
     @ApiImplicitParams({
             @ApiImplicitParam(name = Constant.PAGE, value = "当前页码，从1开始", paramType = "query", required = true, dataType="int") ,
             @ApiImplicitParam(name = Constant.LIMIT, value = "每页显示记录数", paramType = "query",required = true, dataType="int") ,
@@ -54,13 +53,13 @@ public class TrainMaterialsController {
     }
 
     @PostMapping("save")
-    @ApiOperation(value = "新增资料")
+    @ApiOperation(value = "新增材料")
     public Long save(@RequestBody @Validated(TrainMaterialsDTO.Insert.class) TrainMaterialsDTO dto) {
         return trainMaterialsService.save(dto,userHelper.getLoginEmplId());
     }
 
     @DeleteMapping("delete")
-    @ApiOperation(value = "移除资料")
+    @ApiOperation(value = "移除材料")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "id", value = "资料id", paramType = "path", required = true, dataType="int") ,
     })
@@ -74,13 +73,23 @@ public class TrainMaterialsController {
         return trainMaterialsService.batchChangeStatus(dtoList,userHelper.getLoginEmplId());
     }
 
+    @PostMapping("courseBroughtOut")
+    @ApiOperation(value = "培训班课程带出材料")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "programsId", value = "培训班id", paramType = "path", required = true, dataType="int") ,
+    })
+    public Boolean courseBroughtOut(@ApiIgnore @RequestBody Map<String, Object> params) {
+        return trainMaterialsService.courseBroughtOut(Long.valueOf(params.get("programsId").toString()),userHelper.getLoginEmplId());
+    }
+
+
     @PostMapping("pushLearningNotice")
     @ApiOperation(value = "推送学习")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "programsId", value = "培训班id", paramType = "path", required = true, dataType="int") ,
     })
-    public Boolean pushLearningNotice(@RequestBody @RequestParam Long programsId) {
-        return trainMaterialsService.pushLearningNotice(programsId,userHelper.getLoginEmplId());
+    public Boolean pushLearningNotice(@ApiIgnore @RequestBody Map<String, Object> params) {
+        return trainMaterialsService.pushLearningNotice(Long.valueOf(params.get("programsId").toString()),userHelper.getLoginEmplId());
     }
 
     @ResponseResult

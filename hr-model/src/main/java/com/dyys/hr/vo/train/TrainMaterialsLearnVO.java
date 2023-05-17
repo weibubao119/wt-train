@@ -19,7 +19,7 @@ public class TrainMaterialsLearnVO implements Serializable {
     @ApiModelProperty(value = "培训班ID")
     private Long programsId;
 
-    @ApiModelProperty(value = "资料学习标题")
+    @ApiModelProperty(value = "材料学习标题")
     private String title;
 
     @ApiModelProperty(value = "已学人数")

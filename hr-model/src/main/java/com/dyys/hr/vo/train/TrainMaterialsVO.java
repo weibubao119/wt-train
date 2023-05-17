@@ -9,11 +9,11 @@ import java.io.Serializable;
 
 @Data
 @JsonInclude(JsonInclude.Include.ALWAYS)
-@ApiModel(value = "培训班-培训资料VO")
+@ApiModel(value = "培训班-培训材料VO")
 public class TrainMaterialsVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty(value = "资料Id")
+    @ApiModelProperty(value = "材料Id")
     private Long id;
 
     @ApiModelProperty(value = "材料分类")

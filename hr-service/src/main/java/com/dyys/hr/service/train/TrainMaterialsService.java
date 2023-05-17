@@ -25,6 +25,14 @@ public interface TrainMaterialsService extends ICrudService<TrainMaterials, Long
     Boolean batchChangeStatus(List<IdDTO> dtoList, String loginUserId);
 
     /**
+     * 培训班课程带出材料
+     * @param programsId
+     * @param loginUserId
+     * @return
+     */
+    Boolean courseBroughtOut(Long programsId,String loginUserId);
+
+    /**
      * 推送学习
      * @param programsId
      * @param loginUserId

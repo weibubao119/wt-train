@@ -2,13 +2,17 @@ package com.dyys.hr.service.train.impl;
 
 import com.dagongma.mybatis.core.service.impl.AbstractCrudService;
 import com.dyys.hr.dao.train.TrainBaseCourseMaterialsMapper;
+import com.dyys.hr.dao.train.TrainMaterialsLearningRecordMapper;
 import com.dyys.hr.entity.train.TrainMaterialsLearningRecord;
+import com.dyys.hr.entity.train.TrainNotice;
 import com.dyys.hr.service.train.TrainBaseCourseMaterialsService;
 import com.dyys.hr.service.train.TrainMaterialsLearningRecordService;
 import com.dyys.hr.service.train.TrainMaterialsService;
+import com.dyys.hr.service.train.TrainNoticeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 import java.util.Objects;
@@ -22,6 +26,10 @@ public class TrainMaterialsLearningRecordServiceImpl extends AbstractCrudService
     private TrainBaseCourseMaterialsService trainBaseCourseMaterialsService;
     @Autowired
     private TrainMaterialsService trainMaterialsService;
+    @Autowired
+    private TrainMaterialsLearningRecordMapper trainMaterialsLearningRecordMapper;
+    @Autowired
+    private TrainNoticeService trainNoticeService;
 
     /**
      * 材料学习记录
@@ -29,6 +37,7 @@ public class TrainMaterialsLearningRecordServiceImpl extends AbstractCrudService
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Integer materialsLearningRecord(Map<String,Object> params){
         Long materialsId = Long.valueOf(params.get("id").toString());
         int type = Integer.parseInt(params.get("type").toString());
@@ -73,7 +82,29 @@ public class TrainMaterialsLearningRecordServiceImpl extends AbstractCrudService
             updateEntity.setLastDuration(duration);
             updateEntity.setUpdateUser(userId);
             updateEntity.setUpdateTime(System.currentTimeMillis()/1000);
-            return this.updateSelective(updateEntity);
+            this.updateSelective(updateEntity);
+            //判断type=2 时，该材料对应的培训班材料学习如果全部完成则更新notice通知表状态
+            if(type == 2){
+                Long programsId = trainMaterialsService.selectById(materialsId).getProgramsId();
+                int unFinishNum = trainMaterialsLearningRecordMapper.getUnFinishNumByProgramsId(userId,programsId);
+                if(unFinishNum == 0){
+                    TrainNotice queryNotice = new TrainNotice();
+                    queryNotice.setType(12);
+                    queryNotice.setTypeId(programsId);
+                    queryNotice.setUserId(userId);
+                    queryNotice.setStatus(0);
+                    TrainNotice noticeOne = trainNoticeService.selectOne(queryNotice);
+                    if(noticeOne != null){
+                        TrainNotice updateNotice = new TrainNotice();
+                        updateNotice.setId(noticeOne.getId());
+                        updateNotice.setStatus(1);
+                        updateNotice.setUpdateUser(userId);
+                        updateNotice.setUpdateTime(System.currentTimeMillis()/1000);
+                        trainNoticeService.updateSelective(updateNotice);
+                    }
+                }
+            }
+            return 1;
         }
     }
 }

@@ -16,6 +16,9 @@ import java.util.Date;
 public class EmplELearningListVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @ApiModelProperty(value = "培训班编号")
+    private String trainNumber;
+
     @ApiModelProperty(value = "课程编号")
     private String courseNumber;
 
@@ -41,4 +44,7 @@ public class EmplELearningListVO implements Serializable {
 
     @ApiModelProperty(value = "课程学时")
     private BigDecimal classHours;
+
+    @ApiModelProperty(value = "已学习时长")
+    private String haveLearnedTime;
 }

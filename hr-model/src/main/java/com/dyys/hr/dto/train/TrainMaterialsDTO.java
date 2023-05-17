@@ -6,6 +6,7 @@ import lombok.Data;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 
@@ -21,7 +22,7 @@ public class TrainMaterialsDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	@ApiModelProperty(value = "培训项目ID")
-	@NotBlank(message = "培训项目ID不能为空", groups = {Insert.class,Update.class})
+	@NotNull(message = "培训项目ID不能为空", groups = {Insert.class,Update.class})
 	private Long programsId;
 
 	@ApiModelProperty(value = "材料分类")
@@ -37,7 +38,7 @@ public class TrainMaterialsDTO implements Serializable {
 	private String src;
 
 	@ApiModelProperty(value = "类别 1.音视频 2.其他")
-	@NotBlank(message = "材料类别不能为空", groups = {Insert.class,Update.class})
+	@NotNull(message = "材料类别不能为空", groups = {Insert.class,Update.class})
 	private Integer type;
 
 	@ApiModelProperty(value = "时长")

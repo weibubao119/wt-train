@@ -12,10 +12,12 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
 import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.info.MultimediaInfo;
 
@@ -54,9 +56,9 @@ public class OssController {
     @Transactional(rollbackFor = Exception.class)
     @ApiImplicitParams({
             @ApiImplicitParam(name = "file", value = "上传文件", dataTypeClass = MultipartFile.class, required = true, allowMultiple = true),
-            @ApiImplicitParam(name = "type", value = "文件类型 1.音视频 2.其他", paramType = "query", required = true,dataType="int")
+            @ApiImplicitParam(name = "type", value = "文件类型 1.音视频 2.其他", paramType = "query", dataType="int")
     })
-    public Result<Map<String, Object>> upload(@RequestParam("file") MultipartFile file,Integer type) throws IOException {
+    public Result<Map<String, Object>> upload(@RequestParam("file") MultipartFile file, @ApiIgnore @RequestParam Map<String, Object> params) throws IOException {
         if (file.isEmpty()) {
             return new Result<Map<String, Object>>().error(ErrorCode.UPLOAD_FILE_EMPTY);
         }
@@ -78,10 +80,12 @@ public class OssController {
         sysFile.setWebPath(path);
 
         //获取上传文件时长
-        sysFile.setType(type);
-        if(type == 1){
-            sysFile.setDuration(getDurationBackString(file));
+        int type = 2;
+        if (params.containsKey("type") && !StringUtils.isEmpty(params.get("type").toString())) {
+            type = Integer.parseInt(params.get("type").toString());
         }
+        sysFile.setType(type);
+        sysFile.setDuration(getDurationBackString(file));
 
         //保存文件信息
         if (sysFileService.insertSelective(sysFile) > 0) {

@@ -60,7 +60,7 @@
                 when '3' then '评估'
                 when '4' then '机构评估'
                 when '11' then '计划审批'
-                when '12' then '培训资料学习'
+                when '12' then '培训材料学习'
                 end as typeName,
             case a.type
                 when '2' then c.id
@@ -74,7 +74,7 @@
                 when '3' then d.title
                 when '4' then e.title
                 when '11' then f.title
-                when '12' then CONCAT(b.train_name,'-资料学习')
+                when '12' then CONCAT(b.train_name,'-材料学习')
                 end as title,
             case a.type
                 when '2' then c.start_time
@@ -127,6 +127,6 @@
         </where>
     </select>
     <insert id="createEmployeeSelfNotice">
-        insert into wt_common_notice into (type,type_id,empl_id,url) values (#{type},#{typeId},#{emplId},#{url});
+        insert into wt_common_notice (type,type_id,empl_id,url) values (#{type},#{typeId},#{emplId},#{url});
     </insert>
 </mapper>

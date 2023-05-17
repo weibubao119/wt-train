@@ -15,15 +15,7 @@
         delete from train_base_course_materials where course_id = #{courseId}
     </delete>
     <select id="getSelectByCourseId" resultType="com.dyys.hr.dto.train.TrainBaseCourseMaterialsDTO">
-        select * from train_base_course_materials
-        <where>
-            <if test="courseId != null and courseId != ''">
-                and course_id = #{courseId}
-            </if>
-            <if test="status != null and status != ''">
-                and status = #{courseId}
-            </if>
-        </where>
+        select * from train_base_course_materials where course_id = #{courseId}
     </select>
     <select id="totalLearningNumByCourseId" resultType="java.lang.Integer">
         select count(b.id) from

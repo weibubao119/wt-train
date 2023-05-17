@@ -17,4 +17,20 @@
     <sql id="TrainMaterialsLearningRecord_Column_sql">
         id,materials_id,user_id,type,status,materials_type,last_duration,create_user,create_time,update_user,update_time
     </sql>
+    <select id="getUnFinishNumByProgramsId" resultType="java.lang.Integer">
+        select
+        count(a.id)
+        from train_materials_learning_record a left join train_programs_materials b on a.materials_id = b.id and a.type = 2
+        where a.user_id = #{0} and b.programs_id = #{1} and a.status = 0
+    </select>
+    <select id="getHaveFinishDurationList" resultType="java.lang.String">
+        SELECT
+            b.duration
+        FROM
+            train_materials_learning_record a
+            left join train_programs_materials b on a.materials_id = b.id and a.type = 2
+            left join train_programs c on b.programs_id = c.id
+        where  and a.user_id = #{0} and c.number = #{1} and a.`status` = 1;
+    </select>
+
 </mapper>

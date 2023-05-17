@@ -8,6 +8,7 @@ import com.dagongma.kernel.commons.enums.ResultCode;
 import com.dagongma.kernel.commons.exceptions.BusinessException;
 import com.dagongma.mybatis.core.service.impl.AbstractCrudService;
 import com.dyys.hr.dao.train.TrainDataMapper;
+import com.dyys.hr.dao.train.TrainMaterialsLearningRecordMapper;
 import com.dyys.hr.dto.train.ELearningDTO;
 import com.dyys.hr.dto.train.PersonDTO;
 import com.dyys.hr.entity.staff.StaffDepartment;
@@ -74,6 +75,8 @@ public class TrainDataServiceImpl extends AbstractCrudService<TrainData, Long> i
     private IStaffDepartmentService staffDepartmentService;
     @Autowired
     private TrainCostService trainCostService;
+    @Autowired
+    private TrainMaterialsLearningRecordMapper trainMaterialsLearningRecordMapper;
 
     @Override
     public PageInfo<ELearningPageVO> eLearningPageList(Map<String, Object> params){
@@ -549,7 +552,21 @@ public class TrainDataServiceImpl extends AbstractCrudService<TrainData, Long> i
 
     @Override
     public List<EmplELearningListVO> emplELearningList(Map<String, Object> params){
-        return trainDataMapper.emplELearningList(params);
+        List<EmplELearningListVO> listVOS = trainDataMapper.emplELearningList(params);
+        for (EmplELearningListVO listVO : listVOS){
+//            List<String> durationList = trainMaterialsLearningRecordMapper.getHaveFinishDurationList(params.get("emplId").toString(), listVO.getTrainNumber());
+//            int hour = 0;
+//            int min = 0;
+//            int sec = 0;
+//            for (String duration : durationList){
+//                List<String> list = Arrays.asList(duration.split(":"));
+//                hour += Integer.parseInt(list.get(0));
+//                min += Integer.parseInt(list.get(1));
+//                sec += Integer.parseInt(list.get(2));
+//            }
+            listVO.setHaveLearnedTime(null);
+        }
+        return listVOS;
     }
 
     /**

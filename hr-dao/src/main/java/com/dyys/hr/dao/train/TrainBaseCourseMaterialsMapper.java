@@ -6,11 +6,10 @@ import com.dyys.hr.entity.train.TrainBaseCourseMaterials;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Map;
 
 @Repository
 public interface TrainBaseCourseMaterialsMapper extends ICrudMapper<TrainBaseCourseMaterials> {
-    List<TrainBaseCourseMaterialsDTO> getSelectByCourseId(Map<Object, Object> params);
+    List<TrainBaseCourseMaterialsDTO> getSelectByCourseId(Long courseId);
 
     void deleteByCourseId(Long courseId);
 
