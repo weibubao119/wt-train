@@ -26,4 +26,11 @@ public interface TrainMaterialsMapper extends ICrudMapper<TrainMaterials> {
      * @return
      */
     List<TrainMaterialsVO> getMaterialsByProgramsId(Long programsId);
+
+    /**
+     * 根据条件获取所有材料文件名
+     * @param params
+     * @return
+     */
+    List<String> getMaterialsNamesByQuery(Map<String, Object> params);
 }

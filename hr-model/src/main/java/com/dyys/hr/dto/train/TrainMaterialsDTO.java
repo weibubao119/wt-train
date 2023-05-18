@@ -37,7 +37,7 @@ public class TrainMaterialsDTO implements Serializable {
 	@NotBlank(message = "材料地址不能为空", groups = {Insert.class,Update.class})
 	private String src;
 
-	@ApiModelProperty(value = "类别 1.音视频 2.其他")
+	@ApiModelProperty(value = "类别 1.视频 2.音频 3.其他")
 	@NotNull(message = "材料类别不能为空", groups = {Insert.class,Update.class})
 	private Integer type;
 

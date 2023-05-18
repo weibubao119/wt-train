@@ -454,7 +454,8 @@ public class TrainBaseCourseServiceImpl extends AbstractCrudService<TrainBaseCou
                 if(selectOne != null){
                     materialsVO.setLearnedStatus(selectOne.getStatus());
                 }
-
+                //处理材料标题
+                materialsVO.setFileTitle(materialsVO.getFilename().split("\\.")[0]);
                 materialsVOList.add(materialsVO);
             }
             vo.setMaterialsList(materialsVOList);

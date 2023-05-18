@@ -80,7 +80,7 @@ public class OssController {
         sysFile.setWebPath(path);
 
         //获取上传文件时长
-        int type = 2;
+        int type = 3;
         if (params.containsKey("type") && !StringUtils.isEmpty(params.get("type").toString())) {
             type = Integer.parseInt(params.get("type").toString());
         }

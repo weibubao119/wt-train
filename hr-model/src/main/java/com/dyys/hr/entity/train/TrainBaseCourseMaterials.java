@@ -48,8 +48,9 @@ public class TrainBaseCourseMaterials extends BaseEntity<Long> {
     private String src;
     /**
      * 类别
-     * 1.音视频
-     * 2.其他
+     * 1.视频
+     * 2.音频
+     * 3.其他
      */
     private Integer type;
     /**

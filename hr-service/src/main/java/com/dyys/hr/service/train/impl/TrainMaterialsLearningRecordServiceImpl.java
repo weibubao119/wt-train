@@ -41,6 +41,7 @@ public class TrainMaterialsLearningRecordServiceImpl extends AbstractCrudService
     public Integer materialsLearningRecord(Map<String,Object> params){
         Long materialsId = Long.valueOf(params.get("id").toString());
         int type = Integer.parseInt(params.get("type").toString());
+        //材料类型 1.视频 2.音频 3.其他
         int materialsType = Integer.parseInt(params.get("materialsType").toString());
         String duration = params.get("duration").toString();
         String userId = params.get("userId").toString();
@@ -61,7 +62,7 @@ public class TrainMaterialsLearningRecordServiceImpl extends AbstractCrudService
         }
         if(selectOne == null){
             //判断资料类型，根据学习时长处理学习状态
-            if(materialsType == 1 && !Objects.equals(duration, finishDuration)){
+            if(materialsType != 3  && !Objects.equals(duration, finishDuration)){
                 status = 0;
             }
             queryEntity.setMaterialsType(materialsType);
@@ -69,13 +70,14 @@ public class TrainMaterialsLearningRecordServiceImpl extends AbstractCrudService
             queryEntity.setLastDuration(duration);
             queryEntity.setCreateUser(userId);
             queryEntity.setCreateTime(System.currentTimeMillis()/1000);
-            return this.insertSelective(queryEntity).intValue();
+            this.insertSelective(queryEntity).intValue();
+            return status;
         }
         else{
             TrainMaterialsLearningRecord updateEntity = new TrainMaterialsLearningRecord();
             updateEntity.setId(selectOne.getId());
             //判断资料类型，根据学习时长处理学习状态
-            if(selectOne.getStatus() != 1 && materialsType == 1 && !Objects.equals(duration, finishDuration)){
+            if(selectOne.getStatus() != 1 && materialsType != 3 && !Objects.equals(duration, finishDuration)){
                 status = 0;
             }
             updateEntity.setStatus(status);
@@ -104,7 +106,7 @@ public class TrainMaterialsLearningRecordServiceImpl extends AbstractCrudService
                     }
                 }
             }
-            return 1;
+            return status;
         }
     }
 }

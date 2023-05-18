@@ -27,10 +27,13 @@ public class TrainBaseCourseMaterialsVO implements Serializable {
 	@ApiModelProperty(value = "材料名称")
 	private String filename;
 
+	@ApiModelProperty(value = "材料标题")
+	private String fileTitle;
+
 	@ApiModelProperty(value = "材料地址")
 	private String src;
 
-	@ApiModelProperty(value = "类别 1.音视频 2.其他")
+	@ApiModelProperty(value = "类别 1.视频 2.音频 3.其他")
 	private Integer type;
 
 	@ApiModelProperty(value = "时长")

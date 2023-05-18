@@ -201,7 +201,7 @@ public class TrainBaseCourseController {
     @ApiOperation(value = "课程材料学习记录")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "id", value = "材料ID", paramType = "path", required = true, dataType="int") ,
-            @ApiImplicitParam(name = "materialsType", value = "材料类型 1.音视频 2.其他", paramType = "path", required = true, dataType="int"),
+            @ApiImplicitParam(name = "materialsType", value = "材料类型 1.视频 2.音频 3.其他", paramType = "path", required = true, dataType="int"),
             @ApiImplicitParam(name = "duration", value = "学习时长", paramType = "path", dataType="string"),
     })
     public Integer materialsLearningRecord(@ApiIgnore @RequestBody Map<String, Object> params) {

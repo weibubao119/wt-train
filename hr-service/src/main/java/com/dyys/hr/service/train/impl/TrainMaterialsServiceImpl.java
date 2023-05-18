@@ -90,23 +90,29 @@ public class TrainMaterialsServiceImpl extends AbstractCrudService<TrainMaterial
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean courseBroughtOut(Long programsId,String loginUserId){
         //获取培训班课表课程,然后取课程对应已发布材料进行录入
         Map<String, Object> map = new HashMap<>();
         map.put("programsId",programsId);
         List<TrainProgramsCourseDetailVO> courseDetailList = trainProgramsCourseMapper.getDetailList(map);
         List<TrainMaterials> insertList = new ArrayList<>();
+        //获取目前所有培训班材料名称，处理去重
+        List<String> existFileList = trainMaterialsMapper.getMaterialsNamesByQuery(map);
         for (TrainProgramsCourseDetailVO courseDetail : courseDetailList){
             List<TrainBaseCourseMaterialsDTO> materialsDTOS = trainBaseCourseMaterialsMapper.getSelectByCourseId(courseDetail.getCourseId());
             for (TrainBaseCourseMaterialsDTO materials : materialsDTOS){
-                TrainMaterials entity = new TrainMaterials();
-                BeanUtils.copyProperties(materials,entity);
-                entity.setId(null);
-                entity.setProgramsId(programsId);
-                entity.setStatus(0);
-                entity.setCreateUser(loginUserId);
-                entity.setCreateTime(System.currentTimeMillis()/1000);
-                insertList.add(entity);
+                if(!existFileList.contains(materials.getFilename())){
+                    existFileList.add(materials.getFilename());
+                    TrainMaterials entity = new TrainMaterials();
+                    BeanUtils.copyProperties(materials,entity);
+                    entity.setId(null);
+                    entity.setProgramsId(programsId);
+                    entity.setStatus(0);
+                    entity.setCreateUser(loginUserId);
+                    entity.setCreateTime(System.currentTimeMillis()/1000);
+                    insertList.add(entity);
+                }
             }
         }
         if(!insertList.isEmpty()){
@@ -201,6 +207,8 @@ public class TrainMaterialsServiceImpl extends AbstractCrudService<TrainMaterial
                 if(selectOne != null){
                     materialsVO.setLearnedStatus(selectOne.getStatus());
                 }
+                //处理材料标题
+                materialsVO.setFileTitle(materialsVO.getFilename().split("\\.")[0]);
             }
             vo.setMaterialsList(materialsVOList);
         }
