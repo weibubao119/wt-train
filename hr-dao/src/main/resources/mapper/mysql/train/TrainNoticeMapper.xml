@@ -97,7 +97,7 @@
             left join train_appraise d on a.type_id = d.id
             left join train_institution_assessment e on a.type_id = e.id
             left join train_plan f on a.type_id = f.id
-            left join train_materials g on a.type_id = g.id
+            left join train_programs_materials g on a.type_id = g.id
         <where>
             a.status = 0
             <if test="user_id != null and user_id != ''">

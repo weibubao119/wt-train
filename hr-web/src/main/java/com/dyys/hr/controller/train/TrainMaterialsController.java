@@ -2,7 +2,6 @@ package com.dyys.hr.controller.train;
 
 import com.dagongma.kernel.annotation.ResponseResult;
 import com.dyys.hr.constants.Constant;
-import com.dyys.hr.dto.train.IdDTO;
 import com.dyys.hr.dto.train.TrainMaterialsDTO;
 import com.dyys.hr.helper.UserHelper;
 import com.dyys.hr.service.train.TrainMaterialsLearningRecordService;
@@ -20,7 +19,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -69,8 +67,11 @@ public class TrainMaterialsController {
 
     @PostMapping("batchChangeStatus")
     @ApiOperation(value = "批量发布")
-    public Boolean batchChangeStatus(@RequestBody @Validated(IdDTO.Insert.class) List<IdDTO> dtoList) {
-        return trainMaterialsService.batchChangeStatus(dtoList,userHelper.getLoginEmplId());
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "programsId", value = "培训班id", paramType = "path", required = true, dataType="int") ,
+    })
+    public Integer batchChangeStatus(@ApiIgnore @RequestBody Map<String, Object> params) {
+        return trainMaterialsService.batchChangeStatus(Long.valueOf(params.get("programsId").toString()),userHelper.getLoginEmplId());
     }
 
     @PostMapping("courseBroughtOut")

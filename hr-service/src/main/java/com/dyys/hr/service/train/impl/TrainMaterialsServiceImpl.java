@@ -3,7 +3,6 @@ package com.dyys.hr.service.train.impl;
 import cn.hutool.core.convert.Convert;
 import com.dagongma.mybatis.core.service.impl.AbstractCrudService;
 import com.dyys.hr.dao.train.*;
-import com.dyys.hr.dto.train.IdDTO;
 import com.dyys.hr.dto.train.TrainBaseCourseMaterialsDTO;
 import com.dyys.hr.dto.train.TrainMaterialsDTO;
 import com.dyys.hr.entity.train.*;
@@ -67,30 +66,20 @@ public class TrainMaterialsServiceImpl extends AbstractCrudService<TrainMaterial
 
     /**
      * 批量发布
-     * @param dtoList
+     * @param programsId
      * @param loginUserId
      * @return
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean batchChangeStatus(List<IdDTO> dtoList, String loginUserId){
-        boolean result = false;
-        if(dtoList != null && !dtoList.isEmpty()){
-            //循环给参训人员发送通知
-            String ids = "";
-            for (IdDTO dto : dtoList){
-                ids = ids.concat("," + dto.getId().toString());
-            }
-            ids = ids.substring(1);
-            //批量更新材料状态为已报名
-            TrainMaterials updateEntity = new TrainMaterials();
-            updateEntity.setStatus(1);
-            Condition condition = new Condition(TrainMaterials.class);
-            condition.createCriteria().andCondition("id in (" + ids + ")");
-            this.updateByConditionSelective(updateEntity,condition);
-            result = true;
-        }
-        return result;
+    public Integer batchChangeStatus(Long programsId, String loginUserId){
+        TrainMaterials updateMaterials = new TrainMaterials();
+        updateMaterials.setStatus(1);
+        updateMaterials.setUpdateUser(loginUserId);
+        updateMaterials.setUpdateTime(System.currentTimeMillis()/1000);
+        Condition condition = new Condition(TrainMaterials.class);
+        condition.createCriteria().andCondition("programs_id = " + programsId);
+        return this.updateByConditionSelective(updateMaterials,condition);
     }
 
 
