@@ -191,9 +191,10 @@ public class TrainBaseCourseController {
     @ApiOperation(value = "课程材料学习页数据")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "id", value = "课程ID", paramType = "path", required = true, dataType="int") ,
+            @ApiImplicitParam(name = "userId", value = "员工ID", paramType = "path", required = true, dataType="int") ,
     })
-    public TrainBaseCourseVO materialsLearningPageData(@ApiIgnore @RequestParam Long id) {
-        return trainBaseCourseService.materialsLearningPageData(id, userHelper.getLoginEmplId());
+    public TrainBaseCourseVO materialsLearningPageData(@ApiIgnore @RequestParam Map<String, Object> params) {
+        return trainBaseCourseService.materialsLearningPageData(params);
     }
 
     @ResponseResult

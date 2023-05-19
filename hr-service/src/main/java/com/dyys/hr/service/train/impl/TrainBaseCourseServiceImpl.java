@@ -17,6 +17,7 @@ import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -428,11 +429,15 @@ public class TrainBaseCourseServiceImpl extends AbstractCrudService<TrainBaseCou
     @Override
     /**
      * 课程材料学习页数据
-     * @param courseId
-     * @param loginEmplId
+     * @param params
      * @return
      */
-    public TrainBaseCourseVO materialsLearningPageData(Long courseId,String loginEmplId){
+    public TrainBaseCourseVO materialsLearningPageData(Map<String, Object> params){
+        Long courseId = Long.valueOf(params.get("id").toString());
+        String userId = null;
+        if (params.containsKey("userId") && !StringUtils.isEmpty(params.get("userId").toString())) {
+            userId = params.get("userId").toString();
+        }
         TrainBaseCourse entity = trainBaseCourseMapper.selectByCourseId(courseId);
         TrainBaseCourseVO vo = new TrainBaseCourseVO();
         if(entity != null){
@@ -444,15 +449,17 @@ public class TrainBaseCourseServiceImpl extends AbstractCrudService<TrainBaseCou
             for (TrainBaseCourseMaterialsDTO dto : materialsDTO){
                 TrainBaseCourseMaterialsVO materialsVO = new TrainBaseCourseMaterialsVO();
                 BeanUtils.copyProperties(dto,materialsVO);
-                //获取当前用户该资料的学习完成状态
-                TrainMaterialsLearningRecord queryEntity = new TrainMaterialsLearningRecord();
-                queryEntity.setMaterialsId(dto.getId());
-                queryEntity.setType(1);
-                queryEntity.setUserId(loginEmplId);
-                TrainMaterialsLearningRecord selectOne = trainMaterialsLearningRecordService.selectOne(queryEntity);
                 materialsVO.setLearnedStatus(0);
-                if(selectOne != null){
-                    materialsVO.setLearnedStatus(selectOne.getStatus());
+                if(userId != null){
+                    //获取当前用户该资料的学习完成状态
+                    TrainMaterialsLearningRecord queryEntity = new TrainMaterialsLearningRecord();
+                    queryEntity.setMaterialsId(dto.getId());
+                    queryEntity.setType(1);
+                    queryEntity.setUserId(userId);
+                    TrainMaterialsLearningRecord selectOne = trainMaterialsLearningRecordService.selectOne(queryEntity);
+                    if(selectOne != null){
+                        materialsVO.setLearnedStatus(selectOne.getStatus());
+                    }
                 }
                 //处理材料标题
                 materialsVO.setFileTitle(materialsVO.getFilename().split("\\.")[0]);

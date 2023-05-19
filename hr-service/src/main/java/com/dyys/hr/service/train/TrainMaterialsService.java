@@ -1,14 +1,12 @@
 package com.dyys.hr.service.train;
 
 import com.dagongma.mybatis.core.service.ICrudService;
-import com.dyys.hr.dto.train.IdDTO;
 import com.dyys.hr.dto.train.TrainMaterialsDTO;
 import com.dyys.hr.entity.train.TrainMaterials;
 import com.dyys.hr.vo.train.TrainMaterialsLearnVO;
 import com.dyys.hr.vo.train.TrainMaterialsVO;
 import com.github.pagehelper.PageInfo;
 
-import java.util.List;
 import java.util.Map;
 
 public interface TrainMaterialsService extends ICrudService<TrainMaterials, Long> {
@@ -43,9 +41,8 @@ public interface TrainMaterialsService extends ICrudService<TrainMaterials, Long
 
     /**
      * 材料学习页数据
-     * @param programsId
-     * @param loginEmplId
+     * @param params
      * @return
      */
-    TrainMaterialsLearnVO materialsLearningPageData(Long programsId, String loginEmplId);
+    TrainMaterialsLearnVO materialsLearningPageData(Map<String, Object> params);
 }

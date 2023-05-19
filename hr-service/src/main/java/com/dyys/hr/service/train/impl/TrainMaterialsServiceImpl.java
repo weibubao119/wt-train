@@ -13,6 +13,7 @@ import com.dyys.hr.vo.train.TrainProgramsCourseDetailVO;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -181,31 +182,37 @@ public class TrainMaterialsServiceImpl extends AbstractCrudService<TrainMaterial
 
     /**
      * 材料学习页数据
-     * @param programsId
-     * @param loginEmplId
+     * @param params
      * @return
      */
     @Override
-    public TrainMaterialsLearnVO materialsLearningPageData(Long programsId, String loginEmplId){
+    public TrainMaterialsLearnVO materialsLearningPageData(Map<String, Object> params){
         //获取培训班数据
+        Long programsId = Long.valueOf(params.get("programsId").toString());
+        String userId = null;
+        if (params.containsKey("userId") && !StringUtils.isEmpty(params.get("userId").toString())) {
+            userId = params.get("userId").toString();
+        }
         TrainPrograms programsEntity = trainProgramsService.selectById(programsId);
         TrainMaterialsLearnVO vo = new TrainMaterialsLearnVO();
         if(entity != null){
             vo.setProgramsId(programsId);
-            vo.setTitle(programsEntity.getTrainName() + "-材料学习");
+            vo.setTitle(programsEntity.getTrainName());
             //查询共学人数
             vo.setLearnedNum(trainMaterialsMapper.totalLearningNumByProgramsId(programsId));
             List<TrainMaterialsVO> materialsVOList = trainMaterialsMapper.getMaterialsByProgramsId(programsId);
             for (TrainMaterialsVO  materialsVO : materialsVOList){
                 //获取当前用户该资料的学习完成状态
-                TrainMaterialsLearningRecord queryEntity = new TrainMaterialsLearningRecord();
-                queryEntity.setMaterialsId(materialsVO.getId());
-                queryEntity.setType(2);
-                queryEntity.setUserId(loginEmplId);
-                TrainMaterialsLearningRecord selectOne = trainMaterialsLearningRecordService.selectOne(queryEntity);
                 materialsVO.setLearnedStatus(0);
-                if(selectOne != null){
-                    materialsVO.setLearnedStatus(selectOne.getStatus());
+                if(userId != null){
+                    TrainMaterialsLearningRecord queryEntity = new TrainMaterialsLearningRecord();
+                    queryEntity.setMaterialsId(materialsVO.getId());
+                    queryEntity.setType(2);
+                    queryEntity.setUserId(userId);
+                    TrainMaterialsLearningRecord selectOne = trainMaterialsLearningRecordService.selectOne(queryEntity);
+                    if(selectOne != null){
+                        materialsVO.setLearnedStatus(selectOne.getStatus());
+                    }
                 }
                 //处理材料标题
                 materialsVO.setFileTitle(materialsVO.getFilename().split("\\.")[0]);

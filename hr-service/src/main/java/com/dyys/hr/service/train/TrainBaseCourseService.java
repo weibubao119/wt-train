@@ -89,9 +89,8 @@ public interface TrainBaseCourseService extends ICrudService<TrainBaseCourse, Lo
 
     /**
      * 课程材料学习页数据
-     * @param courseId
-     * @param loginEmplId
+     * @param params
      * @return
      */
-    TrainBaseCourseVO materialsLearningPageData(Long courseId,String loginEmplId);
+    TrainBaseCourseVO materialsLearningPageData(Map<String, Object> params);
 }

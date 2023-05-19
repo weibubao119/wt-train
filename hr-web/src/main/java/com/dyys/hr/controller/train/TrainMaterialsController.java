@@ -98,9 +98,10 @@ public class TrainMaterialsController {
     @ApiOperation(value = "培训材料学习页数据")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "programsId", value = "培训班ID", paramType = "path", required = true, dataType="int") ,
+            @ApiImplicitParam(name = "userId", value = "员工ID", paramType = "path", dataType="int") ,
     })
-    public TrainMaterialsLearnVO materialsLearningPageData(@ApiIgnore @RequestParam Long programsId) {
-        return trainMaterialsService.materialsLearningPageData(programsId, userHelper.getLoginEmplId());
+    public TrainMaterialsLearnVO materialsLearningPageData(@ApiIgnore @RequestParam Map<String, Object> params) {
+        return trainMaterialsService.materialsLearningPageData(params);
     }
 
     @ResponseResult
