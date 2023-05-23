@@ -22,4 +22,19 @@
             train_base_course_materials a left join train_materials_learning_record b on a.id = b.materials_id and b.type = 1
         where a.course_id = #{courseId}
     </select>
+    <select id="getGroupMaterialsCategory" resultType="java.lang.String">
+        select category from train_base_course_materials where course_id = #{courseId} group by category order by id asc
+    </select>
+    <select id="getMaterialsByQuery" resultType="com.dyys.hr.vo.train.TrainBaseCourseMaterialsVO">
+        select * from train_base_course_materials
+        <where>
+            <if test="courseId != null">
+                and course_id = #{courseId}
+            </if>
+            <if test="category != null">
+                and category = #{category}
+            </if>
+        </where>
+        order by id asc
+    </select>
 </mapper>

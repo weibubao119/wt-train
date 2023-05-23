@@ -45,4 +45,20 @@
             </if>
         </where>
     </select>
+    <select id="getGroupMaterialsCategory" resultType="java.lang.String">
+        select category from train_programs_materials where programs_id = #{programsId} group by category order by id asc
+    </select>
+    <select id="getMaterialsByQuery" resultType="com.dyys.hr.vo.train.TrainMaterialsVO">
+        select * from train_programs_materials
+        <where>
+            status = 1
+            <if test="programsId != null">
+                and programs_id = #{programsId}
+            </if>
+            <if test="category != null">
+                and category = #{category}
+            </if>
+        </where>
+        order by id asc
+    </select>
 </mapper>

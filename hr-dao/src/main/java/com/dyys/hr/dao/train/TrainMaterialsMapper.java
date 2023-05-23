@@ -19,6 +19,12 @@ public interface TrainMaterialsMapper extends ICrudMapper<TrainMaterials> {
      */
     Integer totalLearningNumByProgramsId(Long programsId);
 
+    /**
+     * 获取培训班材料分类分组
+     * @param programsId
+     * @return
+     */
+    List<String> getGroupMaterialsCategory(Long programsId);
 
     /**
      * 获取已发布培训班资料列表
@@ -26,6 +32,14 @@ public interface TrainMaterialsMapper extends ICrudMapper<TrainMaterials> {
      * @return
      */
     List<TrainMaterialsVO> getMaterialsByProgramsId(Long programsId);
+
+
+    /**
+     * 根据条件获取已发布培训班资料列表
+     * @param params
+     * @return
+     */
+    List<TrainMaterialsVO> getMaterialsByQuery(Map<String, Object> params);
 
     /**
      * 根据条件获取所有材料文件名

@@ -25,6 +25,6 @@ public class TrainMaterialsLearnVO implements Serializable {
     @ApiModelProperty(value = "已学人数")
     private Integer learnedNum;
 
-    @ApiModelProperty(value = "学习材料列表")
-    private List<TrainMaterialsVO> materialsList;
+    @ApiModelProperty(value = "学习材料分类页数据")
+    private List<TrainMaterialsLearnCategoryVO> categoryList;
 }

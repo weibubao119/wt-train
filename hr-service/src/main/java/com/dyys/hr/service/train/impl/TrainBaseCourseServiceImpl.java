@@ -3,6 +3,7 @@ package com.dyys.hr.service.train.impl;
 import cn.hutool.core.convert.Convert;
 import com.dagongma.mybatis.core.service.impl.AbstractCrudService;
 import com.dyys.hr.dao.train.TrainBaseCourseMapper;
+import com.dyys.hr.dao.train.TrainBaseCourseMaterialsMapper;
 import com.dyys.hr.dto.train.TeacherDTO;
 import com.dyys.hr.dto.train.TrainBaseCourseDTO;
 import com.dyys.hr.dto.train.TrainBaseCourseMaterialsDTO;
@@ -11,6 +12,7 @@ import com.dyys.hr.entity.train.excel.AbleTeacherExcel;
 import com.dyys.hr.entity.train.excel.BaseCourseExcel;
 import com.dyys.hr.entity.train.excel.BaseCourseListExcel;
 import com.dyys.hr.service.train.*;
+import com.dyys.hr.vo.train.TrainBaseCourseMaterialsCategoryVO;
 import com.dyys.hr.vo.train.TrainBaseCourseMaterialsVO;
 import com.dyys.hr.vo.train.TrainBaseCourseVO;
 import com.github.pagehelper.PageInfo;
@@ -45,6 +47,8 @@ public class TrainBaseCourseServiceImpl extends AbstractCrudService<TrainBaseCou
     private TrainBaseCourseMaterialsService trainBaseCourseMaterialsService;
     @Autowired
     private TrainMaterialsLearningRecordService trainMaterialsLearningRecordService;
+    @Autowired
+    private TrainBaseCourseMaterialsMapper trainBaseCourseMaterialsMapper;
 
     @Override
     public PageInfo<TrainBaseCourseVO> pageList(Map<String, Object> params){
@@ -444,28 +448,38 @@ public class TrainBaseCourseServiceImpl extends AbstractCrudService<TrainBaseCou
             BeanUtils.copyProperties(entity,vo);
             //查询共学人数
             vo.setLearnedNum(trainBaseCourseMaterialsService.totalLearningNumByCourseId(courseId));
-            List<TrainBaseCourseMaterialsVO> materialsVOList = new ArrayList<>();
-            List<TrainBaseCourseMaterialsDTO> materialsDTO = trainBaseCourseMaterialsService.getSelectByCourseId(courseId);
-            for (TrainBaseCourseMaterialsDTO dto : materialsDTO){
-                TrainBaseCourseMaterialsVO materialsVO = new TrainBaseCourseMaterialsVO();
-                BeanUtils.copyProperties(dto,materialsVO);
-                materialsVO.setLearnedStatus(0);
-                if(userId != null){
-                    //获取当前用户该资料的学习完成状态
-                    TrainMaterialsLearningRecord queryEntity = new TrainMaterialsLearningRecord();
-                    queryEntity.setMaterialsId(dto.getId());
-                    queryEntity.setType(1);
-                    queryEntity.setUserId(userId);
-                    TrainMaterialsLearningRecord selectOne = trainMaterialsLearningRecordService.selectOne(queryEntity);
-                    if(selectOne != null){
-                        materialsVO.setLearnedStatus(selectOne.getStatus());
+            //获取当前课程材料的分类group分组
+            List<String> categories = trainBaseCourseMaterialsMapper.getGroupMaterialsCategory(courseId);
+            List<TrainBaseCourseMaterialsCategoryVO> categoryVOList = new ArrayList<>();
+            Map<String, Object> query = new HashMap<>();
+            query.put("courseId",courseId);
+            for (String category : categories){
+                query.put("category",category);
+                List<TrainBaseCourseMaterialsVO> materialsVOList = new ArrayList<>();
+                List<TrainBaseCourseMaterialsVO> materialsVOS = trainBaseCourseMaterialsMapper.getMaterialsByQuery(query);
+                for (TrainBaseCourseMaterialsVO materialsVO : materialsVOS){
+                    materialsVO.setLearnedStatus(0);
+                    if(userId != null){
+                        //获取当前用户该资料的学习完成状态
+                        TrainMaterialsLearningRecord queryEntity = new TrainMaterialsLearningRecord();
+                        queryEntity.setMaterialsId(materialsVO.getId());
+                        queryEntity.setType(1);
+                        queryEntity.setUserId(userId);
+                        TrainMaterialsLearningRecord selectOne = trainMaterialsLearningRecordService.selectOne(queryEntity);
+                        if(selectOne != null){
+                            materialsVO.setLearnedStatus(selectOne.getStatus());
+                        }
                     }
+                    //处理材料标题
+                    materialsVO.setFileTitle(materialsVO.getFilename().split("\\.")[0]);
+                    materialsVOList.add(materialsVO);
                 }
-                //处理材料标题
-                materialsVO.setFileTitle(materialsVO.getFilename().split("\\.")[0]);
-                materialsVOList.add(materialsVO);
+                TrainBaseCourseMaterialsCategoryVO categoryVO = new TrainBaseCourseMaterialsCategoryVO();
+                categoryVO.setCategory(category);
+                categoryVO.setMaterialsList(materialsVOList);
+                categoryVOList.add(categoryVO);
             }
-            vo.setMaterialsList(materialsVOList);
+            vo.setCategoryList(categoryVOList);
         }
         return vo;
     }

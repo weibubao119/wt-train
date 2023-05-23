@@ -88,7 +88,7 @@ info:
 # 是否登陆拦截
 permission:
   authc: /**
-  anon: /common/login,/swagger-ui.html,/doc.html,/swagger-resources/**,/v2/api-docs/**,/webjars/springfox-swagger-ui/**,/druid/**,/hystrix/**,/actuator/**,/error,/train/employee/signInAttendance,/recruit/talent/getCollectDetailExport,/recruit/feedback/audit/getExcelTemplate,/recruit/position/**/getUrlQRCode,/sys/dictDetail/list,/sys/user/info,/recruit/position,/recruit/resume,/common/tmp/login,/train/data/eLearningSave,/train/data/employTrainData,/train/bi/**,/common/loginSso
+  anon: /common/login,/swagger-ui.html,/doc.html,/swagger-resources/**,/v2/api-docs/**,/webjars/springfox-swagger-ui/**,/druid/**,/hystrix/**,/actuator/**,/error,/train/employee/signInAttendance,/recruit/talent/getCollectDetailExport,/recruit/feedback/audit/getExcelTemplate,/recruit/position/**/getUrlQRCode,/sys/dictDetail/list,/sys/user/info,/recruit/position,/recruit/resume,/common/tmp/login,/train/data/eLearningSave,/train/data/employTrainData,/train/bi/**,/common/loginSso,/train/course/materialsLearningPageData,/train/materials/materialsLearningPageData,/train/course/materialsLearningRecord,/train/materials/materialsLearningRecord
 
 
 

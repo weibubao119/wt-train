@@ -1,6 +1,5 @@
 package com.dyys.hr.vo.train;
 
-import com.dyys.hr.dto.train.TrainBaseCourseMaterialsDTO;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -43,6 +42,6 @@ public class TrainBaseCourseVO implements Serializable {
     @ApiModelProperty(value = "已学人数")
     private Integer learnedNum;
 
-    @ApiModelProperty(value = "课程材料列表")
-    private List<TrainBaseCourseMaterialsVO> materialsList;
+    @ApiModelProperty(value = "课程材料分页列表")
+    private List<TrainBaseCourseMaterialsCategoryVO> categoryList;
 }
