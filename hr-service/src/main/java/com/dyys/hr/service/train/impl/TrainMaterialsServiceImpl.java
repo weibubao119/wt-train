@@ -95,7 +95,7 @@ public class TrainMaterialsServiceImpl extends AbstractCrudService<TrainMaterial
     public Boolean courseBroughtOut(Long programsId,String loginUserId){
         //获取培训班课表课程,然后取课程对应已发布材料进行录入
         Map<String, Object> map = new HashMap<>();
-        map.put("programsId",programsId);
+        map.put("programs_id",programsId);
         List<TrainProgramsCourseDetailVO> courseDetailList = trainProgramsCourseMapper.getDetailList(map);
         List<TrainMaterials> insertList = new ArrayList<>();
         //获取目前所有培训班材料名称，处理去重

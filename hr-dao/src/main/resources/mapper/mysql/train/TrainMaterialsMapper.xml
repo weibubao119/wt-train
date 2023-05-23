@@ -40,11 +40,8 @@
     <select id="getMaterialsNamesByQuery" resultType="java.lang.String">
         select filename from train_programs_materials
         <where>
-            <if test="programsId != null">
-                and programs_id = #{programsId}
-            </if>
-            <if test="status != null">
-                and status = #{status}
+            <if test="programs_id != null">
+                and programs_id = #{programs_id}
             </if>
         </where>
     </select>

@@ -446,7 +446,11 @@ public class TrainExaminerServiceImpl extends AbstractCrudService<TrainExaminer,
                 insertDetail.setExamTime(sdf.parse(excel.getExamTime()));
                 insertDetail.setUseTime(excel.getUseTime());
                 insertDetail.setScore(excel.getScore());
-                insertDetail.setIsPass(userUpdate.getStatus());
+                int isPass = 0;
+                if(Float.parseFloat(excel.getScore()) > Float.parseFloat(trainExam.getPassScore())){
+                    isPass = 1;
+                }
+                insertDetail.setIsPass(isPass);
                 insertDetail.setStatus(1);
                 insertDetail.setCreateUser(loginUserId);
                 insertDetail.setCreateTime(System.currentTimeMillis() / 1000);

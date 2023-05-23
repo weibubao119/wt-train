@@ -260,10 +260,14 @@ public class TrainTraineeSummaryServiceImpl extends AbstractCrudService<TrainTra
             trainEmployeeCertificateMapper.deleteByCondition(certificateCondition);
 
             // 生成培训总结数据
-            this.insertBatchSelective(tsEntityList);
+            if(!tsEntityList.isEmpty()){
+                this.insertBatchSelective(tsEntityList);
+            }
 
             // 生成证书数据
-            trainEmployeeCertificateService.insertBatchSelective(certificateAddList);
+            if(!certificateAddList.isEmpty()){
+                trainEmployeeCertificateService.insertBatchSelective(certificateAddList);
+            }
 
             // 更新证书数据
             if (!upMap.isEmpty()) {

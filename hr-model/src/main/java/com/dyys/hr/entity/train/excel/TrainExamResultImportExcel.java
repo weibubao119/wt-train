@@ -39,7 +39,7 @@ public class TrainExamResultImportExcel {
     private String score;
 
     @ColumnWidth(30)
-    @ExcelProperty(value = "考试时间(必填)\n格式例如：2023/8/8 08:00:00",index = 3)
+    @ExcelProperty(value = "考试时间(必填)\n格式例如：2023-05-23 08:00:00",index = 3)
     @ApiModelProperty(value = "考试时间")
     private String examTime;
 
