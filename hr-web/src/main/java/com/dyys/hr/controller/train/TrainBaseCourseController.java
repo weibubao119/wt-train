@@ -204,9 +204,9 @@ public class TrainBaseCourseController {
             @ApiImplicitParam(name = "id", value = "材料ID", paramType = "path", required = true, dataType="int") ,
             @ApiImplicitParam(name = "materialsType", value = "材料类型 1.视频 2.音频 3.其他", paramType = "path", required = true, dataType="int"),
             @ApiImplicitParam(name = "duration", value = "学习时长", paramType = "path", dataType="string"),
+            @ApiImplicitParam(name = "userId", value = "员工ID", paramType = "path", required = true, dataType="string") ,
     })
     public Integer materialsLearningRecord(@ApiIgnore @RequestBody Map<String, Object> params) {
-        params.put("userId",userHelper.getLoginEmplId());
         params.put("type",1);
         return trainMaterialsLearningRecordService.materialsLearningRecord(params);
     }
