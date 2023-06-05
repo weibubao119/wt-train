@@ -60,7 +60,7 @@ public class TrainPlanServiceImpl extends AbstractCrudService<TrainPlan, Long> i
         //插入计划
         TrainPlan planEntity = new TrainPlan();
         BeanUtils.copyProperties(dto,planEntity);
-        planEntity.setStatus(0);
+        planEntity.setStatus(1);
         planEntity.setCreateUser(loginUserId);
         planEntity.setCreateTime(System.currentTimeMillis()/1000);
         List<FileDTO> fileList = dto.getFileList();
