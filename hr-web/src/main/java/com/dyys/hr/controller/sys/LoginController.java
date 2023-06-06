@@ -50,13 +50,13 @@ public class LoginController {
     @Autowired
     private IStaffUserInfoService iStaffUserInfoService;
 
-    @Value("${knps.auth.driver}")
+    @Value("${wtps.auth.driver}")
     private String authDriver;
-    @Value("${knps.auth.url}")
+    @Value("${wtps.auth.url}")
     private String authUrl;
-    @Value("${knps.auth.user}")
+    @Value("${wtps.auth.user}")
     private String authUser;
-    @Value("${knps.auth.password}")
+    @Value("${wtps.auth.password}")
     private String authPassword;
 
     @ApiOperation(value = "登陆", notes = "登陆接口")

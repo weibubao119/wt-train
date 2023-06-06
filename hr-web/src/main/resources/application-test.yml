@@ -92,10 +92,10 @@ dyys-hr:
 ebs:
   post-url: http://trnerp.cnmc.com.cn:8050/webservices/SOAProvider/plsql/cux_pub_xml_soap_pub_hr/?wsdl
   soap-action: http://trnerp.cnmc.com.cn:8050/webservices/SOAProvider/plsql/cux_pub_xml_soap_pub_hr/
-knps:
+wtps:
   auth:
     driver: com.mysql.jdbc.Driver
-    url: jdbc:mysql://218.13.91.107:39046/kn-auth?useUnicode=true&characterEncoding=utf8&useSSL=false&tinyInt1isBit=false
+    url: jdbc:mysql://218.13.91.107:39046/wt-auth?useUnicode=true&characterEncoding=utf8&useSSL=false&tinyInt1isBit=false
     user: root
     password: sie2022^^O^^
 
