@@ -204,8 +204,7 @@ public class StaffController {
     @ApiOperation(value = "学历列表")
     @ApiImplicitParams({})
     public List<PsDictVO> eduBackList(@ApiIgnore @RequestParam Map<String, Object> params){
-        params.put("typeName", "C_EDCT_BAKG"); // 学历标识
-        return iStaffJobService.employeeDictList(params);
+        return iStaffJobService.eduLevelList(params);
     }
 
     @GetMapping("eduLrngStyleList")
