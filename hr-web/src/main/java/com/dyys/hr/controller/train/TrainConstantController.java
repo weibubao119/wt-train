@@ -68,7 +68,7 @@ public class TrainConstantController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = Constant.PAGE, value = "当前页码，从1开始", paramType = "query", required = true, dataType="int") ,
             @ApiImplicitParam(name = Constant.LIMIT, value = "每页显示记录数", paramType = "query",required = true, dataType="int") ,
-            @ApiImplicitParam(name = "type", value = "类型：1.课程类别，2.培训-需求依据，3.培训-考核方法，4.讲师-等级，5.机构类型，6.计划类型，7.职序与学习方向，8.培训科目，9.机构等级，10.学习方式", paramType = "query",dataType="int"),
+            @ApiImplicitParam(name = "type", value = "类型：1.课程类别，2.培训-需求依据，3.培训-考核方法，4.讲师-等级，5.机构类型，6.计划类型，7.职序与学习方向，8.培训科目，9.机构等级，10.学习方式 11.学历等级", paramType = "query",dataType="int"),
             @ApiImplicitParam(name = "pid", value = "父级ID(例如职序编码)", paramType = "query",dataType="String"),
             @ApiImplicitParam(name = "status", value = "状态 1.启用 0.停用", paramType = "query",dataType="int"),
             @ApiImplicitParam(name = "name", value = "名称", paramType = "query",dataType="String")

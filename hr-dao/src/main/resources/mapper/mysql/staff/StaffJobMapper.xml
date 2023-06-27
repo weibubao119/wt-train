@@ -85,8 +85,6 @@
                 and sj.eff_date &lt;= #{endTime}
             </if>
         </where>
-        order by
-        sj.id asc
     </select>
     <select id="emplInfo" resultType="com.dyys.hr.vo.train.EmplInfoVO">
         SELECT sj.empl_id, sj.empl_name, sj.company, sj.company_descr, sj.dept_id, sj.dept_descr,
@@ -109,4 +107,16 @@
         WHERE sj.empl_id = #{emplId}
     </select>
     <select id="trainList" resultType="com.dyys.hr.vo.train.EmplTrainListVO"></select>
+    <select id="eduLevelList" resultType="com.dyys.hr.vo.common.PsDictVO">
+        SELECT
+            id AS dictCode,
+            NAME AS dictName
+        FROM
+            train_constant
+        WHERE
+            type = 11
+        ORDER BY
+            id ASC,
+            order_by ASC
+    </select>
 </mapper>

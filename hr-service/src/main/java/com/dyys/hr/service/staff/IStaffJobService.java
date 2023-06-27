@@ -31,6 +31,13 @@ public interface IStaffJobService extends ICrudService<StaffJob, String> {
     List<PsDictVO> employeeDictList(Map<String, Object> params);
 
     /**
+     * 学历等级列表
+     * @param params
+     * @return
+     */
+    List<PsDictVO> eduLevelList(Map<String, Object> params);
+
+    /**
      * 学员档案分页列表
      * @param params
      * @return

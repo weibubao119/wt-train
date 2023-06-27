@@ -177,7 +177,7 @@ public class CommonController {
     @GetMapping("/trainConstant/selectList")
     @ApiOperation(value = "配置类型选择列表")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "type", value = "配置类型  1.课程类别 2.培训需求依据 3.培训考核方法 4.讲师等级 5.机构类型 6.计划类型 7.职序与学习方向 8.培训科目 9.机构等级 10.学习形式", paramType = "query", required = true,dataType="int") ,
+            @ApiImplicitParam(name = "type", value = "配置类型  1.课程类别 2.培训需求依据 3.培训考核方法 4.讲师等级 5.机构类型 6.计划类型 7.职序与学习方向 8.培训科目 9.机构等级 10.学习形式 11.学历等级", paramType = "query", required = true,dataType="int") ,
             @ApiImplicitParam(name = "pid", value = "上级ID(例如职序编码)", paramType = "query",dataType="String"),
             @ApiImplicitParam(name = "name", value = "名称", paramType = "query",dataType="String")
     })

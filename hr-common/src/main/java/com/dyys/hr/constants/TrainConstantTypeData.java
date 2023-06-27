@@ -27,6 +27,7 @@ public class TrainConstantTypeData {
         map.put(8,"培训科目");
         map.put(9,"机构等级");
         map.put(10,"学习方式");
+        map.put(11,"学历等级");
         return map;
     }
 

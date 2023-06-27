@@ -60,6 +60,7 @@
         when 8 then "培训科目"
         when 9 then "机构等级"
         when 10 then "学习方式"
+        when 11 then "学历等级"
         end as typeName,
         status, if(status=1,'启用','停用') as statusName, FROM_UNIXTIME(create_time) as create_time
         from train_constant

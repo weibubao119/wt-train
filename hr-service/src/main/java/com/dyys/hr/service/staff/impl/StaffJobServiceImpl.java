@@ -50,6 +50,16 @@ public class StaffJobServiceImpl extends AbstractCrudService<StaffJob, String> i
     }
 
     /**
+     * 学历等级列表
+     * @param params
+     * @return
+     */
+    @Override
+    public List<PsDictVO> eduLevelList(Map<String, Object> params) {
+        return staffJobMapper.eduLevelList(params);
+    }
+
+    /**
      * 学员档案分页列表
      * @param params
      * @return

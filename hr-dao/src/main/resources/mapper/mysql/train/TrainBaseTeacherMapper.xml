@@ -75,7 +75,7 @@
                 and name like '%${name}%'
             </if>
         </where>
-        order by id asc
+        order by id desc
     </select>
     <select id="teacherListExport" resultType="com.dyys.hr.entity.train.excel.BaseTeacherListExcel">
         select a.id,a.name,a.number,if(a.type=1,'内部讲师','外部讲师') as typeName,a.organization_name,
