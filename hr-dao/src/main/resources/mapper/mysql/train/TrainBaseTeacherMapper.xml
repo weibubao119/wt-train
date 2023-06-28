@@ -67,7 +67,7 @@
         select avatar from train_base_teacher where is_delete = 0 and id = #{id}
     </select>
     <select id="selectList" resultType="java.util.Map">
-        select id,name,number,type, IF(type = 1, "内部讲师", "外部讲师") AS typeName, organization_name
+        select id, id as teacherId,name,number,type, IF(type = 1, "内部讲师", "外部讲师") AS typeName, organization_name
         from train_base_teacher
         <where>
             status = 1
