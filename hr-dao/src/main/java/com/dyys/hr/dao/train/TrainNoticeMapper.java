@@ -1,5 +1,6 @@
 package com.dyys.hr.dao.train;
 
+import cn.hutool.core.date.DateTime;
 import com.dagongma.mybatis.core.dao.ICrudMapper;
 import com.dyys.hr.entity.train.TrainNotice;
 import com.dyys.hr.vo.train.EmployeeParticipantsNoticeListVO;
@@ -23,4 +24,23 @@ public interface TrainNoticeMapper extends ICrudMapper<TrainNotice> {
      * 新增员工自助平台代办通知
      */
     void createEmployeeSelfNotice(Map<String,Object> dataParams);
+
+    /**
+     * 自主模块插入代办通知
+     * @param systemNam
+     * @param messageModule
+     * @param employeeNumber
+     * @param messageJump
+     * @param messageUrl
+     * @param messageDate
+     * @param messageContent
+     * @param messageRead
+     * @param creator
+     * @param createName
+     * @return
+     */
+    Void insertHcmPortalMessage(String systemNam, String messageModule, String employeeNumber,
+                                Integer messageJump, String messageUrl, DateTime messageDate,
+                                String messageContent, Integer messageRead, String creator,
+                                String createName);
 }

@@ -108,3 +108,6 @@ storage-config:
   localDomain:  #本地上传绑定的域名
   localPrefix:  #本地上传路径前缀
   localPath: D:\java\wt-train\upload  #本地上传存储目录
+
+portal-config:
+  domain: "http://218.13.91.107:38000" #跳转主域名

@@ -1,6 +1,7 @@
 package com.dyys.hr.service.train.impl;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateTime;
 import com.dagongma.mybatis.core.service.impl.AbstractCrudService;
 import com.dyys.hr.dao.train.TrainNoticeMapper;
 import com.dyys.hr.entity.train.TrainNotice;
@@ -63,5 +64,28 @@ public class TrainNoticeServiceImpl extends AbstractCrudService<TrainNotice, Lon
         condition.createCriteria().andEqualTo("typeId", typeId)
                 .andEqualTo("type", type);
         return trainNoticeMapper.deleteByCondition(condition);
+    }
+
+
+    /**
+     * 自主模块插入代办通知
+     * @param systemName
+     * @param messageModule
+     * @param employeeNumber
+     * @param messageJump
+     * @param messageUrl
+     * @param messageDate
+     * @param messageContent
+     * @param messageRead
+     * @param creator
+     * @param createName
+     * @return
+     */
+    @Override
+    public Void insertHcmPortalMessage(String systemName, String messageModule, String employeeNumber,
+                                   Integer messageJump, String messageUrl, DateTime messageDate,
+                                   String messageContent, Integer messageRead, String creator,
+                                   String createName){
+       return trainNoticeMapper.insertHcmPortalMessage(systemName,messageModule,employeeNumber,messageJump,messageUrl,messageDate,messageContent,messageRead,creator,createName);
     }
 }

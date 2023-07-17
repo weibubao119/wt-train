@@ -1,17 +1,16 @@
 package com.dyys.hr.service.train.impl;
 
+import cn.hutool.core.date.DateTime;
 import com.dagongma.kernel.commons.enums.ResultCode;
 import com.dagongma.kernel.commons.exceptions.BusinessException;
 import com.dagongma.kernel.core.entity.PageView;
 import com.dagongma.mybatis.core.service.impl.AbstractCrudService;
 import com.dyys.hr.constants.Constant;
 import com.dyys.hr.dao.train.TrainExaminerMapper;
-import com.dyys.hr.dao.train.TrainNoticeMapper;
 import com.dyys.hr.dto.train.IdDTO;
 import com.dyys.hr.entity.exam.ExamBack;
 import com.dyys.hr.entity.train.*;
 import com.dyys.hr.entity.train.excel.OfflineExamResultsExcel;
-import com.dyys.hr.entity.train.excel.TrainAttendanceRecordImportExcel;
 import com.dyys.hr.entity.train.excel.TrainExamResultImportExcel;
 import com.dyys.hr.service.exam.IExamBackService;
 import com.dyys.hr.service.staff.IStaffUserInfoService;
@@ -21,8 +20,6 @@ import com.dyys.hr.service.train.TrainExaminerService;
 import com.dyys.hr.service.train.TrainNoticeService;
 import com.dyys.hr.vo.common.PsPersionVO;
 import com.dyys.hr.vo.exam.ExamCenterVO;
-import com.dyys.hr.vo.train.TrainAttendanceRecordImportExcelVO;
-import com.dyys.hr.vo.train.TrainAttendanceRecordVO;
 import com.dyys.hr.vo.train.TrainExamResultImportExcelVO;
 import com.dyys.hr.vo.train.TrainExaminerVO;
 import com.github.pagehelper.Page;
@@ -30,6 +27,7 @@ import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -53,12 +51,13 @@ public class TrainExaminerServiceImpl extends AbstractCrudService<TrainExaminer,
     @Autowired
     private TrainNoticeService trainNoticeService;
     @Autowired
-    private TrainNoticeMapper trainNoticeMapper;
-    @Autowired
     private IStaffUserInfoService iStaffUserInfoService;
     @Autowired
     private TrainExamService trainExamService;
+    @Value("${portal-config.domain}")
+    private String jumpDomain;
 
+    @Override
     public List<TrainExaminerVO> getListByQuery(Map<String, Object> params) {
         return trainExaminerMapper.getListByQuery(params);
     }
@@ -284,18 +283,17 @@ public class TrainExaminerServiceImpl extends AbstractCrudService<TrainExaminer,
     public Boolean batchExamNotice(List<IdDTO> dtoList, String loginUserId){
         boolean result = false;
         if(dtoList != null && !dtoList.isEmpty()){
-            //循环给参训人员发送通知
-            Map<String, Object> dataParams = new HashMap<>();
+            //获取登陆人和考试名称
+            String loginUserName = iStaffUserInfoService.getUserInfoById(loginUserId).getEmplName();
+
             for (IdDTO dto : dtoList){
                 //获取所有参考人员
                 List<String> allExamUserIds = this.allExamUserIds(dto.getId());
+                String examTitle = trainExamService.selectById(dto.getId()).getTitle();
                 for (String userId : allExamUserIds){
                     //自助平台插入代办
-                    dataParams.put("typeId",dto.getId());
-                    dataParams.put("type",11);
-                    dataParams.put("emplId",userId);
-                    dataParams.put("url","http://218.13.91.107:38000/kn-front/emp/center");
-                    trainNoticeMapper.createEmployeeSelfNotice(dataParams);
+                    trainNoticeService.insertHcmPortalMessage("培训系统","线上考试",userId, 1,jumpDomain + "/kn-front/emp/center", DateTime.now(), examTitle + "线上考试",
+                            0,loginUserId,loginUserName);
                 }
             }
             result = true;

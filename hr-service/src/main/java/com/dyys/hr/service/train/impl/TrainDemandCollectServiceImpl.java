@@ -2,13 +2,13 @@ package com.dyys.hr.service.train.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import com.dagongma.mybatis.core.service.impl.AbstractCrudService;
 import com.dyys.hr.dao.train.TrainDemandCollectMapper;
 import com.dyys.hr.dao.train.TrainDemandFeedbackMapper;
-import com.dyys.hr.dao.train.TrainNoticeMapper;
 import com.dyys.hr.dto.train.FileDTO;
 import com.dyys.hr.dto.train.TrainDemandCollectDTO;
 import com.dyys.hr.dto.train.TrainDemandFeedbackDTO;
@@ -17,6 +17,7 @@ import com.dyys.hr.service.staff.IStaffUserInfoService;
 import com.dyys.hr.service.train.TrainDemandCollectService;
 import com.dyys.hr.service.train.TrainDemandFeedbackLogService;
 import com.dyys.hr.service.train.TrainDemandFeedbackService;
+import com.dyys.hr.service.train.TrainNoticeService;
 import com.dyys.hr.vo.common.PsPersionVO;
 import com.dyys.hr.vo.train.*;
 import com.github.pagehelper.PageInfo;
@@ -24,6 +25,7 @@ import com.github.pagehelper.page.PageMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +46,11 @@ public class TrainDemandCollectServiceImpl extends AbstractCrudService<TrainDema
     @Autowired
     private TrainDemandFeedbackLogService trainDemandFeedbackLogService;
     @Autowired
-    private TrainNoticeMapper trainNoticeMapper;
+    private TrainNoticeService trainNoticeService;
+
+    @Value("${portal-config.domain}")
+    private String jumpDomain;
+
     @Override
     public PageInfo<TrainDemandCollectVO> pageList(Map<String, Object> params){
         int page = Convert.toInt(params.get("page"));
@@ -71,7 +77,7 @@ public class TrainDemandCollectServiceImpl extends AbstractCrudService<TrainDema
             if(userList != null && !userList.isEmpty()){
                 List<TrainDemandFeedback> feedbackList = new ArrayList<>();
                 HashMap<String, Object> map = new HashMap<>();
-                Map<String, Object> dataParams = new HashMap<>();
+                String loginUserName = iStaffUserInfoService.getUserInfoById(loginUserId).getEmplName();
                 for (TrainDemandFeedbackDTO  userDTO : userList){
                     if(map.get(userDTO.getFeedbackUserId()) == null){
                         map.put(userDTO.getFeedbackUserId(),1);
@@ -84,11 +90,9 @@ public class TrainDemandCollectServiceImpl extends AbstractCrudService<TrainDema
                         feedbackList.add(userEntity);
 
                         //自助平台插入代办
-                        dataParams.put("typeId",dto.getId());
-                        dataParams.put("type",10);
-                        dataParams.put("emplId",userDTO.getFeedbackUserId());
-                        dataParams.put("url","http://218.13.91.107:38000/kn-front/demand-management");
-                        trainNoticeMapper.createEmployeeSelfNotice(dataParams);
+                        trainNoticeService.insertHcmPortalMessage("培训系统","需求反馈",userDTO.getFeedbackUserId(),
+                                1,jumpDomain + "/kn-front/demand-management", DateTime.now(), dto.getDemandName() + "待反馈需求",
+                                0,loginUserId,loginUserName);
 
                     }
                 }

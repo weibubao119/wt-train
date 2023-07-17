@@ -54,7 +54,8 @@ public interface TrainAppraiseService extends ICrudService<TrainAppraise, Long> 
     /**
      * 批量通知评估
      * @param dtoList
+     * @param loginUserId
      * @return
      */
-    Boolean batchAppraiseNotice(List<IdDTO> dtoList);
+    Boolean batchAppraiseNotice(List<IdDTO> dtoList,String loginUserId);
 }

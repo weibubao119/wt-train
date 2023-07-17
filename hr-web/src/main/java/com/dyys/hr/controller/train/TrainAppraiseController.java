@@ -56,14 +56,6 @@ public class TrainAppraiseController {
     private QuestionnaireInstructionsService questionnaireInstructionsService;
     @Autowired
     private QuestionnaireCheckBoxService questionnaireCheckBoxService;
-
-
-    @Autowired
-    private TrainExamService trainExamService;
-    @Autowired
-    private TrainInstitutionAssessmentService trainInstitutionAssessmentService;
-
-
     @Autowired
     private UserHelper userHelper;
 
@@ -304,6 +296,6 @@ public class TrainAppraiseController {
     @PostMapping("batchAppraiseNotice")
     @ApiOperation(value = "批量评估通知提醒")
     public Boolean batchAppraiseNotice(@RequestBody @Validated(IdDTO.Insert.class) List<IdDTO> dtoList) {
-        return trainAppraiseService.batchAppraiseNotice(dtoList);
+        return trainAppraiseService.batchAppraiseNotice(dtoList,userHelper.getLoginEmplId());
     }
 }

@@ -1,8 +1,8 @@
 package com.dyys.hr.service.train.impl;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateTime;
 import com.dagongma.mybatis.core.service.impl.AbstractCrudService;
-import com.dyys.hr.dao.train.TrainNoticeMapper;
 import com.dyys.hr.dao.train.TrainProgramsParticipantsMapper;
 import com.dyys.hr.dto.train.IdDTO;
 import com.dyys.hr.dto.train.TrainProgramsParticipantsDTO;
@@ -10,14 +10,17 @@ import com.dyys.hr.entity.train.TrainNotice;
 import com.dyys.hr.entity.train.TrainProgramsParticipants;
 import com.dyys.hr.entity.train.excel.ProgramsParticipantsExcel;
 import com.dyys.hr.entity.train.excel.SummaryExcel;
+import com.dyys.hr.service.staff.IStaffUserInfoService;
 import com.dyys.hr.service.train.TrainNoticeService;
 import com.dyys.hr.service.train.TrainProgramsParticipantsService;
+import com.dyys.hr.service.train.TrainProgramsService;
 import com.dyys.hr.vo.train.EmployeeTrainingScheduleVO;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Condition;
@@ -36,7 +39,11 @@ public class TrainProgramsParticipantsServiceImpl extends AbstractCrudService<Tr
     @Autowired
     private TrainNoticeService trainNoticeService;
     @Autowired
-    private TrainNoticeMapper trainNoticeMapper;
+    private TrainProgramsService trainProgramsService;
+    @Autowired
+    private IStaffUserInfoService iStaffUserInfoService;
+    @Value("${portal-config.domain}")
+    private String jumpDomain;
 
     @Override
     public void deleteByParams(Map<String,Object> params){
@@ -58,8 +65,10 @@ public class TrainProgramsParticipantsServiceImpl extends AbstractCrudService<Tr
         boolean result = false;
         if(dtoList != null && !dtoList.isEmpty()){
             List<TrainNotice> noticeList = new ArrayList<>();
+            //获取登陆人和反馈需求名称
+            String loginUserName = iStaffUserInfoService.getUserInfoById(loginUserId).getEmplName();
+            String trainName = "";
             //循环给参训人员发送通知
-            Map<String, Object> dataParams = new HashMap<>();
             String ids = "";
             for (IdDTO dto : dtoList){
                 TrainProgramsParticipants participants = this.selectById(dto.getId());
@@ -73,11 +82,14 @@ public class TrainProgramsParticipantsServiceImpl extends AbstractCrudService<Tr
                 noticeList.add(trainNotice);
 
                 //自助平台插入代办
-                dataParams.put("typeId",dto.getId());
-                dataParams.put("type",11);
-                dataParams.put("emplId",participants.getUserId());
-                dataParams.put("url","http://218.13.91.107:38000/kn-front/emp/center");
-                trainNoticeMapper.createEmployeeSelfNotice(dataParams);
+                if("".equals(trainName)){
+                    trainName = trainProgramsService.selectById(participants.getProgramsId()).getTrainName();
+                }
+
+                trainNoticeService.insertHcmPortalMessage("培训系统","参训通知",participants.getUserId(),
+                        1,jumpDomain + "/kn-front/emp/center", DateTime.now(), trainName + "培训项目参训通知",
+                        0,loginUserId,loginUserName);
+
                 ids = ids.concat("," + dto.getId().toString());
             }
             result = trainNoticeService.insertBatchSelective(noticeList);

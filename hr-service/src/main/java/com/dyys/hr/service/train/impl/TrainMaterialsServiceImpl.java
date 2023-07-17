@@ -1,11 +1,13 @@
 package com.dyys.hr.service.train.impl;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateTime;
 import com.dagongma.mybatis.core.service.impl.AbstractCrudService;
 import com.dyys.hr.dao.train.*;
 import com.dyys.hr.dto.train.TrainBaseCourseMaterialsDTO;
 import com.dyys.hr.dto.train.TrainMaterialsDTO;
 import com.dyys.hr.entity.train.*;
+import com.dyys.hr.service.staff.IStaffUserInfoService;
 import com.dyys.hr.service.train.*;
 import com.dyys.hr.vo.train.TrainMaterialsLearnCategoryVO;
 import com.dyys.hr.vo.train.TrainMaterialsLearnVO;
@@ -17,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Condition;
@@ -35,8 +38,6 @@ public class TrainMaterialsServiceImpl extends AbstractCrudService<TrainMaterial
     @Autowired
     private TrainProgramsParticipantsMapper trainProgramsParticipantsMapper;
     @Autowired
-    private TrainNoticeMapper trainNoticeMapper;
-    @Autowired
     private TrainNoticeService trainNoticeService;
     @Autowired
     private TrainProgramsService trainProgramsService;
@@ -46,6 +47,10 @@ public class TrainMaterialsServiceImpl extends AbstractCrudService<TrainMaterial
     private TrainProgramsCourseMapper trainProgramsCourseMapper;
     @Autowired
     private TrainBaseCourseMaterialsMapper trainBaseCourseMaterialsMapper;
+    @Autowired
+    private IStaffUserInfoService iStaffUserInfoService;
+    @Value("${portal-config.domain}")
+    private String jumpDomain;
 
     @Override
     public PageInfo<TrainMaterialsVO> pageList(Map<String, Object> params){
@@ -138,9 +143,11 @@ public class TrainMaterialsServiceImpl extends AbstractCrudService<TrainMaterial
         List<String> userIds = trainProgramsParticipantsMapper.getUserIdsByQuery(map);
         List<TrainNotice> noticeList = new ArrayList<>();
         List<TrainMaterialsLearningRecord> learnRecordList = new ArrayList<>();
+        //获取登陆人和培训名称
+        String loginUserName = iStaffUserInfoService.getUserInfoById(loginUserId).getEmplName();
+        String trainName = trainProgramsService.selectById(programsId).getTrainName();
+
         if(userIds != null && !userIds.isEmpty()){
-            //循环给参训人员发送通知
-            Map<String, Object> dataParams = new HashMap<>();
             for (String userId : userIds){
                 TrainNotice trainNotice = new TrainNotice();
                 trainNotice.setTypeId(programsId);
@@ -168,11 +175,8 @@ public class TrainMaterialsServiceImpl extends AbstractCrudService<TrainMaterial
                 }
 
                 //自助平台插入代办
-                dataParams.put("typeId",11);
-                dataParams.put("type",11);
-                dataParams.put("emplId",userId);
-                dataParams.put("url","http://218.13.91.107:38000/kn-front/emp/center");
-                trainNoticeMapper.createEmployeeSelfNotice(dataParams);
+                trainNoticeService.insertHcmPortalMessage("培训系统","线上学习",userId, 1,jumpDomain + "/kn-front/emp/center", DateTime.now(), trainName + "培训项目线上材料学习",
+                        0,loginUserId,loginUserName);
             }
         }
         if(!learnRecordList.isEmpty()){

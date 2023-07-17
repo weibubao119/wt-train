@@ -129,4 +129,8 @@
     <insert id="createEmployeeSelfNotice">
         insert into wt_common_notice (type,type_id,empl_id,url) values (#{type},#{typeId},#{emplId},#{url});
     </insert>
+    <insert id="insertHcmPortalMessage">
+        insert into wt_hcm_portal.hcm_message_notice (system_name,message_module,employee_number,message_jump,message_url,message_date,message_content,message_read,creator,create_name) values
+                                        (#{systemName},#{messageModule},#{employeeNumber},#{messageJump},#{messageUrl},#{messageDate},#{messageContent},#{messageRead},#{creator},#{createName});
+    </insert>
 </mapper>

@@ -1,5 +1,6 @@
 package com.dyys.hr.service.train;
 
+import cn.hutool.core.date.DateTime;
 import com.dagongma.mybatis.core.service.ICrudService;
 import com.dyys.hr.entity.train.TrainNotice;
 import com.dyys.hr.vo.train.EmployeeParticipantsNoticeListVO;
@@ -24,4 +25,24 @@ public interface TrainNoticeService extends ICrudService<TrainNotice, Long> {
      * @return
      */
     Integer delByCondition(Long typeId, Integer type);
+
+
+    /**
+     * 自主模块插入代办通知
+     * @param systemName
+     * @param messageModule
+     * @param employeeNumber
+     * @param messageJump
+     * @param messageUrl
+     * @param messageDate
+     * @param messageContent
+     * @param messageRead
+     * @param creator
+     * @param createName
+     * @return
+     */
+    Void insertHcmPortalMessage(String systemName, String messageModule, String employeeNumber,
+                                   Integer messageJump, String messageUrl, DateTime messageDate,
+                                   String messageContent, Integer messageRead, String creator,
+                                   String createName);
 }

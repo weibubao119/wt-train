@@ -1,11 +1,12 @@
 package com.dyys.hr.service.train.impl;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateTime;
 import com.dagongma.mybatis.core.service.impl.AbstractCrudService;
 import com.dyys.hr.dao.train.TrainAppraiseMapper;
-import com.dyys.hr.dao.train.TrainNoticeMapper;
 import com.dyys.hr.dto.train.*;
 import com.dyys.hr.entity.train.*;
+import com.dyys.hr.service.staff.IStaffUserInfoService;
 import com.dyys.hr.service.train.*;
 import com.dyys.hr.vo.train.EmployeeAppraisePageVO;
 import com.dyys.hr.vo.train.TrainAppraiseDetailVO;
@@ -15,6 +16,7 @@ import com.github.pagehelper.page.PageMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +41,11 @@ public class TrainAppraiseServiceImpl extends AbstractCrudService<TrainAppraise,
     @Autowired
     private QuestionnaireService questionnaireService;
     @Autowired
-    private TrainNoticeMapper trainNoticeMapper;
+    private TrainAppraiseService trainAppraiseService;
+    @Autowired
+    private IStaffUserInfoService iStaffUserInfoService;
+    @Value("${portal-config.domain}")
+    private String jumpDomain;
 
     @Override
     public PageInfo<TrainAppraiseVO> pageList(Map<String, Object> params){
@@ -242,27 +248,26 @@ public class TrainAppraiseServiceImpl extends AbstractCrudService<TrainAppraise,
     /**
      * 批量通知评估
      * @param dtoList
+     * @param loginUserId
      * @return
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean batchAppraiseNotice(List<IdDTO> dtoList){
+    public Boolean batchAppraiseNotice(List<IdDTO> dtoList,String loginUserId){
         boolean result = false;
         if(dtoList != null && !dtoList.isEmpty()){
-            //循环给参训人员发送通知
-            Map<String, Object> dataParams = new HashMap<>();
+            //获取登陆人和评估名称
+            String loginUserName = iStaffUserInfoService.getUserInfoById(loginUserId).getEmplName();
             Map<String, Object> query = new HashMap<>();
             for (IdDTO dto : dtoList){
-                //获取所有参考人员
+                //获取所有参评人员
                 query.put("appraiseId",dto.getId());
                 List<String> allUserIds = trainAppraisePersonService.getPersonIdsByQuery(query);
+                String appraiseTitle = trainAppraiseService.selectById(dto.getId()).getTitle();
                 for (String userId : allUserIds){
                     //自助平台插入代办
-                    dataParams.put("typeId",dto.getId());
-                    dataParams.put("type",11);
-                    dataParams.put("emplId",userId);
-                    dataParams.put("url","http://218.13.91.107:38000/kn-front/emp/center");
-                    trainNoticeMapper.createEmployeeSelfNotice(dataParams);
+                    trainNoticeService.insertHcmPortalMessage("培训系统","评估反馈",userId, 1,jumpDomain + "/kn-front/emp/center", DateTime.now(), appraiseTitle + "评估反馈",
+                            0,loginUserId,loginUserName);
                 }
             }
             result = true;

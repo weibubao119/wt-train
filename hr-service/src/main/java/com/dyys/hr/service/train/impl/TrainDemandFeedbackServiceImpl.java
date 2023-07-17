@@ -2,14 +2,18 @@ package com.dyys.hr.service.train.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateTime;
 import com.dagongma.mybatis.core.service.impl.AbstractCrudService;
 import com.dyys.hr.dao.train.TrainDemandFeedbackDetailMapper;
 import com.dyys.hr.dao.train.TrainDemandFeedbackMapper;
 import com.dyys.hr.dto.train.TrainDemandAddFeedbackDTO;
 import com.dyys.hr.entity.train.TrainDemandFeedback;
 import com.dyys.hr.entity.train.TrainDemandFeedbackLog;
+import com.dyys.hr.service.staff.IStaffUserInfoService;
+import com.dyys.hr.service.train.TrainDemandCollectService;
 import com.dyys.hr.service.train.TrainDemandFeedbackLogService;
 import com.dyys.hr.service.train.TrainDemandFeedbackService;
+import com.dyys.hr.service.train.TrainNoticeService;
 import com.dyys.hr.vo.train.TrainDemandFeedbackVO;
 import com.dyys.hr.vo.train.TrainDemandUserFeedbackVO;
 import com.github.pagehelper.PageInfo;
@@ -17,6 +21,7 @@ import com.github.pagehelper.page.PageMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,9 +39,16 @@ public class TrainDemandFeedbackServiceImpl extends AbstractCrudService<TrainDem
     @Autowired
     private TrainDemandFeedbackDetailMapper trainDemandFeedbackDetailMapper;
     @Autowired
-    private TrainDemandFeedbackService trainDemandFeedbackService;
-    @Autowired
     private TrainDemandFeedbackLogService trainDemandFeedbackLogService;
+    @Autowired
+    private TrainDemandCollectService trainDemandCollectService;
+    @Autowired
+    private IStaffUserInfoService iStaffUserInfoService;
+    @Autowired
+    private TrainNoticeService trainNoticeService;
+
+    @Value("${portal-config.domain}")
+    private String jumpDomain;
 
     @Override
     public PageInfo<TrainDemandUserFeedbackVO> userFeedBackPageList(Map<String, Object> params){
@@ -51,6 +63,7 @@ public class TrainDemandFeedbackServiceImpl extends AbstractCrudService<TrainDem
         return new PageInfo<>(voList);
     }
 
+    @Override
     public List<TrainDemandFeedbackVO> feedbackList(Map<String, Object> params){
         return trainDemandFeedbackMapper.feedbackList(params);
     }
@@ -73,6 +86,9 @@ public class TrainDemandFeedbackServiceImpl extends AbstractCrudService<TrainDem
             }
 
             List<TrainDemandFeedback> feedbackList = new ArrayList<>();
+            //获取登陆人和反馈需求名称
+            String loginUserName = iStaffUserInfoService.getUserInfoById(loginUserId).getEmplName();
+            String demandName = trainDemandCollectService.selectById(dtoList.get(0).getDemandId()).getDemandName();
             for (TrainDemandAddFeedbackDTO dto : dtoList){
 
                 if (feedbackUserIdS.contains(dto.getFeedbackUserId())){
@@ -85,6 +101,12 @@ public class TrainDemandFeedbackServiceImpl extends AbstractCrudService<TrainDem
                 entity.setCreateTime(System.currentTimeMillis()/1000);
                 entity.setCreateUser(loginUserId);
                 feedbackList.add(entity);
+
+
+                //自助平台插入代办
+                trainNoticeService.insertHcmPortalMessage("培训系统","需求反馈",dto.getFeedbackUserId(),
+                        1,jumpDomain + "/kn-front/demand-management", DateTime.now(), demandName + "待反馈需求",
+                        0,loginUserId,loginUserName);
             }
             if (!CollectionUtil.isEmpty(feedbackList)){
                 return this.insertBatchSelective(feedbackList);
